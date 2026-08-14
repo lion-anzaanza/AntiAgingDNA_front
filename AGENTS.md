@@ -6,6 +6,10 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 React Native / Expo SDK 57, Expo Router, TypeScript, NativeWind v4.
 
+**Read [README.md](README.md) first** if you have not already — it covers what is
+built, what is still untouched Expo template, what has no logic behind it yet,
+and where things live. This file only covers rules and known traps.
+
 The UI is a port of a Figma design. **Figma is the source of truth — re-pull it
 before implementing or "fixing" any screen.** The design is still moving; several
 components have already been renamed or replaced mid-build, so never trust the
