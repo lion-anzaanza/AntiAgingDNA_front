@@ -1,3 +1,8 @@
+// NativeWind's stylesheet. It has to be imported once from the root so that
+// every `className` in the app resolves; keep it here rather than in a leaf
+// module that a later cleanup might delete.
+import '@/global.css';
+
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';

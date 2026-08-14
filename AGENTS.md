@@ -87,10 +87,20 @@ master rather than assuming.
 
 Six Pretendard weights are loaded in `src/app/_layout.tsx` and registered in
 `tailwind.config.js`: Regular / Medium / SemiBold / Bold / ExtraBold / Black.
-Figma weight names map straight onto the `font-pretendard-*` classes. If Figma
-introduces a weight that is missing, add the `.otf` (Pretendard is SIL OFL, on
-jsDelivr under `orioncactus/pretendard`) rather than approximating with a
-neighbouring weight.
+Figma weight names map onto the `font-pretendard-*` classes, except Regular,
+which is plain `font-pretendard` with no suffix. If Figma introduces a weight
+that is missing, add the `.otf` (Pretendard is SIL OFL, on jsDelivr under
+`orioncactus/pretendard`) rather than approximating with a neighbouring weight.
+
+### 8. `src/global.css` is imported once, from the root layout
+
+NativeWind's stylesheet has to be imported somewhere for any `className` to
+resolve. It used to be imported from `src/constants/theme.ts` — a template file
+this project describes as disposable — so the auth flow was styled only as a
+side effect of expo-router eagerly loading the template tab screens. Deleting
+that file would have silently killed every `font-pretendard-*` class.
+
+It now lives in `src/app/_layout.tsx`. Keep it there.
 
 ### 7. Figma node exports come back **without alpha**
 
@@ -106,6 +116,9 @@ side-by-side against Figma's own export before committing it.
 ## Verifying on the Android emulator
 
 Type-checking is not verification. Every UI change gets looked at on the emulator.
+
+The recipe below is Git Bash (the repo's shell is PowerShell by default, but
+`nohup`, `until` and `MSYS_NO_PATHCONV` all assume bash).
 
 ```bash
 # start Metro, keeping the output somewhere greppable
@@ -150,13 +163,16 @@ and a root `index.tsx` cannot share `/` with `(tabs)/index.tsx`. The anchor is
 pinned by `unstable_settings.initialRouteName` in `src/app/_layout.tsx`.
 
 There is no auth state yet — 약관 동의 simply `replace`s to `/(tabs)/home`.
-Adding real auth means gating those routes (expo-router v6 has
-`<Stack.Protected guard={...}>`), not re-ordering screens.
+Adding real auth means gating those routes (`<Stack.Protected guard={...}>`
+exists in the installed expo-router 57.x), not re-ordering screens.
+
+Routes register themselves from the filesystem — `(auth)/_layout.tsx` declares
+no `<Stack.Screen>` at all and its five routes work. The explicit list in the
+root layout exists only to pin the anchor described above.
 
 ## Open items
 
-`npx tsc --noEmit` and `npx expo lint` both pass on `feat/auth-flow-ui`. Keep
-them that way.
+`npx tsc --noEmit` and `npx expo lint` both pass. Keep them that way.
 
 Waiting on a decision — do not resolve these unilaterally:
 
@@ -174,6 +190,13 @@ Waiting on a decision — do not resolve these unilaterally:
 - **Sign-up intro** (`(auth)/sign-up/index.tsx`) comes from Figma frame
   `457:738`, which is `hidden` — a deprecated draft still using the old upright
   `dna-icon.png` while login uses the tilted `NiceDNA`.
+- **The colour scales in `tailwind.config.js` are dead and slightly wrong.**
+  Nothing in `src` uses `text-primary-900` and friends — the code takes colours
+  from `src/lib/design.ts` and explicit hex — and several values disagree with
+  Figma (`primary.900` `#04342C` vs `#00352C`, `gray.100` `#D3D1C7` vs
+  `#D3D1C6`, `gray.400` `#888780` vs `#88877F`). Reaching for those classes
+  gets you a subtly wrong colour. Either correct them against Figma or drop
+  them; only the `fontFamily` block is actually in use.
 
 Known and deliberately deferred:
 

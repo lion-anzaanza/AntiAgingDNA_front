@@ -10,7 +10,8 @@ UI까지** 구현되어 있고, 그 이후 화면들은 아직 Expo 템플릿 �
 - React Native (Expo SDK 57) + Expo Router
 - TypeScript
 - NativeWind (Tailwind CSS)
-- iOS/Android 네이티브 앱 전용 (웹 타겟 없음)
+- iOS/Android 타겟 (`app.json`의 `platforms`). 웹은 지원 대상이 아니지만
+  템플릿 잔재가 남아 있습니다 — AGENTS.md의 미해결 항목 참고
 
 ## 시작하기
 
@@ -35,10 +36,13 @@ npx expo lint
 |---|---|
 | `/` | `(auth)/sign-in`으로 리다이렉트 |
 | `(auth)/sign-in` | 로그인 |
-| `(auth)/sign-up/index` | 회원가입 인트로 |
+| `(auth)/sign-up/index` | 회원가입 인트로 ※ |
 | `(auth)/sign-up/personal-info` | STEP 1 · 개인정보 입력 |
-| `(auth)/sign-up/survey` | STEP 2 · 초기 진단 10문항 |
+| `(auth)/sign-up/survey` | STEP 2 · 초기 진단 |
 | `(auth)/sign-up/terms` | STEP 3 · 약관 동의 |
+
+※ 회원가입 인트로는 Figma에서 `hidden` 처리된 폐기 초안(`457:738`)을 옮긴 것이라,
+로그인과 다른 구형 DNA 아이콘을 씁니다. 손대기 전 AGENTS.md의 미해결 항목을 보세요.
 
 **아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
 
@@ -64,13 +68,23 @@ src/
     index.tsx          "/" → 로그인으로 리다이렉트
     (auth)/            가입 플로우 — 구현 완료
     (tabs)/            가입 이후 앱 — 템플릿 상태
-  components/ui/       Figma 디자인 시스템 컴포넌트
+    _layout.tsx        폰트 로드 + global.css + 스택 앵커
+  components/ui/       Figma 디자인 시스템 컴포넌트 (collapsible 은 템플릿)
   components/          템플릿 잔여 컴포넌트
   lib/
     scale.ts           Figma 220pt 좌표 → 실기기 dp 변환
     design.ts          그림자·그라디언트 등 Figma 원시값
+  global.css           NativeWind 진입점 (_layout.tsx 에서 1회 import)
   constants/, hooks/   템플릿 유틸
 ```
+
+경로 별칭은 `@/*` → `src/*`, **`@/assets/*` → `assets/*`** 두 가지입니다
+(두 번째는 `src` 밖을 가리키므로 주의). `app.json`의 `typedRoutes` 때문에
+`href` 문자열은 타입 검사를 받습니다.
+
+라우트는 파일 위치로 자동 등록됩니다. 새 화면을 추가할 때 레이아웃에
+`<Stack.Screen>`을 넣을 필요는 없습니다 — 루트 레이아웃의 목록은 시작 화면을
+고정하기 위한 것입니다.
 
 괄호 폴더(`(auth)`, `(tabs)`)는 **경로에 포함되지 않는 그룹**입니다. 즉
 `(auth)/sign-in`의 실제 경로는 `/sign-in`입니다.
@@ -84,16 +98,26 @@ src/
 |---|---|---|
 | `button` | ButtonNextUI | 하단 주요 액션 버튼 |
 | `select-button` | SelectButton1~5 | 선택 알약 (5단계 크기 × 회색/흰색) |
-| `pill-group` | SelectItem3~5 | 라벨 + 알약 그리드 |
+| `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열) |
 | `likert-card` | SelectItem6_Card | 0~5 만족도 카드 |
 | `slider-0-to-10` | Select0To10 | 0~10 슬라이더 |
-| `text-input` | TextInput | 라벨 + 입력 필드 |
+| `text-input` (`TextInputField`) | TextInput | 라벨 + 입력 필드 |
 | `date-input-row` | 생년월일 | 년/월/일 3분할 입력 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
 | `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |
 
 크기·간격은 모두 Figma 값을 `scale()`로 감싸서 씁니다 (`scale(17)` = Figma 17pt).
+색상은 `src/lib/design.ts`와 명시적 hex를 씁니다. `tailwind.config.js`의 색상
+스케일은 쓰이지 않고 값도 일부 어긋나 있으니 `text-primary-900` 같은 클래스에
+손대지 마세요 (AGENTS.md 참고).
+
+**단, 아래 두 화면은 이 규칙을 따르지 않습니다.** Figma 원본이 컴포넌트가 아닌
+수작업 도형이거나 `PillGroup`이 표현할 수 없는 배치라서 직접 조립했습니다.
+새 화면의 본보기로 삼지 마세요.
+
+- `survey.tsx` — 수면 유형·수면의 질 알약을 `Pressable`로 직접 구성
+- `personal-info.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
 
 ## 함께 읽을 것
 

@@ -38,7 +38,8 @@ Only 01 and 02 are implemented so far. Component library lives under
 
 Frames are 220×480. The status-bar mock (`PhoneHeader`) occupies the top ~38pt and
 is replaced by `SafeAreaView` in code, so screen `paddingTop` is roughly
-`figmaY - 38`. Horizontal padding is `scale(17)`, giving a 186pt content column.
+`figmaY - 38`. Horizontal padding is `scale(17)` on the three step screens, giving a 186pt
+content column; 로그인 and 회원가입 인트로 use `scale(18)`.
 
 The 약관 동의 screen has **no back button and no title** — `StepHeader` omits them
 when `title` is not passed.
