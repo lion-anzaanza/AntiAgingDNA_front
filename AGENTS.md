@@ -117,6 +117,10 @@ MSYS_NO_PATHCONV=1 adb shell screencap -p /sdcard/s.png
 MSYS_NO_PATHCONV=1 adb pull /sdcard/s.png ./s.png
 ```
 
+- **Deep links are not enough — cold start the app plain (`exp://<host>:8081`,
+  no `/--/` path) at least once per change to a screen's entry path.** The entire
+  auth flow was unreachable from app launch for a whole working session precisely
+  because every check went through a deep link.
 - Route-group folders are omitted from deep links: `(auth)/sign-up/survey`
   is `--/sign-up/survey`.
 - Force-stop before testing a route — Fast Refresh keeps the previous screen.
@@ -126,18 +130,59 @@ MSYS_NO_PATHCONV=1 adb pull /sdcard/s.png ./s.png
   from there; the log accumulates and old entries read as current.
 - Screenshots are reported at a scaled-down size. Multiply the reported
   coordinates by the stated factor before passing them to `adb shell input tap`.
+- Expo Go sometimes wedges on "New update available, downloading…" and never
+  reaches the app. Metro is fine; force-stop and relaunch.
+- Give the bundle time before screenshotting, or you photograph the splash and
+  read it as a broken screen. Wait on the window first:
+  `until adb shell dumpsys window | grep -q ExperienceActivity; do sleep 3; done`
 - Keep scratch screenshots out of the repo.
+
+## Routing
+
+`/` is a redirect to `/(auth)/sign-in`, and the tabs home lives at `/home`
+rather than `/`. Both are deliberate: the root stack anchors on whichever screen
+is declared first, so with `(tabs)` first a cold start bypassed auth entirely,
+and a root `index.tsx` cannot share `/` with `(tabs)/index.tsx`. The anchor is
+pinned by `unstable_settings.initialRouteName` in `src/app/_layout.tsx`.
+
+There is no auth state yet — 약관 동의 simply `replace`s to `/(tabs)/home`.
+Adding real auth means gating those routes (expo-router v6 has
+`<Stack.Protected guard={...}>`), not re-ordering screens.
 
 ## Open items
 
-- **Sign-up intro** (`src/app/(auth)/sign-up/index.tsx`) is built from Figma frame
-  `457:738`, which is `hidden` — a deprecated draft. It still uses the old upright
-  `dna-icon.png` while the live login screen uses the tilted `NiceDNA`. Confirm the
-  intended treatment before touching it.
-- `SelectItem5_2` contains a stray `"2002"` text node (left over from a year
-  picker) that sits behind the pills. Deliberately not implemented.
-- `SelectButton4_History` (`#7786A8` / `#F7F8FA`) exists in Figma but is unused in
-  the auth flow.
-- `NoSelect` — the red "아직 응답하지 않았어요" validation state — is designed but
-  not implemented; unanswered groups currently render as normal white pills.
-- Next planned work: componentising the remaining sections.
+`npx tsc --noEmit` and `npx expo lint` both pass on `feat/auth-flow-ui`. Keep
+them that way.
+
+Waiting on a decision — do not resolve these unilaterally:
+
+- **마케팅 정보 수신 is marked `[필수]` and gates signup** (`terms.tsx`). Figma
+  says 필수, but Korean 정보통신망법 requires advertising consent to be optional
+  and separable from signup, so a user who declines can never finish. Needs the
+  designer and whoever owns compliance; the code change is one line.
+- **Sliders cannot tell 0 from unanswered.** `useState(0)` means an untouched
+  slider reports the minimum. Fixing it needs a design for what an unanswered
+  slider looks like — Figma specifies `NoSelect` for pill groups but nothing for
+  Select0To10.
+- **Web is half-configured.** `app.json` declares ios/android, yet `.web.tsx`
+  variants and `react-dom` are present while `react-native-web` is not. Either
+  support web or drop the leftovers; both are product calls.
+- **Sign-up intro** (`(auth)/sign-up/index.tsx`) comes from Figma frame
+  `457:738`, which is `hidden` — a deprecated draft still using the old upright
+  `dna-icon.png` while login uses the tilted `NiceDNA`.
+
+Known and deliberately deferred:
+
+- **No input validation anywhere.** Password mismatch, malformed email and
+  impossible dates all pass. None of the form state is lifted or persisted
+  either, so 약관 동의 submits nothing — validation should land together with
+  whatever form/state design comes next, not before it.
+- **`scale()` is fixed at module-eval width** (see rule 1). Fine while the app is
+  portrait-locked; Android split-screen and foldables would need
+  `useWindowDimensions`, which touches every component.
+- `NoSelect` — the red "아직 응답하지 않았어요" state — is designed but not built.
+- `SelectItem5_2` carries a stray `"2002"` text node (left over from a year
+  picker) behind the pills; intentionally not reproduced.
+- `SelectButton4_History` (`#7786A8` / `#F7F8FA`) exists in Figma, unused in auth.
+
+Next planned work: componentising the remaining sections.
