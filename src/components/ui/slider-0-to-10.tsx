@@ -1,6 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { GestureResponderEvent, PanResponder, Text, View } from 'react-native';
+import {
+  GestureResponderEvent,
+  PanResponder,
+  PanResponderGestureState,
+  Text,
+  View,
+} from 'react-native';
 
 import { GRADIENT_PROGRESS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -13,6 +19,8 @@ type Slider0To10Props = {
 
 const HANDLE_WIDTH = 13;
 const HANDLE_HEIGHT = 12;
+/** Movement under this (dp) still counts as a tap rather than a drag. */
+const TAP_SLOP = 4;
 
 /**
  * Figma: Select0To10 — like the step bar, the filled part of the track is 5pt
@@ -28,11 +36,21 @@ export function Slider0To10({ label, value, onChange }: Slider0To10Props) {
     onChange(Math.round(next * 10));
   }
 
+  // These sliders sit in a long ScrollView, so committing on touch-down would
+  // let a finger that merely brushed the track while starting to scroll set the
+  // answer. The gesture's own travel tells us which it was: commit once the drag
+  // is clearly horizontal, or on release if the touch never really moved.
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: (e: GestureResponderEvent) => updateFromX(e.nativeEvent.locationX),
-    onPanResponderMove: (e: GestureResponderEvent) => updateFromX(e.nativeEvent.locationX),
+    onPanResponderMove: (e: GestureResponderEvent, gesture: PanResponderGestureState) => {
+      if (Math.abs(gesture.dx) < TAP_SLOP) return;
+      updateFromX(e.nativeEvent.locationX);
+    },
+    onPanResponderRelease: (e: GestureResponderEvent, gesture: PanResponderGestureState) => {
+      if (Math.abs(gesture.dx) > TAP_SLOP || Math.abs(gesture.dy) > TAP_SLOP) return;
+      updateFromX(e.nativeEvent.locationX);
+    },
   });
 
   return (
