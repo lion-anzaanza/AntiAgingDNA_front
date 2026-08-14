@@ -7,9 +7,18 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 
 SplashScreen.preventAutoHideAsync();
 
+/**
+ * Without this the stack anchors on whichever screen is declared first, which
+ * dropped a cold start straight into the tabs and left the auth flow reachable
+ * only by deep link. `index` redirects on to 로그인.
+ */
+export const unstable_settings = {
+  initialRouteName: 'index',
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [fontsLoaded] = useFonts({
+  const [fontsLoaded, fontError] = useFonts({
     'Pretendard-Regular': require('@/assets/fonts/Pretendard-Regular.otf'),
     'Pretendard-Medium': require('@/assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-SemiBold': require('@/assets/fonts/Pretendard-SemiBold.otf'),
@@ -18,14 +27,21 @@ export default function RootLayout() {
     'Pretendard-Black': require('@/assets/fonts/Pretendard-Black.otf'),
   });
 
-  if (!fontsLoaded) return null;
+  // Carry on with the system font if a face fails to load: holding the tree back
+  // on `fontsLoaded` alone would strand the user on the splash screen forever,
+  // since the only thing that hides it lives further down this tree.
+  if (fontError) {
+    console.warn('Pretendard failed to load, falling back to the system font', fontError);
+  }
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </ThemeProvider>
   );

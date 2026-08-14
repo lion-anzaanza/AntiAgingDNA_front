@@ -93,7 +93,7 @@ export default function TermsScreen() {
             label="가입하고 LifeDNA 만들기 →"
             disabled={!allAgreed}
             style={{ opacity: allAgreed ? 1 : 0.4 }}
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => router.replace('/(tabs)/home')}
           />
         </View>
       </View>
