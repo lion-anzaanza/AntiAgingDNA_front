@@ -55,16 +55,25 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 **There is no single content column — check the frame.** Measured off
 `get_metadata`:
 
-| Screen | Left | Width |
-|---|---|---|
-| 로그인/메인 | 18 | 184 |
-| 회원가입/1 개인정보 | 18 | 184 |
-| 회원가입/2 초기 진단 | **17** | **186** (button at 22, Likert cards at 25) |
-| 회원가입/3 약관 동의 | 18 | 184 |
-| 일지/메인 | **19** | 184 |
+| Screen | Left | Width | Notes |
+|---|---|---|---|
+| 로그인/메인 | 18 | 184 | |
+| 회원가입/1 개인정보 | 18 | 184 | 성별 group is a 172-wide instance |
+| 회원가입/2 초기 진단 | **17** | **186** | button at 22, Likert cards at 25 |
+| 회원가입/3 약관 동의 | 18 | 184 | button at 19 |
+| 홈/메인 | 18 | **180** | right margin 22 — the only asymmetric one |
+| 일지/메인 | **19** | 184 | right margin 17 |
+| 일지/오늘의기록 | 18 | 184 | cards inside are 182 |
+| 일지/캘린더 | **17** | **186** | |
+| 일지/상세보기 | 18 | 184 | cards 182, loose rects 184 |
 
 Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
 184pt column overflowed the row and collapsed the 2×2 grid into one column.
+
+`SelectItem*_Card`, `SelectFeel5` and `InputTime_Card` are **182 wide in every
+instance**, so they carry their own width rather than filling the screen's
+column — on the 일지 screens that column is 184 and they would come out 2pt wide.
+The hand-built loose cards on 상세보기 really are 184 and do fill it.
 
 The step progress bar is **180pt wide**, not the content width — segments at
 0–56 / 60–118 / 121–179, fill to 56 / 119 / 180 for steps 1–3.

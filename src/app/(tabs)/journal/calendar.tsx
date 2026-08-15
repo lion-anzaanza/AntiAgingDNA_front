@@ -65,7 +65,11 @@ export default function JournalCalendarScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: scale(17), paddingBottom: scale(24) }}>
+        contentContainerStyle={{
+          paddingHorizontal: scale(17),
+          paddingTop: scale(3),
+          paddingBottom: scale(24),
+        }}>
         <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
           <ButtonBack fallbackHref="/journal" />
           <Text
@@ -93,7 +97,7 @@ export default function JournalCalendarScreen() {
         <View
           style={{
             height: scale(186),
-            marginTop: scale(6),
+            marginTop: scale(16),
             borderRadius: scale(10),
             backgroundColor: '#FFFFFF',
             boxShadow: SHADOW,

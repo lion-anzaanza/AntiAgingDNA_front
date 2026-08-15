@@ -363,13 +363,19 @@ export default function JournalTodayScreen() {
   );
 }
 
+/**
+ * 오늘의 기록's first heading follows the 항목별로 banner, not the screen header,
+ * so it sits further down than 상세보기's — see that file's own constant.
+ */
+const FIRST_HEADING_GAP = 12.5;
+
 function SectionHeading({ children, first }: { children: string; first?: boolean }) {
   return (
     <Text
       style={{
         fontSize: scale(10),
         lineHeight: scale(14),
-        marginTop: scale(first ? SECTION_GAP - 1 : SECTION_GAP),
+        marginTop: scale(first ? FIRST_HEADING_GAP : SECTION_GAP),
         marginBottom: scale(HEADING_GAP),
         color: '#00352C',
       }}

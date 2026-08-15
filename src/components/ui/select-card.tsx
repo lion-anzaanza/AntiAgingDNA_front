@@ -2,7 +2,11 @@ import { Text, View } from 'react-native';
 
 import { SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
+
 import { SelectButton, type SelectButtonLevel, type SelectButtonState } from './select-button';
+
+/** Every SelectItem*_Card / SelectFeel5 instance in Figma is 182pt wide. */
+const CARD_WIDTH = 182;
 
 /**
  * Figma's `SelectItem{3,4,6}[_Caption]_Card` family: a 182pt white card holding
@@ -74,6 +78,9 @@ export function SelectCard(props: SelectCardProps) {
   return (
     <View
       style={{
+        // Figma draws every card in this family 182 wide; the 일지 screens' own
+        // column is 184, so filling the parent made each card 2pt too wide.
+        width: scale(CARD_WIDTH),
         borderRadius: scale(10),
         backgroundColor: '#FFFFFF',
         boxShadow: SHADOW,

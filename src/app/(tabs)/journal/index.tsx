@@ -40,7 +40,13 @@ export default function JournalMainScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: scale(19), paddingBottom: scale(24) }}>
+        contentContainerStyle={{
+          // 일지/메인 sits at x=19 and is 184 wide, so the right margin is 17.
+          paddingLeft: scale(19),
+          paddingRight: scale(220 - 19 - CARD_WIDTH),
+          paddingTop: scale(8),
+          paddingBottom: scale(24),
+        }}>
         <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
           <ButtonBack fallbackHref="/(tabs)/home" />
           <Text
@@ -141,7 +147,7 @@ function WeekCard() {
       style={{
         width: scale(CARD_WIDTH),
         height: scale(95),
-        marginTop: scale(11),
+        marginTop: scale(12),
         borderRadius: scale(10),
         backgroundColor: '#FFFFFF',
         boxShadow: SHADOW,

@@ -36,6 +36,8 @@ export function InputTimeCard({
   return (
     <View
       style={{
+        // Figma draws InputTime_Card 182 wide inside the 일지 screens' 184 column.
+        width: scale(182),
         borderRadius: scale(10),
         backgroundColor: '#FFFFFF',
         boxShadow: SHADOW,

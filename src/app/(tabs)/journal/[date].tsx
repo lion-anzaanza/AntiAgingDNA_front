@@ -400,13 +400,20 @@ function PillRow({
   );
 }
 
+/**
+ * 상세보기's first heading follows the screen header directly, and Figma leaves
+ * 9pt there rather than a full section gap. 오늘의 기록 has the 항목별로 banner
+ * in between and spaces it differently, so the two are not shared.
+ */
+const FIRST_HEADING_GAP = 9;
+
 function SectionHeading({ children, first }: { children: string; first?: boolean }) {
   return (
     <Text
       style={{
         fontSize: scale(10),
         lineHeight: scale(14),
-        marginTop: scale(first ? SECTION_GAP - 1 : SECTION_GAP),
+        marginTop: scale(first ? FIRST_HEADING_GAP : SECTION_GAP),
         marginBottom: scale(HEADING_GAP),
         color: '#00352C',
       }}

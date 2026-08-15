@@ -4,6 +4,9 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
+/** Every SelectItem*_Card / SelectFeel5 instance in Figma is 182pt wide. */
+const CARD_WIDTH = 182;
+
 /**
  * Figma: `SelectFeel5` (182×66) and `SelectFeel5_NeedAnswer` (182×76) — a
  * labelled white card holding the five-face 컨디션 scale. The 일지 screens use
@@ -54,6 +57,7 @@ export function FeelSelect({
     <View>
       <View
         style={{
+          width: scale(CARD_WIDTH),
           borderRadius: scale(10),
           backgroundColor: needAnswer ? ALERT_BG : '#FFFFFF',
           borderWidth: needAnswer ? scale(0.3) : 0,
