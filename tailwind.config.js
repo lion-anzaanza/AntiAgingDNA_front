@@ -5,6 +5,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
+        'pretendard-light': ['Pretendard-Light'],
         pretendard: ['Pretendard-Regular'],
         'pretendard-medium': ['Pretendard-Medium'],
         'pretendard-semibold': ['Pretendard-SemiBold'],

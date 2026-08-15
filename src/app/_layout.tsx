@@ -24,6 +24,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [fontsLoaded, fontError] = useFonts({
+    'Pretendard-Light': require('@/assets/fonts/Pretendard-Light.otf'),
     'Pretendard-Regular': require('@/assets/fonts/Pretendard-Regular.otf'),
     'Pretendard-Medium': require('@/assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-SemiBold': require('@/assets/fonts/Pretendard-SemiBold.otf'),
