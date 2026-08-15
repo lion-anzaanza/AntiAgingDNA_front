@@ -56,11 +56,10 @@ npx expo lint
 **아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
 
 - `(tabs)/explore` — "Welcome to Expo" 기본 화면. 이제 탭 바에 없지만
-  `/explore`로는 여전히 열립니다. `components/app-tabs*.tsx`도 더는 쓰이지
-  않습니다 (Figma 탭 바인 `ui/bottom-bar.tsx`가 대신합니다).
+  `/explore`로는 여전히 열립니다. 템플릿 탭 바(`components/app-tabs*.tsx`)는
+  Figma 탭 바(`ui/bottom-bar.tsx`)로 대체되면서 삭제했습니다.
 - `components/` 중 `themed-*`, `external-link`, `hint-row`, `web-badge`,
-  `animated-icon*`, `app-tabs*`, `ui/collapsible` — 위 탭 화면들이 쓰는
-  템플릿 코드.
+  `animated-icon*`, `ui/collapsible` — 위 탭 화면들이 쓰는 템플릿 코드.
 - `constants/theme.ts`, `hooks/` — 템플릿의 라이트/다크 테마 유틸.
 
 **동작하지 않는 것** (UI만 있고 로직이 없습니다)

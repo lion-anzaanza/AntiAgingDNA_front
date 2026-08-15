@@ -314,8 +314,8 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 `dna-nice.png`.
 
 - **The tab bar is built** (`ui/bottom-bar.tsx`) and both screens now sit inside
-  it. 개선책 and MY are drawn but inert — they have no screens. `app-tabs.tsx`
-  and `app-tabs.web.tsx` are now unused; left in place as template leftovers.
+  it. 개선책 and MY are drawn but inert — they have no screens. The template
+  `app-tabs.tsx` / `app-tabs.web.tsx` it replaced are gone.
 - The three remaining 홈 pieces are decorative: two 1×1 glow dots on the CTA
   card and the three sparkles inside `NiceGene` itself (the card-level three
   are drawn). None are legible at device size.
