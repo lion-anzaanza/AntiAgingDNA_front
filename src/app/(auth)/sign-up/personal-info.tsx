@@ -111,7 +111,7 @@ export default function PersonalInfoScreen() {
               <SelectButton
                 key={option}
                 label={option}
-                selected={option === job}
+                state={option === job ? 'active' : 'inactive'}
                 onPress={() => setJob(option)}
                 level={4}
                 tone="white"

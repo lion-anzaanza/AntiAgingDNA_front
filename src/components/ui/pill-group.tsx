@@ -1,7 +1,12 @@
 import { Text, View } from 'react-native';
 
 import { scale } from '@/lib/scale';
-import { SelectButton, type SelectButtonLevel, type SelectButtonTone } from './select-button';
+import {
+  SelectButton,
+  type SelectButtonLevel,
+  type SelectButtonState,
+  type SelectButtonTone,
+} from './select-button';
 
 /**
  * The SelectItem family from Figma: a Bold label over a grid of select pills.
@@ -40,6 +45,8 @@ type PillGroupProps = {
   columns?: 1 | 2 | 3 | 4;
   level?: SelectButtonLevel;
   tone?: SelectButtonTone;
+  /** Read-only replay of an earlier day's answer — see `SelectButtonState`. */
+  history?: boolean;
 } & (
   | { multiple?: false; value: string | null; onChange: (value: string) => void }
   | { multiple: true; value: string[]; onChange: (value: string[]) => void }
@@ -54,12 +61,18 @@ export function PillGroup(props: PillGroupProps) {
     columns = 2,
     level = 2,
     tone = 'white',
+    history = false,
   } = props;
   const width = scale(pillWidth(columns));
   const labelStyle = LABEL_STYLE[labelTone];
 
   function isSelected(option: string) {
     return props.multiple ? props.value.includes(option) : option === props.value;
+  }
+
+  function stateOf(option: string): SelectButtonState {
+    if (!isSelected(option)) return 'inactive';
+    return history ? 'history' : 'active';
   }
 
   function handlePress(option: string) {
@@ -109,7 +122,7 @@ export function PillGroup(props: PillGroupProps) {
           <SelectButton
             key={option}
             label={option}
-            selected={isSelected(option)}
+            state={stateOf(option)}
             onPress={() => handlePress(option)}
             level={level}
             tone={tone}

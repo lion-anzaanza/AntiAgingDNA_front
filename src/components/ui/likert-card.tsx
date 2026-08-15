@@ -10,13 +10,15 @@ type LikertCardProps = {
   statement: string;
   value: number | null;
   onChange: (value: number) => void;
+  /** Read-only replay of an earlier day's answer — see `SelectButtonState`. */
+  history?: boolean;
 };
 
 /**
  * Figma: SelectItem6_Card — a 47pt white card holding an 8pt Bold statement
  * above six SelectButton5 pills.
  */
-export function LikertCard({ statement, value, onChange }: LikertCardProps) {
+export function LikertCard({ statement, value, onChange, history = false }: LikertCardProps) {
   return (
     <View
       style={{
@@ -42,7 +44,7 @@ export function LikertCard({ statement, value, onChange }: LikertCardProps) {
           <SelectButton
             key={n}
             label={String(n)}
-            selected={n === value}
+            state={n === value ? (history ? 'history' : 'active') : 'inactive'}
             onPress={() => onChange(n)}
             level={5}
             tone="gray"
