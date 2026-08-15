@@ -130,11 +130,14 @@ Three follow-ons, learned while porting 일지 and 홈:
   replay each `<img>`'s `w`/`h`/`left`/`top` percentages against its container
   box; `assets/images/journal/feel-*.png` were cut that way.
 - **Vector nodes have no fill to fall back on**, and their export is flattened
-  onto the canvas grey `#EAEAEA`. If the icon only ever sits on white — the 홈
-  stat icons do — mapping that flat grey to white is exact for every opaque
-  pixel and leaves only a sub-pixel fringe on the anti-aliased edge. A
-  difference matte is *not* an option: parts of the artwork are themselves near
-  the background colour and would come out semi-transparent.
+  onto the canvas grey `#EAEAEA`. Key that flat grey to **transparent**, not to
+  the background you happen to need: the 홈 stat icons were first keyed to white
+  because they only sat on white cards, and the moment 일간_컨디션_요약 put them
+  on a `#FBF4FF` tile each one showed a white box. Transparent costs nothing —
+  the anti-aliased edge keeps a faint grey tint either way, invisible against a
+  near-white surface. A difference matte is still *not* an option: parts of the
+  artwork are themselves near the background colour and would come out
+  semi-transparent.
 
 ### 9. An instance can carry children of its own, and they draw on top
 
@@ -313,6 +316,10 @@ and each is listed so the next person does not "fix" the code back.
   message, not a palette colour.
 - **`BottomBar2` stacks two 개선책 icons** (a dark bulb-and-gear over the plain
   grey bulb). Presumably a layering slip.
+- **`일간_컨디션_요약` shows the 보통 face beside the label 좋음.** Measured, not
+  guessed: the `image 1099` crop window lands at 0.413–0.593 of the 만족도 sheet,
+  which is 보통 (0.420–0.580). The card derives the face from the condition
+  instead, since both come from the same value.
 
 ### The backend exists, and nothing is wired to it
 
@@ -394,12 +401,16 @@ Still to port from 04_일지:
   it is the tab shell, not a leaf component, so building it means restructuring
   `(tabs)` — and the icons need the `rawImages` treatment (rule 7) plus an
   active/inactive pair per tab that only `BottomBar0`–`4` together supply.
-- **`주간_컨디션_그래프`** (`585:1436`) and **`일간_컨디션_요약`** (`585:1377`).
-  Both float *beside* the frames rather than being placed on any screen, so
-  where they belong is a question for the designer. The graph is also the only
-  thing in 일지 that needs a real chart — a vector polyline over seven points —
-  which would mean `react-native-svg` (bundled in Expo Go, so free for the dev
-  loop).
+- **`주간_컨디션_그래프`** (`585:1436`) — still unplaced, and the only thing in
+  일지 that needs a real chart: a vector polyline over seven points, which would
+  mean `react-native-svg` (bundled in Expo Go, so free for the dev loop).
+
+  Where these floating cards belong is readable from **where they sit on the
+  canvas**: Figma parks each one directly beneath its parent frame, same `x`.
+  `일간_컨디션_요약` (`585:1377`) sits under 캘린더 and is built — a day opens the
+  card, and 입력 기록 보기 on the card opens 상세보기. By the same logic the graph
+  belongs to 일지/메인, but that screen has no room for it at 480pt, so confirm
+  with the designer rather than assuming.
 - The 미응답 state of a day with no entry, which is blocked on knowing what
   `GET /api/diaries/{date}` returns for one (backlog 23).
 

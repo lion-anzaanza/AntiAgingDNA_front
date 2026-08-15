@@ -47,6 +47,9 @@ npx expo lint
 | `(tabs)/journal/calendar` | 일지 · 기록 캘린더 |
 | `(tabs)/journal/[date]` | 일지 · 상세보기 (읽기 전용) |
 
+캘린더에서 날짜를 누르면 **하루 요약 카드**가 먼저 뜨고, 그 카드의 "입력 기록 보기"로
+상세보기에 들어갑니다.
+
 ※ 회원가입 인트로는 Figma에서 `hidden` 처리된 폐기 초안(`457:738`)을 옮긴 것이라,
 로그인과 다른 구형 DNA 아이콘을 씁니다. 손대기 전 AGENTS.md의 미해결 항목을 보세요.
 
@@ -136,6 +139,7 @@ src/
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
 | `bottom-bar` | BottomBar0~4 | 하단 탭 바 (활성 시 아이콘만 바뀜) |
 | `date-cell` | Date | 캘린더 날짜 칸 (없음/낮음/중간/높음) |
+| `daily-summary-card` | 일간_컨디션_요약 | 날짜 탭 시 뜨는 하루 요약 카드 |
 | `living-artwork` | (Figma에 모션 없음) | 오브·DNA 상시 미세 운동 + 누름 반응 |
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |

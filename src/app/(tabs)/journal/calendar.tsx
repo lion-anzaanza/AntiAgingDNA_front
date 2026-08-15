@@ -1,9 +1,11 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ButtonBack } from '@/components/ui/button-back';
+import { DailySummaryCard, type DailySummary } from '@/components/ui/daily-summary-card';
 import { DateCell, type DateLevel } from '@/components/ui/date-cell';
 import { GradientText } from '@/components/ui/gradient-text';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
@@ -13,8 +15,12 @@ import { scale } from '@/lib/scale';
  * Figma: 일지/캘린더 — `480:1274`. A month of entries, each day tinted by its
  * score.
  *
- * The month, the levels and the summary line are all Figma's mock — there is no
- * data layer, and the score→level thresholds are a backend question anyway
+ * Tapping a day does **not** jump straight to 상세보기 — it opens the
+ * `일간_컨디션_요약` card, and 입력 기록 보기 on that card is what opens the full
+ * entry. Figma parks that card directly beneath this frame on the canvas.
+ *
+ * The month, the levels and the summary are all Figma's mock — there is no data
+ * layer, and the score→level thresholds are a backend question anyway
  * (docs/backend-backlog.md item 22).
  */
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -32,7 +38,23 @@ const DAY_LEVELS: DateLevel[] = [
 const CELL_WIDTH = 19;
 const CARD_INSET = 15;
 
+/** Figma's example day, reused for whichever day is tapped. */
+function summaryFor(day: number): DailySummary {
+  return {
+    dateLabel: `7월 ${day}일 (${WEEKDAYS[(day + LEADING_BLANKS - 1) % 7]})`,
+    score: 82,
+    grade: '컨디션 좋음',
+    sleep: '7.1h',
+    water: '3컵',
+    stress: '6/10',
+    condition: 4,
+    conditionLabel: '좋음',
+    comment: '전반적으로 안정적입니다.\n스트레스 관리가 조금 더 받쳐주면 상위 점수도 가능해요.',
+  };
+}
+
 export default function JournalCalendarScreen() {
+  const [selected, setSelected] = useState<number | null>(null);
   const cells: (number | null)[] = [
     ...Array.from({ length: LEADING_BLANKS }, () => null),
     ...DAY_LEVELS.map((_, index) => index + 1),
@@ -126,7 +148,10 @@ export default function JournalCalendarScreen() {
                       key={day}
                       day={day}
                       level={DAY_LEVELS[day - 1]}
-                      onPress={() => router.push(`/journal/2026-07-${String(day).padStart(2, '0')}`)}
+                      // A day with no entry has nothing to summarise.
+                      onPress={() =>
+                        setSelected(DAY_LEVELS[day - 1] === 'none' ? null : day)
+                      }
                     />
                   ),
                 )}
@@ -171,6 +196,17 @@ export default function JournalCalendarScreen() {
             7월 기록 27일 · 평균 79점 · 최고 88점(19일)
           </GradientText>
         </View>
+
+        {selected === null ? null : (
+          <View style={{ marginTop: scale(10) }}>
+            <DailySummaryCard
+              summary={summaryFor(selected)}
+              onOpenDetail={() =>
+                router.push(`/journal/2026-07-${String(selected).padStart(2, '0')}`)
+              }
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
