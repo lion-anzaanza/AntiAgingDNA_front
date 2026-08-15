@@ -39,6 +39,34 @@ const CONTENT_INSET = 18;
  */
 const PAGE_WIDTH = Dimensions.get('window').width;
 
+/**
+ * The orb's highlights are two stacked sets, and the stacking is the whole
+ * point. Three violet dots belong to the card and sit **under** the artwork,
+ * which all but hides them; three near-white ones belong to `NiceGene` itself
+ * and sit **over** it, 1.5pt lower. Those are the ones you actually see.
+ *
+ * Draw only the violet set, or put either set above the artwork, and the
+ * highlights read purple instead of white.
+ *
+ * Positions are card-relative; each carries its own white glow.
+ */
+type Sparkle = { left: number; top: number; size: number; color: string; glow: string };
+
+const GLOW_SMALL = '0px 0px 5px rgba(255, 255, 255, 0.5)';
+const GLOW_LARGE = '0px 0px 4px 1px rgba(255, 255, 255, 0.25)';
+
+const ORB_SPARKLES_UNDER: Sparkle[] = [
+  { left: 74, top: 86, size: 2, color: 'rgba(191, 145, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 107, top: 62, size: 2, color: 'rgba(191, 145, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 95, top: 89, size: 3, color: 'rgba(237, 221, 255, 0.75)', glow: GLOW_LARGE },
+];
+
+const ORB_SPARKLES_OVER: Sparkle[] = [
+  { left: 74, top: 87.5, size: 2, color: 'rgba(253, 237, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 107, top: 63.5, size: 2, color: 'rgba(253, 237, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 95, top: 90.5, size: 3, color: 'rgba(255, 221, 245, 0.75)', glow: GLOW_LARGE },
+];
+
 const ORB_PAGES: {
   key: string;
   caption: string;
@@ -46,6 +74,8 @@ const ORB_PAGES: {
   artwork: ImageSourcePropType;
   /** The artwork's box inside the 180pt card, in Figma points. */
   frame: { left: number; top: number; width: number; height: number };
+  sparklesUnder: Sparkle[];
+  sparklesOver: Sparkle[];
   hint: string;
 }[] = [
   {
@@ -56,6 +86,8 @@ const ORB_PAGES: {
     // NiceGene is placed 70.5×69.92 at (55,48), but its bitmap overhangs that
     // box — the glow — so the image itself is drawn larger and offset.
     frame: { left: 45.12, top: 42.0, width: 90.28, height: 89.92 },
+    sparklesUnder: ORB_SPARKLES_UNDER,
+    sparklesOver: ORB_SPARKLES_OVER,
     hint: '옆으로 밀어 유기체 모델을 확인해보세요 →',
   },
   {
@@ -64,15 +96,11 @@ const ORB_PAGES: {
     score: '99',
     artwork: require('@/assets/images/auth/dna-nice.png'),
     frame: { left: 45, top: 33, width: 89.76, height: 99.37 },
+    // The helix card carries no highlights at all, and NiceDNA has none of its own.
+    sparklesUnder: [],
+    sparklesOver: [],
     hint: '← 옆으로 밀어 유기체 모델을 확인해보세요',
   },
-];
-
-/** Sparkles Figma scatters over the orb. Positions are card-relative. */
-const SPARKLES = [
-  { left: 74, top: 86, size: 2, color: 'rgba(191,145,255,0.5)' },
-  { left: 107, top: 62, size: 2, color: 'rgba(191,145,255,0.5)' },
-  { left: 95, top: 89, size: 3, color: 'rgba(237,221,255,0.75)' },
 ];
 
 const STATS: { label: string; value: string; badge: string; bg: string; fg: string; icon: ImageSourcePropType }[] = [
@@ -224,7 +252,17 @@ type OrbCardProps = Omit<(typeof ORB_PAGES)[number], 'key'> & {
   pageCount: number;
 };
 
-function OrbCard({ caption, score, artwork, frame, hint, page, pageCount }: OrbCardProps) {
+function OrbCard({
+  caption,
+  score,
+  artwork,
+  frame,
+  sparklesUnder,
+  sparklesOver,
+  hint,
+  page,
+  pageCount,
+}: OrbCardProps) {
   return (
     <View
       style={{
@@ -283,6 +321,9 @@ function OrbCard({ caption, score, artwork, frame, hint, page, pageCount }: OrbC
 
       <DashedRing left={43} top={36} size={94} />
       <DashedRing left={49} top={42} size={82} />
+      {sparklesUnder.map((sparkle) => (
+        <SparkleDot key={`under-${sparkle.left}-${sparkle.top}`} {...sparkle} />
+      ))}
       <Image
         source={artwork}
         style={{
@@ -292,21 +333,11 @@ function OrbCard({ caption, score, artwork, frame, hint, page, pageCount }: OrbC
           width: scale(frame.width),
           height: scale(frame.height),
         }}
-        resizeMode="contain"
+        // Figma fills the box exactly rather than fitting inside it.
+        resizeMode="stretch"
       />
-      {SPARKLES.map((sparkle) => (
-        <View
-          key={`${sparkle.left}-${sparkle.top}`}
-          style={{
-            position: 'absolute',
-            left: scale(sparkle.left),
-            top: scale(sparkle.top),
-            width: scale(sparkle.size),
-            height: scale(sparkle.size),
-            borderRadius: scale(sparkle.size),
-            backgroundColor: sparkle.color,
-          }}
-        />
+      {sparklesOver.map((sparkle) => (
+        <SparkleDot key={`over-${sparkle.left}-${sparkle.top}`} {...sparkle} />
       ))}
 
       <Text
@@ -439,6 +470,23 @@ function OrbCard({ caption, score, artwork, frame, hint, page, pageCount }: OrbC
         {hint}
       </Text>
     </View>
+  );
+}
+
+function SparkleDot({ left, top, size, color, glow }: Sparkle) {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left: scale(left),
+        top: scale(top),
+        width: scale(size),
+        height: scale(size),
+        borderRadius: scale(size),
+        backgroundColor: color,
+        boxShadow: glow,
+      }}
+    />
   );
 }
 

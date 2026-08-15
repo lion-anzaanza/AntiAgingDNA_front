@@ -197,6 +197,29 @@ fill at 26.06% / 52.11% / 78.17% for Low/Mid/High) and seven `_ScoreBar`
 (`606:1962`, 3×16 at x 8,12,16,20,24,28,32, filled from the bottom in eighths —
 level *n* fills (n+1)/8) beside a SemiBold 5 `#7A7A7A` sentence from x 43.
 
+### The orb's highlights
+
+`NiceGene` (`485:58`) is 70.5×69.92 with its bitmap overhanging that box —
+`inset-[-8.58% -14.04% -20.02% -14.02%]`, so the image is drawn 90.28×89.92 and
+offset up-left. It also carries **three highlight dots of its own**
+(`486:472/473/474`), which the 오브 카드 does not show in a metadata listing.
+
+Six dots in total, in paint order (card coordinates):
+
+| Order | Position | Size | Fill | Glow |
+|---|---|---|---|---|
+| under | 74, 86 | 2 | `rgba(191,145,255,.5)` | `0 0 5px rgba(255,255,255,.5)` |
+| under | 107, 62 | 2 | `rgba(191,145,255,.5)` | `0 0 5px rgba(255,255,255,.5)` |
+| under | 95, 89 | 3 | `rgba(237,221,255,.75)` | `0 0 4px 1px rgba(255,255,255,.25)` |
+| over | 74, 87.5 | 2 | `rgba(253,237,255,.5)` | `0 0 5px rgba(255,255,255,.5)` |
+| over | 107, 63.5 | 2 | `rgba(253,237,255,.5)` | `0 0 5px rgba(255,255,255,.5)` |
+| over | 95, 90.5 | 3 | `rgba(255,221,245,.75)` | `0 0 4px 1px rgba(255,255,255,.25)` |
+
+The violet three belong to the card and sit under the artwork; the near-white
+three are inside `NiceGene` and sit over it. Only the second set is really
+visible. The DNA 카드 (`457:791`) has **no** dots — `NiceDNA` (`485:110`) is a
+single rotated bitmap with no children.
+
 The 홈 stat cards, orb card and 일지 CTA are loose shapes, not components; their
 values live in `(tabs)/home.tsx`. Badge colours are their own palette, not the
 tone trio: 조금 부족 `#FBF2E1`/`#E5A64E`, 좋아요 `#E6F4EE`/`#4B9977`,

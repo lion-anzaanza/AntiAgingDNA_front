@@ -136,6 +136,28 @@ Three follow-ons, learned while porting 일지 and 홈:
   difference matte is *not* an option: parts of the artwork are themselves near
   the background colour and would come out semi-transparent.
 
+### 9. An instance can carry children of its own, and they draw on top
+
+`get_metadata` on a frame lists an instance as one opaque line. Whatever is
+*inside* that instance is invisible to it — and it renders above everything the
+frame drew before it.
+
+The 홈 orb is the case that caught this. The card draws three violet highlight
+dots, then places `NiceGene` last; `NiceGene` contains its own three near-white
+dots, 1.5pt lower. So Figma's violet dots are all but buried under the artwork
+and the white ones on top are what you actually see. Porting only the card-level
+dots — and drawing them above the artwork — produced purple highlights where the
+design has white ones, which is exactly backwards.
+
+Two habits that would have caught it: call `get_design_context` on the instance
+itself, not only on the frame; and preserve **paint order**, since an absolutely
+positioned child that comes later in the tree is on top.
+
+The comparison that settled it is worth repeating for any artwork that matters:
+export the Figma node at scale 4, screenshot the emulator, crop both to the
+subject's bounding box, scale to a common size, and difference them. Anything
+left beyond thin edge outlines is a real difference.
+
 ## Verifying on the Android emulator
 
 Type-checking is not verification. Every UI change gets looked at on the emulator.
@@ -316,9 +338,9 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 - **The tab bar is built** (`ui/bottom-bar.tsx`) and both screens now sit inside
   it. 개선책 and MY are drawn but inert — they have no screens. The template
   `app-tabs.tsx` / `app-tabs.web.tsx` it replaced are gone.
-- The three remaining 홈 pieces are decorative: two 1×1 glow dots on the CTA
-  card and the three sparkles inside `NiceGene` itself (the card-level three
-  are drawn). None are legible at device size.
+- Two 1×1 glow dots on the CTA card are skipped; they are not legible at device
+  size. The orb's six highlights **are** all drawn — see rule 9 for why the
+  stacking order matters.
 - **Figma writes the product name three ways** — LifeDNA, Life DAN, LifeDAN.
   All are reproduced verbatim where they appear (홈 orb card says "Life DAN",
   the 일지 banner says "LifeDAN", the 홈 CTA says "LifeDNA"). Worth a decision.
