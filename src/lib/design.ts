@@ -19,3 +19,27 @@ export const GRADIENT_BRAND: readonly [string, string] = ['#4655F6', '#9423FF'];
 
 /** The filled part of a step progress bar. */
 export const GRADIENT_PROGRESS: readonly [string, string] = ['#4056F6', '#853EF6'];
+
+/** The slightly cooler ramp the 홈 score bars and weekly progress bars use. */
+export const GRADIENT_SCORE: readonly [string, string] = ['#3F56F6', '#8B3FF6'];
+
+/**
+ * 홈 grades everything three ways — 좋음 / 주의 / 위험 — and both `DNAKind` and
+ * `LifeDNA_WeeklyInfo_Word` colour themselves from this one trio.
+ */
+export type Tone = 'good' | 'warn' | 'danger';
+
+export const TONE_TEXT: Record<Tone, string> = {
+  good: '#00A172',
+  warn: '#C57100',
+  danger: '#F53942',
+};
+
+export const TONE_BG: Record<Tone, string> = {
+  good: '#DCF7EF',
+  warn: '#FCEFD8',
+  danger: '#FFEAEB',
+};
+
+/** The hairline shadow the small 홈 chips and bars carry, rather than `SHADOW`. */
+export const SHADOW_HAIRLINE = '0px 0px 1px rgba(148, 148, 148, 0.25)';
