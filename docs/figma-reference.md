@@ -23,8 +23,10 @@ with `get_metadata` to find its replacement.
 | `153:286` | 05_사용자_맞춤_개선책 |
 | `153:288` | 06_마이페이지 |
 
-Only 01 and 02 are implemented so far. Component library lives under
-`153:290` (컴포넌트), with sub-sections 버튼 `457:700` and 입력 `480:1285`.
+01, 02 and one screen of 04 are implemented so far. Component library lives under
+`153:290` (컴포넌트), with sub-sections 버튼 `457:700`, 입력 `480:1285`,
+만족도 `457:701`, 범용 `457:820` (BottomBar), 캘린더 `603:1852` and
+나의 LifeDNA 정보 `603:1884`.
 
 ## Screens
 
@@ -35,6 +37,10 @@ Only 01 and 02 are implemented so far. Component library lives under
 | `457:828` | 회원가입/2 초기 진단 | `(auth)/sign-up/survey.tsx` |
 | `457:829` | 회원가입/3 약관 동의 | `(auth)/sign-up/terms.tsx` |
 | `457:738` | (hidden draft) 시작해보기 | `(auth)/sign-up/index.tsx` |
+| `480:1269` | 일지/오늘의기록(생성) | `journal/today.tsx` |
+| `480:1268` | 일지/메인 | — |
+| `480:1274` | 일지/캘린더 | — |
+| `480:1275` | 일지/상세보기 | — |
 
 Frames are 220×480. The status-bar mock (`PhoneHeader`) occupies the top ~38pt and
 is replaced by `SafeAreaView` in code, so screen `paddingTop` is roughly
@@ -61,8 +67,9 @@ Shared: radius 5, Pretendard Medium, line-height 8, text `#5F5E5B` at rest and
 white when active, shadow always present when active. Tone only changes the
 resting background: `gray` = `#F2F2F0`, `white` = `#FFFFFF`.
 
-A third variant `SelectButton4_History` (`603:1820`, `#7786A8` bg / `#F7F8FA` text)
-exists but is unused in auth.
+All five grey levels now carry a third variant `*_History` — `#7786A8` bg,
+`#F7F8FA` text, shadow on: `603:1832` / `1828` / `1824` / `1820` / `1816` for
+levels 1–5. The white tone has only active/inactive.
 
 ## SelectItem — labelled pill groups
 
@@ -83,6 +90,68 @@ why the column gap varies with the column count (2 → 12, 3 → 8, 4 → 5).
 `labelTone` on `PillGroup` picks between the two label styles: `section`
 (Bold 10 `#00352C`, 4pt gap) and `field` (Bold 7 `#88877F`, no gap — the same
 label the text inputs use).
+
+## SelectItem*_Card — the carded pill groups (일지)
+
+Rendered by `src/components/ui/select-card.tsx`. All are 182 wide on a white
+card, radius 10, with the same Bold 8 `#00352C` title on a 15pt line box. The
+pill count picks the whole row geometry.
+
+| Node | Name | H | Pills | Column gap | Side inset |
+|---|---|---|---|---|---|
+| `480:1754` | SelectItem3_Caption_Card | 52 | 3 × level 2 | 8 | 11 |
+| `496:1920` | SelectItem4_Card | 46 | 4 × level 3 | 5 | 10 / 8.5 |
+| `480:1548` | SelectItem4_Caption_Card | 52 | 4 × level 3 | 5 | 10 / 8.5 |
+| `457:899` | SelectItem6_Caption_Card | 52 | 6 × level 5 | 4 | 9 |
+| `457:898` | SelectItem6_Card | 47 | 6 × level 5 | 4 | 9 |
+
+Captioned cards run `paddingTop 4.5 → title 15 → caption 8 (marginTop −1) →
+pills → paddingBottom`; the caption is Regular 5 `#88877F` (except
+SelectItem4_Caption_Card, which Figma drew as Medium — see AGENTS.md).
+`SelectItem4_Card`, the only captionless member, is a point tighter top and
+bottom, and `SelectItem6_Card` uses a 10pt title line box instead of 15.
+
+## SelectFeel5 — the five-face 컨디션 scale
+
+`603:1836` (182×66), plus `677:1175` `SelectFeel5_NeedAnswer` (182×76).
+Implemented as `src/components/ui/feel-select.tsx`.
+
+Card: white, radius 10, title Bold 8 `#00352C` on a 15pt line box at x 12. Five
+28×33 buttons on a row inset 12 left / 8 right, evenly spread (gap ≈ 5.5).
+
+Each face (만족도 section `457:701`) is radius 5 with a 16×16 emoji at y 5 and a
+Medium 6 label whose line box sits at y 22–30:
+
+| State | Background | Text |
+|---|---|---|
+| Inactive | `#F2F2F0` | `#5F5E5B` |
+| Active | GRADIENT_SELECT @ 18.9% | `#FFFFFF` |
+| History | `#7786A8` | `#F1F1F1` |
+
+`_NeedAnswer` swaps the card to `#FFF9F9` with a 0.3pt pure-`red` border and
+adds a Regular 5 red "아직 응답하지 않았어요" beneath, right-aligned.
+
+The five faces come from **one spritesheet**, not five nodes. `download_assets`
+on `603:1836` returns it under `rawImages` (2720×900, with alpha); the crops
+live in `assets/images/journal/feel-*.png` and were derived by applying each
+`<img>`'s `w`/`h`/`left`/`top` percentages against its 16×16 container. See
+rule 7 in AGENTS.md — the flattened export is unusable here because an active
+face sits on a gradient.
+
+## InputTime_Card
+
+`457:884` — 182×60. Title row (Bold 8) with a `#E9F0FF` duration badge at the
+right (33×10, radius 10, Medium 5 `#4800FF`). Below it two Medium 5 `#88877F`
+field labels, then two 68×19 fields (white, radius 5, 0.7pt `#F1EFE7` border,
+Bold 7 `#2C2C2A`, letter-spacing 0.21) separated by a 25pt Light 10 `#B4B2A8`
+arrow. Light is the only place that weight is used so far.
+
+## Select0To10_Card
+
+`597:1582` — 182×55. The bare `Select0To10` in a card: title drops to Bold 8 on a
+15pt line box, the handle shrinks from 13×12 to 10×10, and the end labels use a
+8pt line box. Same `#E9F0FF` badge. `Select0To10_History` (`603:1849`, 184×55)
+is the read-only twin and is **not built yet**.
 
 ## Other components
 

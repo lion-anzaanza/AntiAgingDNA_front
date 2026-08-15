@@ -40,9 +40,14 @@ npx expo lint
 | `(auth)/sign-up/personal-info` | STEP 1 · 개인정보 입력 |
 | `(auth)/sign-up/survey` | STEP 2 · 초기 진단 |
 | `(auth)/sign-up/terms` | STEP 3 · 약관 동의 |
+| `journal/today` | 일지 · 오늘의 기록 ※※ |
 
 ※ 회원가입 인트로는 Figma에서 `hidden` 처리된 폐기 초안(`457:738`)을 옮긴 것이라,
 로그인과 다른 구형 DNA 아이콘을 씁니다. 손대기 전 AGENTS.md의 미해결 항목을 보세요.
+
+※※ 일지 섹션 컴포넌트를 실제로 렌더해 검증하려고 만든 화면입니다. 아직 어디서도
+링크되지 않고(`/journal/today`로 직접 들어가야 합니다) 하단 탭 바도 없습니다 —
+BottomBar는 탭 셸 구조와 함께 만들어야 해서 미착수입니다. AGENTS.md 참고.
 
 **아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
 
@@ -97,15 +102,27 @@ src/
 | 컴포넌트 | Figma | 용도 |
 |---|---|---|
 | `button` | ButtonNextUI | 하단 주요 액션 버튼 |
-| `select-button` | SelectButton1~5 | 선택 알약 (5단계 크기 × 회색/흰색) |
-| `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열) |
-| `likert-card` | SelectItem6_Card | 0~5 만족도 카드 |
-| `slider-0-to-10` | Select0To10 | 0~10 슬라이더 |
+| `button-back` | ButtonBack | 14×13 뒤로가기 칩 (빈 스택 가드 포함) |
+| `select-button` | SelectButton1~5 | 선택 알약 (5단계 × 회색/흰색 × 3상태) |
+| `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열, 카드 없음) |
+| `select-card` | SelectItem{3,4,6}[_Caption]_Card | 카드 + 라벨 + 설명 + 알약 한 줄 |
+| `likert-card` | SelectItem6_Card | 0~5 숫자 척도 카드 |
+| `feel-select` | SelectFeel5 / _NeedAnswer | 5단계 컨디션 (이모지 5종) |
+| `input-time-card` | InputTime_Card | 시작/종료 시각 + 소요시간 뱃지 |
+| `slider-0-to-10` | Select0To10 / _Card | 0~10 슬라이더 (`card` prop) |
 | `text-input` (`TextInputField`) | TextInput | 라벨 + 입력 필드 |
 | `date-input-row` | 생년월일 | 년/월/일 3분할 입력 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
 | `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |
+
+**`pill-group`과 `select-card`는 형제입니다.** Figma가 같은 알약 묶음을 카드 없는
+`SelectItem*`(회원가입)과 카드 있는 `SelectItem*_Card`(일지) 두 벌로 그려두었고,
+콘텐츠 폭(186 vs 182)과 안쪽 여백이 달라서 별도 컴포넌트로 두었습니다.
+
+**필은 3상태입니다** — `inactive` / `active` / `history`. `history`는 지난 기록을
+읽기 전용으로 되비출 때 쓰는 회청색(`#7786A8`) 상태로, 눌리지 않습니다.
+`PillGroup`·`SelectCard`·`LikertCard`·`FeelSelect`는 `history` boolean으로 넘깁니다.
 
 크기·간격은 모두 Figma 값을 `scale()`로 감싸서 씁니다 (`scale(17)` = Figma 17pt).
 색상은 `src/lib/design.ts`와 명시적 hex를 씁니다. `tailwind.config.js`의 색상
@@ -118,6 +135,8 @@ src/
 
 - `survey.tsx` — 수면 유형·수면의 질 알약을 `Pressable`로 직접 구성
 - `personal-info.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
+- `journal/today.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
+  낱개 도형이고, 알약 폭이 균등 그리드가 아니라 글자 길이에 맞춰져 있습니다
 
 ## 함께 읽을 것
 

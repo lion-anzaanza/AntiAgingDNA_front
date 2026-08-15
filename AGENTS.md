@@ -85,12 +85,18 @@ master rather than assuming.
 
 ### 6. Fonts
 
-Six Pretendard weights are loaded in `src/app/_layout.tsx` and registered in
-`tailwind.config.js`: Regular / Medium / SemiBold / Bold / ExtraBold / Black.
-Figma weight names map onto the `font-pretendard-*` classes, except Regular,
-which is plain `font-pretendard` with no suffix. If Figma introduces a weight
-that is missing, add the `.otf` (Pretendard is SIL OFL, on jsDelivr under
+Seven Pretendard weights are loaded in `src/app/_layout.tsx` and registered in
+`tailwind.config.js`: Light / Regular / Medium / SemiBold / Bold / ExtraBold /
+Black. Figma weight names map onto the `font-pretendard-*` classes, except
+Regular, which is plain `font-pretendard` with no suffix. If Figma introduces a
+weight that is missing, add the `.otf` (Pretendard is SIL OFL, on jsDelivr under
 `orioncactus/pretendard`) rather than approximating with a neighbouring weight.
+
+The jsDelivr path is
+`…@v1.3.9/packages/pretendard/dist/public/static/Pretendard-<Weight>.otf`.
+A wrong path still writes a file — a few hundred bytes of error page saved as
+`.otf` — so check the download: the sfnt tag must be `OTTO`, and the name table
+should read `Pretendard <Weight>` / `Version 1.309` / SIL OFL.
 
 ### 8. `src/global.css` is imported once, from the root layout
 
@@ -174,6 +180,24 @@ root layout exists only to pin the anchor described above.
 
 `npx tsc --noEmit` and `npx expo lint` both pass. Keep them that way.
 
+### Figma slips found while porting 일지 — worth a designer's eye
+
+None of these block anything; each was resolved by picking the majority reading,
+and each is listed so the next person does not "fix" the code back.
+
+- **The 만족도 faces disagree about their shadow.** `VeryBad` carries the ambient
+  shadow in all three states; `Bad`/`Normal`/`Good`/`VeryGood` carry it in none.
+  `VeryBad` is the one that was rebuilt most recently and it matches the rest of
+  the SelectButton family, so the code gives every face the shadow.
+- **`SelectFeel5` insets its pill row 12 on the left but 8 on the right.**
+  Reproduced as-is; it is visible if you look for it.
+- **The `_Caption_Card` captions disagree on weight** — `SelectItem4_Caption_Card`
+  is Medium, `SelectItem3`/`SelectItem6` are Regular. `SelectCard` uses Regular.
+- **`SelectFeel5_NeedAnswer` uses pure `red` (`#FF0000`)** for its border and
+  message, not a palette colour.
+- **`BottomBar2` stacks two 개선책 icons** (a dark bulb-and-gear over the plain
+  grey bulb). Presumably a layering slip.
+
 Waiting on a decision — do not resolve these unilaterally:
 
 - **마케팅 정보 수신 is marked `[필수]` and gates signup** (`terms.tsx`). Figma
@@ -210,6 +234,31 @@ Known and deliberately deferred:
 - `NoSelect` — the red "아직 응답하지 않았어요" state — is designed but not built.
 - `SelectItem5_2` carries a stray `"2002"` text node (left over from a year
   picker) behind the pills; intentionally not reproduced.
-- `SelectButton4_History` (`#7786A8` / `#F7F8FA`) exists in Figma, unused in auth.
+### 일지 — built, and what is still missing
 
-Next planned work: componentising the remaining sections.
+`journal/today.tsx` is the 오늘의 기록 screen (`480:1269`), built to prove the new
+components render. It is **not linked from anywhere** — open `/journal/today`
+directly — and it carries no bottom tab bar.
+
+Still to port from 04_일지:
+
+- **`BottomBar0`–`BottomBar4`** (`496:1958`–`496:1962`). Deliberately skipped:
+  it is the tab shell, not a leaf component, so building it means restructuring
+  `(tabs)` — and the icons need the `rawImages` treatment (rule 7) plus an
+  active/inactive pair per tab that only `BottomBar0`–`4` together supply.
+- **`Select0To10_History`** (`603:1849`) — the read-only slider for 상세보기.
+- **`Date`** (`603:1881`, four heat levels) for 일지/캘린더.
+- **`LifeDNA_WeeklyInfo_Card`** and its `ScoreBar`/`Word`/`ProgressBar` parts
+  (`603:1884`) — mostly a 홈 concern.
+- The three remaining screens: 일지/메인 (`480:1268`), 캘린더 (`480:1274`),
+  상세보기 (`480:1275`).
+
+`PillGroup`/`SelectCard`/`LikertCard`/`FeelSelect` already accept `history`, but
+nothing renders it yet — 상세보기 will be the first. The assumed semantic is
+"the chosen pill turns slate, the rest stay inactive"; confirm against
+`667:891` and friends before building that screen.
+
+- `SelectButton*_History` (`#7786A8` / `#F7F8FA`) now exists on all five levels
+  and is implemented as `state="history"`.
+
+Next planned work: the remaining 일지 screens, then 03_홈.
