@@ -83,6 +83,7 @@ src/
   lib/
     scale.ts           Figma 220pt 좌표 → 실기기 dp 변환
     design.ts          그림자·그라디언트 등 Figma 원시값
+    motion.ts          오브·DNA 모션 튜닝값 (Figma 기준 아님 — 기기에서 조정)
   global.css           NativeWind 진입점 (_layout.tsx 에서 1회 import)
   constants/, hooks/   템플릿 유틸
 ```
@@ -119,6 +120,7 @@ src/
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
 | `bottom-bar` | BottomBar0~4 | 하단 탭 바 (활성 시 아이콘만 바뀜) |
+| `living-artwork` | (Figma에 모션 없음) | 오브·DNA 상시 미세 운동 + 누름 반응 |
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
 | `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |

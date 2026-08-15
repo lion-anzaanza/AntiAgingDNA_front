@@ -158,6 +158,55 @@ export the Figma node at scale 4, screenshot the emulator, crop both to the
 subject's bounding box, scale to a common size, and difference them. Anything
 left beyond thin edge outlines is a real difference.
 
+### 10. `scale()` must never be called inside a worklet
+
+`src/lib/scale.ts` is an ordinary JS function. A Reanimated worklet that reaches
+for one throws *"Tried to synchronously call a non-worklet function on the UI
+thread"* — and the failure mode is what makes this worth a rule:
+
+```tsx
+// WRONG — throws on the UI thread, red screen
+useAnimatedStyle(() => ({ transform: [{ translateX: t.get() * scale(1.5) }] }));
+
+// RIGHT — convert in the render body; the worklet closes over a number
+const drift = scale(1.5);
+useAnimatedStyle(() => ({ transform: [{ translateX: t.get() * drift }] }));
+```
+
+The same goes for anything else imported from `@/lib` — worklets may only see
+numbers, strings and other worklets.
+
+Two related notes:
+
+- Reanimated shared values use `.get()` / `.set()` here, not `.value`. The
+  `react-hooks/immutability` lint rule (React Compiler) rejects `value =`
+  assignments in event handlers; `.set()` is the supported accessor.
+- `useReducedMotion()` reads the system animator duration scale. If motion looks
+  dead on a device or emulator, check `adb shell settings get global
+  animator_duration_scale` before suspecting the code.
+
+### 11. Diffing screenshots is not looking at them
+
+Chasing rule 10 cost about a dozen rounds because the check was
+`ImageChops.difference` on two captures, and both captures were of a **red error
+screen**. Identical frames were read as "the animation is not running" when they
+actually meant "the app has crashed and is showing a stack trace".
+
+So: **open the screenshot** before measuring anything about it. Diffing is for
+comparing two things you have already looked at, and comparing against a Figma
+export — not for deciding whether the app is alive.
+
+For motion specifically, `screencap` is the wrong tool anyway. A still frame
+cannot show movement, and the video encoder gives you the answer for free:
+
+```bash
+adb shell screenrecord --time-limit 6 --size 540x1200 /sdcard/rec.mp4
+# a static screen encodes to ~1 decoded frame; a moving one to ~100
+```
+
+Then measure **consecutive** frames, not every frame against the first — that
+separates continuous motion from a one-time layout settle.
+
 ## Verifying on the Android emulator
 
 Type-checking is not verification. Every UI change gets looked at on the emulator.
@@ -344,6 +393,25 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 - **Figma writes the product name three ways** — LifeDNA, Life DAN, LifeDAN.
   All are reproduced verbatim where they appear (홈 orb card says "Life DAN",
   the 일지 banner says "LifeDAN", the 홈 CTA says "LifeDNA"). Worth a decision.
+
+### Motion — phase 1 only
+
+The orb and the helix breathe, drift, twinkle, counter-rotate their rings, carry
+a sheen sweep, and squash when pressed. All Reanimated, no new dependency, all
+tunable from `src/lib/motion.ts`. **Figma specifies no motion** — the numbers
+there are a starting point for the designer to react to on a device, not a spec.
+
+Not built, in the order they would matter:
+
+- **State transitions.** Figma has seven orb states and seven DNA states, and
+  the orb card already promises "컨디션이 좋아 오브가 푸른빛이에요". Wiring that
+  needs the data layer; `LivingArtwork` should grow a `state` prop then.
+- **Sparkles flaring on press.** The artwork reacts; the highlights do not.
+- **Skia.** Deformation, real radial gradients and a continuous colour morph
+  across the seven states all need it. Worth knowing: `librnskia.so` **is**
+  bundled in Expo Go, so adopting it costs no change to the dev loop — only
+  release binary size. `lottie-react-native` is *not* bundled and would force a
+  development build.
 
 Next planned work: the remaining 일지 screens (메인 · 캘린더 · 상세보기), then
 05_개선책 and 06_마이페이지 — which are also what the two dead tabs are waiting on.

@@ -16,8 +16,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DnaKind } from '@/components/ui/dna-kind';
 import { GradientText } from '@/components/ui/gradient-text';
+import {
+  LivingArtwork,
+  SpinningRing,
+  TwinkleDot,
+  type ArtworkFrame,
+} from '@/components/ui/living-artwork';
 import { WeeklyInfoCard, type ScoreBarValue } from '@/components/ui/weekly-info-card';
 import { SHADOW } from '@/lib/design';
+import { MOTION } from '@/lib/motion';
 import { scale } from '@/lib/scale';
 
 /**
@@ -73,9 +80,13 @@ const ORB_PAGES: {
   score: string;
   artwork: ImageSourcePropType;
   /** The artwork's box inside the 180pt card, in Figma points. */
-  frame: { left: number; top: number; width: number; height: number };
+  frame: ArtworkFrame;
   sparklesUnder: Sparkle[];
   sparklesOver: Sparkle[];
+  /** The helix sways; the orb, being a sphere, has nothing to sway about. */
+  tilt: boolean;
+  /** A light band travelling inside the silhouette — reads best on the orb. */
+  sheen: boolean;
   hint: string;
 }[] = [
   {
@@ -88,6 +99,8 @@ const ORB_PAGES: {
     frame: { left: 45.12, top: 42.0, width: 90.28, height: 89.92 },
     sparklesUnder: ORB_SPARKLES_UNDER,
     sparklesOver: ORB_SPARKLES_OVER,
+    tilt: false,
+    sheen: true,
     hint: '옆으로 밀어 유기체 모델을 확인해보세요 →',
   },
   {
@@ -99,6 +112,8 @@ const ORB_PAGES: {
     // The helix card carries no highlights at all, and NiceDNA has none of its own.
     sparklesUnder: [],
     sparklesOver: [],
+    tilt: true,
+    sheen: true,
     hint: '← 옆으로 밀어 유기체 모델을 확인해보세요',
   },
 ];
@@ -259,6 +274,8 @@ function OrbCard({
   frame,
   sparklesUnder,
   sparklesOver,
+  tilt,
+  sheen,
   hint,
   page,
   pageCount,
@@ -319,25 +336,20 @@ function OrbCard({
         8월 5일 수요일
       </Text>
 
-      <DashedRing left={43} top={36} size={94} />
-      <DashedRing left={49} top={42} size={82} />
-      {sparklesUnder.map((sparkle) => (
-        <SparkleDot key={`under-${sparkle.left}-${sparkle.top}`} {...sparkle} />
+      <SpinningRing left={43} top={36} size={94} period={MOTION.rings.outerPeriod} />
+      <SpinningRing left={49} top={42} size={82} period={MOTION.rings.innerPeriod} reverse />
+      {sparklesUnder.map((sparkle, index) => (
+        <TwinkleDot key={`under-${sparkle.left}-${sparkle.top}`} {...sparkle} index={index} />
       ))}
-      <Image
+      <LivingArtwork
         source={artwork}
-        style={{
-          position: 'absolute',
-          left: scale(frame.left),
-          top: scale(frame.top),
-          width: scale(frame.width),
-          height: scale(frame.height),
-        }}
-        // Figma fills the box exactly rather than fitting inside it.
-        resizeMode="stretch"
+        frame={frame}
+        tilt={tilt}
+        sheen={sheen}
+        accessibilityLabel={caption}
       />
-      {sparklesOver.map((sparkle) => (
-        <SparkleDot key={`over-${sparkle.left}-${sparkle.top}`} {...sparkle} />
+      {sparklesOver.map((sparkle, index) => (
+        <TwinkleDot key={`over-${sparkle.left}-${sparkle.top}`} {...sparkle} index={index + 3} />
       ))}
 
       <Text
@@ -470,41 +482,6 @@ function OrbCard({
         {hint}
       </Text>
     </View>
-  );
-}
-
-function SparkleDot({ left, top, size, color, glow }: Sparkle) {
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        left: scale(left),
-        top: scale(top),
-        width: scale(size),
-        height: scale(size),
-        borderRadius: scale(size),
-        backgroundColor: color,
-        boxShadow: glow,
-      }}
-    />
-  );
-}
-
-function DashedRing({ left, top, size }: { left: number; top: number; size: number }) {
-  return (
-    <View
-      style={{
-        position: 'absolute',
-        left: scale(left),
-        top: scale(top),
-        width: scale(size),
-        height: scale(size),
-        borderRadius: scale(size),
-        borderWidth: scale(1),
-        borderColor: '#F1EFE7',
-        borderStyle: 'dashed',
-      }}
-    />
   );
 }
 
