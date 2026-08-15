@@ -20,7 +20,15 @@ type Slider0To10Props = {
    * (186×43): white card chrome, a smaller heading and a smaller handle.
    */
   card?: boolean;
+  /**
+   * `Select0To10_History` — the read-only replay of an earlier day. Implies
+   * `card`; the track and handle go slate and the control stops responding.
+   */
+  history?: boolean;
 };
+
+/** The slate the whole history family shares. */
+const HISTORY_FILL = '#7C85A5';
 
 /** Figma draws a smaller handle inside the card than on the bare slider. */
 const HANDLE = {
@@ -35,8 +43,15 @@ const TAP_SLOP = 4;
  * the track is 5pt tall and the remainder only 3pt, with a white handle riding
  * the join.
  */
-export function Slider0To10({ label, value, onChange, card = false }: Slider0To10Props) {
-  const handle = card ? HANDLE.card : HANDLE.bare;
+export function Slider0To10({
+  label,
+  value,
+  onChange,
+  card = false,
+  history = false,
+}: Slider0To10Props) {
+  const carded = card || history;
+  const handle = carded ? HANDLE.card : HANDLE.bare;
   const [trackWidth, setTrackWidth] = useState(0);
   const ratio = value / 10;
 
@@ -66,7 +81,7 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
   return (
     <View
       style={
-        card
+        carded
           ? {
               borderRadius: scale(10),
               backgroundColor: '#FFFFFF',
@@ -83,12 +98,12 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          paddingRight: card ? 0 : scale(10),
+          paddingRight: carded ? 0 : scale(10),
         }}>
         <Text
           style={{
-            fontSize: scale(card ? 8 : 10),
-            lineHeight: scale(card ? 15 : 10),
+            fontSize: scale(carded ? 8 : 10),
+            lineHeight: scale(carded ? 15 : 10),
             color: '#00352C',
           }}
           className="font-pretendard-bold">
@@ -105,7 +120,7 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
             justifyContent: 'center',
           }}>
           <Text
-            style={{ fontSize: scale(5), lineHeight: scale(10), color: '#4800FF' }}
+            style={{ fontSize: scale(5), lineHeight: scale(10), color: history ? '#262830' : '#4800FF' }}
             className="font-pretendard-medium">
             현재 선택 : {value}
           </Text>
@@ -113,11 +128,11 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
       </View>
 
       <View
-        {...panResponder.panHandlers}
+        {...(history ? {} : panResponder.panHandlers)}
         onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
         style={{
           height: scale(handle.height),
-          marginTop: scale(card ? 5.5 : 9),
+          marginTop: scale(carded ? 5.5 : 9),
           justifyContent: 'center',
         }}>
         <View
@@ -128,7 +143,7 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
           }}
         />
         <LinearGradient
-          colors={[...GRADIENT_PROGRESS]}
+          colors={history ? [HISTORY_FILL, HISTORY_FILL] : [...GRADIENT_PROGRESS]}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={{
@@ -149,7 +164,7 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
             height: scale(handle.height),
             borderRadius: scale(handle.height) / 2,
             borderWidth: scale(2),
-            borderColor: '#823FF6',
+            borderColor: history ? HISTORY_FILL : '#823FF6',
             backgroundColor: '#FFFFFF',
             boxShadow: SHADOW,
           }}
@@ -160,15 +175,15 @@ export function Slider0To10({ label, value, onChange, card = false }: Slider0To1
         style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          marginTop: scale(card ? 4 : 2),
+          marginTop: scale(carded ? 4 : 2),
         }}>
         <Text
-          style={{ fontSize: scale(7), lineHeight: scale(card ? 8 : 10), color: '#5F5E5B' }}
+          style={{ fontSize: scale(7), lineHeight: scale(carded ? 8 : 10), color: '#5F5E5B' }}
           className="font-pretendard-medium">
           0 | 낮음
         </Text>
         <Text
-          style={{ fontSize: scale(7), lineHeight: scale(card ? 8 : 10), color: '#5F5E5B' }}
+          style={{ fontSize: scale(7), lineHeight: scale(carded ? 8 : 10), color: '#5F5E5B' }}
           className="font-pretendard-medium">
           높음 | 10
         </Text>

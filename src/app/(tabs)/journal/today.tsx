@@ -11,6 +11,32 @@ import { SelectButton } from '@/components/ui/select-button';
 import { SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import {
+  CAFFEINE_CAPTION,
+  CAFFEINE_CUPS,
+  CAFFEINE_TIME,
+  CAFFEINE_TIME_CAPTION,
+  CAFFEINE_TIME_WIDTH,
+  CARD_GAP,
+  DID_EXERCISE,
+  EXERCISE_KIND,
+  EXERCISE_MINUTES,
+  HEADING_GAP,
+  JUNK_FOOD,
+  JUNK_FOOD_CAPTION,
+  MEAL_COUNT,
+  MET_PEOPLE,
+  MET_PEOPLE_CAPTION,
+  MOOD_RECOVERY,
+  MOOD_RECOVERY_CAPTION,
+  SAT,
+  SCREEN_TIME,
+  SECTION_GAP,
+  SLEEP_ONSET,
+  WALKED,
+  WATER,
+  WATER_CAPTION,
+} from '@/lib/journal-options';
 import { scale } from '@/lib/scale';
 
 /**
@@ -21,28 +47,6 @@ import { scale } from '@/lib/scale';
  * grid, so they are assembled by hand below. Like `survey.tsx` and
  * `personal-info.tsx`, do not copy them as a pattern for a new screen.
  */
-const SLEEP_ONSET = ['5분 이내', '15분 이내', '30분 이내', '1시간 이상'];
-const MEAL_COUNT = ['0끼', '1끼', '2끼', '3끼', '4끼', '5끼 +'];
-const JUNK_FOOD = ['0회', '1~2회', '3회 이상'];
-const CAFFEINE_CUPS = ['0잔', '1~2잔', '3~4잔', '5잔 이상'];
-const CAFFEINE_TIME = ['안 마심', '오전', '오후 (~5시)', '저녁 (6시 이후)'];
-/** Figma sizes these four to their text rather than to an even grid. */
-const CAFFEINE_TIME_WIDTH = [27, 27, 39, 46];
-const WATER = ['2잔 이하', '3~5잔', '6~7잔', '8잔 이상'];
-const DID_EXERCISE = ['네', '아니요'];
-const EXERCISE_MINUTES = ['15분 이하', '30분', '1시간', '1시간 이상'];
-const EXERCISE_KIND = ['걷기', '유산소', '근력', '기타'];
-const WALKED = ['30분 이하', '1시간', '2시간', '2시간 이상'];
-const SAT = ['4시간 이하', '4~8시간', '8~10시간', '10시간 이상'];
-const SCREEN_TIME = ['2시간 이하', '2~4시간', '4~6시간', '6시간 이상'];
-const MOOD_RECOVERY = ['안 함', '잠깐', '충분히'];
-const MET_PEOPLE = ['거의 안 만남', '잠깐', '여러 번·길게'];
-
-/** Space above a section heading, below it, and between consecutive cards. */
-const SECTION_GAP = 13;
-const HEADING_GAP = 6;
-const CARD_GAP = 5;
-
 export default function JournalTodayScreen() {
   const [condition, setCondition] = useState<FeelValue | null>(null);
   const [sleepOnset, setSleepOnset] = useState<string | null>(null);
@@ -150,7 +154,7 @@ export default function JournalTodayScreen() {
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
             label="페스트푸드·단 음식"
-            caption="기준 : 패스트푸드·디저트·가당음료 각 1건 = 1회"
+            caption={JUNK_FOOD_CAPTION}
             options={JUNK_FOOD}
             value={junkFood}
             onChange={setJunkFood}
@@ -169,7 +173,7 @@ export default function JournalTodayScreen() {
             paddingRight: scale(10),
           }}>
           <CardTitle>카페인 섭취</CardTitle>
-          <CardCaption>커피·에너지드링크·차 등</CardCaption>
+          <CardCaption>{CAFFEINE_CAPTION}</CardCaption>
           <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(2.5) }}>
             {CAFFEINE_CUPS.map((option) => (
               <SelectButton
@@ -186,7 +190,7 @@ export default function JournalTodayScreen() {
           <View style={{ marginTop: scale(6) }}>
             <CardTitle>마지막 섭취 시각</CardTitle>
           </View>
-          <CardCaption>취침 6시간 전 섭취는 수면을 방해해요</CardCaption>
+          <CardCaption>{CAFFEINE_TIME_CAPTION}</CardCaption>
           <View style={{ flexDirection: 'row', gap: scale(7), marginTop: scale(2) }}>
             {CAFFEINE_TIME.map((option, index) => (
               <SelectButton
@@ -205,7 +209,7 @@ export default function JournalTodayScreen() {
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
             label="수분 섭취량"
-            caption="1잔 ≈ 200ml"
+            caption={WATER_CAPTION}
             options={WATER}
             value={water}
             onChange={setWater}
@@ -292,7 +296,7 @@ export default function JournalTodayScreen() {
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
             label="기분 전환·회복 활동을 했나요?"
-            caption="산책·취미·대화 등 기분을 회복하는 활동"
+            caption={MOOD_RECOVERY_CAPTION}
             options={MOOD_RECOVERY}
             value={moodRecovery}
             onChange={setMoodRecovery}
@@ -301,7 +305,7 @@ export default function JournalTodayScreen() {
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
             label="오늘 사람을 만났나요?"
-            caption="대면·통화·영상 모두 포함"
+            caption={MET_PEOPLE_CAPTION}
             options={MET_PEOPLE}
             value={metPeople}
             onChange={setMetPeople}

@@ -383,9 +383,10 @@ Known and deliberately deferred:
   picker) behind the pills; intentionally not reproduced.
 ### 일지 — built, and what is still missing
 
-`journal/today.tsx` is the 오늘의 기록 screen (`480:1269`), built to prove the new
-components render. It is **not linked from anywhere** — open `/journal/today`
-directly — and it carries no bottom tab bar.
+All four 일지 screens are built: 메인 (`480:1268`) is the tab root, with
+오늘의 기록 (`480:1269`), 캘린더 (`480:1274`) and 상세보기 (`480:1275`) pushing on
+top. 상세보기 is `[date].tsx`, and confirmed against Figma: the answer that was
+given renders `history`, every other pill stays `inactive`.
 
 Still to port from 04_일지:
 
@@ -393,17 +394,14 @@ Still to port from 04_일지:
   it is the tab shell, not a leaf component, so building it means restructuring
   `(tabs)` — and the icons need the `rawImages` treatment (rule 7) plus an
   active/inactive pair per tab that only `BottomBar0`–`4` together supply.
-- **`Select0To10_History`** (`603:1849`) — the read-only slider for 상세보기.
-- **`Date`** (`603:1881`, four heat levels) for 일지/캘린더.
-- **`LifeDNA_WeeklyInfo_Card`** and its `ScoreBar`/`Word`/`ProgressBar` parts
-  (`603:1884`) — mostly a 홈 concern.
-- The three remaining screens: 일지/메인 (`480:1268`), 캘린더 (`480:1274`),
-  상세보기 (`480:1275`).
-
-`PillGroup`/`SelectCard`/`LikertCard`/`FeelSelect` already accept `history`, but
-nothing renders it yet — 상세보기 will be the first. The assumed semantic is
-"the chosen pill turns slate, the rest stay inactive"; confirm against
-`667:891` and friends before building that screen.
+- **`주간_컨디션_그래프`** (`585:1436`) and **`일간_컨디션_요약`** (`585:1377`).
+  Both float *beside* the frames rather than being placed on any screen, so
+  where they belong is a question for the designer. The graph is also the only
+  thing in 일지 that needs a real chart — a vector polyline over seven points —
+  which would mean `react-native-svg` (bundled in Expo Go, so free for the dev
+  loop).
+- The 미응답 state of a day with no entry, which is blocked on knowing what
+  `GET /api/diaries/{date}` returns for one (backlog 23).
 
 - `SelectButton*_History` (`#7786A8` / `#F7F8FA`) now exists on all five levels
   and is implemented as `state="history"`.

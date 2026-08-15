@@ -2,8 +2,9 @@
 
 LifeDNA 만들기 프로젝트.
 
-매일의 기록을 모아 사용자별 '유전자'를 만들어가는 앱입니다. 현재는 **가입 플로우
-UI까지** 구현되어 있고, 그 이후 화면들은 아직 Expo 템플릿 상태입니다.
+매일의 기록을 모아 사용자별 '유전자'를 만들어가는 앱입니다. 현재 **로그인·회원가입,
+홈, 일지 4개 화면**의 UI가 구현돼 있습니다. 개선책·마이페이지는 미착수이고,
+**백엔드에는 아직 아무것도 연결돼 있지 않습니다.**
 
 ## 기술 스택
 
@@ -41,17 +42,21 @@ npx expo lint
 | `(auth)/sign-up/survey` | STEP 2 · 초기 진단 |
 | `(auth)/sign-up/terms` | STEP 3 · 약관 동의 |
 | `(tabs)/home` | 홈 · 메인 ※※ |
-| `(tabs)/journal` | 일지 · 오늘의 기록 ※※ |
+| `(tabs)/journal` | 일지 · 메인 ※※ |
+| `(tabs)/journal/today` | 일지 · 오늘의 기록 |
+| `(tabs)/journal/calendar` | 일지 · 기록 캘린더 |
+| `(tabs)/journal/[date]` | 일지 · 상세보기 (읽기 전용) |
 
 ※ 회원가입 인트로는 Figma에서 `hidden` 처리된 폐기 초안(`457:738`)을 옮긴 것이라,
 로그인과 다른 구형 DNA 아이콘을 씁니다. 손대기 전 AGENTS.md의 미해결 항목을 보세요.
 
-※※ 두 화면은 Figma의 하단 탭 바 안에 들어 있습니다. 탭은 4개(홈 · 오늘의 일지 ·
-개선책 · MY)지만 **화면이 있는 건 앞의 둘뿐**이고, 개선책·MY는 Figma 그대로
-보이기만 하고 눌러도 아무 일도 없습니다.
+※※ 탭 루트입니다. Figma 하단 탭 바는 4개(홈 · 오늘의 일지 · 개선책 · MY)지만
+**화면이 있는 건 앞의 둘뿐**이고, 개선책·MY는 Figma 그대로 보이기만 하고 눌러도
+아무 일도 없습니다.
 
-홈의 "오늘 기록하기 →"가 일지 탭으로 넘어갑니다. 두 화면 다 데이터 계층이 없어서
-숫자·문구는 Figma에 있는 값을 그대로 박아둔 상태입니다.
+일지 탭 안에서 메인 → 오늘의 기록 / 캘린더 / 상세보기로 이동합니다. 홈의
+"오늘 기록하기 →"는 오늘의 기록으로 바로 갑니다. **전부 데이터 계층이 없어서
+숫자·문구는 Figma 값을 그대로 박아둔 상태입니다.**
 
 **아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
 
@@ -93,6 +98,7 @@ src/
     design.ts          그림자·그라디언트 등 Figma 원시값
     motion.ts          오브·DNA 모션 튜닝값 (Figma 기준 아님 — 기기에서 조정)
     sign-up-form.tsx   회원가입 3단계 공용 입력 상태 (Context)
+    journal-options.ts 일지 선택지 (오늘의 기록·상세보기 공용)
   global.css           NativeWind 진입점 (_layout.tsx 에서 1회 import)
   constants/, hooks/   템플릿 유틸
 ```
@@ -123,12 +129,13 @@ src/
 | `likert-card` | SelectItem6_Card | 0~5 숫자 척도 카드 |
 | `feel-select` | SelectFeel5 / _NeedAnswer | 5단계 컨디션 (이모지 5종) |
 | `input-time-card` | InputTime_Card | 시작/종료 시각 + 소요시간 뱃지 |
-| `slider-0-to-10` | Select0To10 / _Card | 0~10 슬라이더 (`card` prop) |
+| `slider-0-to-10` | Select0To10 / _Card / _History | 0~10 슬라이더 (`card`·`history` prop) |
 | `text-input` (`TextInputField`) | TextInput | 라벨 + 입력 필드 |
 | `date-input-row` | 생년월일 | 년/월/일 3분할 입력 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
 | `bottom-bar` | BottomBar0~4 | 하단 탭 바 (활성 시 아이콘만 바뀜) |
+| `date-cell` | Date | 캘린더 날짜 칸 (없음/낮음/중간/높음) |
 | `living-artwork` | (Figma에 모션 없음) | 오브·DNA 상시 미세 운동 + 누름 반응 |
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
