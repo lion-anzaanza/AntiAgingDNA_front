@@ -535,7 +535,7 @@ function JournalCta() {
         기록할수록 나의 LifeDNA가 더 정교해져요
       </Text>
       <Pressable
-        onPress={() => router.push('/journal/today')}
+        onPress={() => router.push('/journal')}
         style={{
           width: scale(62),
           height: scale(20),
