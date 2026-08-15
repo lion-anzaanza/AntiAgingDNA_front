@@ -21,45 +21,57 @@ Figma의 `PhoneHeader` 컴포넌트는 상단 상태바(시계·와이파이·�
 - 파일명은 kebab-case (`button.tsx`, `text-input.tsx`), 기존 스캐폴드 파일들(`themed-text.tsx` 등)과 동일한 컨벤션.
 - Figma 레이어의 한글명(`컬러 스타일`, `만족도` 등)은 코드 식별자로 쓰지 않는다.
 
-## 색상 토큰 — `primary`(teal)와 `brand`(보라)를 혼동하지 말 것
+## 색상 — `tailwind.config.js`의 색상 스케일은 쓰지 않는다
 
-**실제 겪은 버그**: 컬러 스타일 페이지의 "Primary" 스와치는 라벨이 "메인/안전 Teal"이고, 실제로는 DNA/오브 상태의 "안전(good)" 같은 **상태 색상**이지 브랜드 색이 아니다. 로그인/버튼/링크/선택된 필 등 실제 화면에서 쓰이는 보라-파랑 그라데이션(`#4655F6→#9423FF`, `#4B52F6→#BC40F6`, 링크 텍스트 `#8B2AFE` 등)은 컬러 스타일 페이지에 **별도로 정의되어 있지 않다**. `tailwind.config.js`에 이미 두 스케일이 등록되어 있다:
+**이 절은 한 번 뒤집혔다.** 예전에는 `brand-*`/`primary-*` 같은 Tailwind 색상 클래스를 쓰라고 안내했지만, 그 스케일은 현재 **죽어 있고 값도 Figma와 어긋난다**(`primary.900` `#04342C` vs 실제 `#00352C`, `gray.100` `#D3D1C7` vs `#D3D1C6`, `gray.400` `#888780` vs `#88877F`). `src` 어디에서도 쓰지 않는다. AGENTS.md의 미해결 항목 참고.
 
-```js
-brand: { 400: '#4655F6', 500: '#8B2AFE', 600: '#9423FF' },
-primary: { 50: '#E1F5EE', 100: '#9FE1CB', 200: '#5DCAA5', 400: '#1D9E75', 600: '#0F6E56', 900: '#04342C' },
-```
+지금 규칙:
+- 그림자·그라디언트 등 여러 곳이 공유하는 값 → `src/lib/design.ts`
+- 그 외 색은 `get_design_context`가 준 **hex를 그대로** 명시한다
+- `tailwind.config.js`에서 실제로 쓰는 건 `fontFamily` 블록뿐이다
+- `src/constants/theme.ts`의 `Colors`(light/dark)는 템플릿 잔재다. 새 컴포넌트에서 쓰지 않는다
 
-규칙:
-- 헤딩/바디 텍스트가 짙은 청록색(`#00352C` 계열)이면 → `primary-900` (맞음, 그대로 사용)
-- 버튼 배경, 링크 텍스트("회원가입", "로그인"), 선택된 필/체크박스, 슬라이더 핸들, 진행 바 등 **인터랙션 강조색**이면 → `brand-400`/`brand-500`/`brand-600` (`primary`가 아님)
-- 헷갈리면 실제 hex를 `get_design_context`로 다시 확인하고 어느 스케일에 속하는지 판단할 것, 이름만 보고 추정하지 말 것.
-- `gray`/`error`/`warning` 토큰도 `tailwind.config.js`에 등록되어 있다 (각 50/100/200/400/600/900). 하드코딩된 hex 대신 이 토큰들을 쓴다.
-- `src/constants/theme.ts`의 `Colors`(light/dark)는 Tailwind로 표현하기 애매한 네이티브 전용 값(상태바, 스플래시 배경)에만 쓰고, 컴포넌트 스타일링은 NativeWind 클래스가 기본이다.
+이름만 보고 추정하지 말 것 — 컬러 스타일 페이지의 "Primary"는 브랜드색이 아니라 DNA/오브의 **상태 색상**(안전 teal)이고, 화면에서 쓰이는 보라-파랑 그라데이션은 그 페이지에 정의돼 있지 않다.
 
-## 크기/폰트 스케일 변환 — 기준 폭 375 확정
+## 크기/폰트 스케일 변환 — 기준은 **기기 폭**이다
 
-Figma 프레임은 220pt 폭으로, 실제 iPhone 375pt 폭 기준 디자인을 축소해서 작업한 것이다(비율 375/220 ≈ 1.7045). `get_design_context`로 뽑은 실제 폰트 크기(7px, 10px, 14px 등)를 이 비율로 역산하면 12px/17px/24px 같은 흔한 앱 폰트 크기와 정확히 맞아떨어져 **검증된 값**이다.
+**이 절도 한 번 뒤집혔다.** 예전 안내(고정 375pt 기준)는 틀렸고, 실제로 화면 전체가 ~5% 작게 나오는 버그를 냈다. Figma 프레임 220pt는 **폰 전체 폭**을 나타내므로 실제 창 폭을 220으로 나눈다.
 
 ```ts
 // src/lib/scale.ts
 const FIGMA_FRAME_WIDTH = 220;
-const DESIGN_BASE_WIDTH = 375;
+const FIGMA_TO_DP = Dimensions.get('window').width / FIGMA_FRAME_WIDTH;
 export function scale(figmaValue: number) {
-  return figmaValue * (DESIGN_BASE_WIDTH / FIGMA_FRAME_WIDTH);
+  return figmaValue * FIGMA_TO_DP;
 }
 ```
 
 `get_design_context`가 주는 모든 px 값(폰트 크기, padding, radius, 위치)은 코드에 그대로 쓰지 말고 `scale()`을 통과시킨다.
 
+## 백분율 inset을 실제 pt로 되돌리는 법
+
+`get_design_context`는 자식 위치를 `inset-[10.61%_40.66%_74.24%_6.59%]`(top/right/bottom/left) 같은 백분율로 준다. 부모의 선언된 크기를 곱하면 Figma pt가 정확히 복원된다.
+
+```
+부모 182×66 → top 66×0.1061 = 7, left 182×0.0659 = 12,
+              폭 = 182 − left − right
+```
+
+텍스트는 `leading-[N]`(line-height)이 박스 높이보다 큰 경우가 흔하다. RN에서는 **line box 기준**으로 배치한다 — 박스 중심에서 `lineHeight/2`만큼 위아래로 벌린 값이 실제 차지하는 영역이다. 이 방식으로 카드 높이를 합산하면 Figma 값과 정확히 맞아떨어지므로, 합이 안 맞으면 어딘가 잘못 읽은 것이다.
+
 ## 폰트 — Pretendard 실제 로드
 
 Figma Plugin API에서는 Pretendard를 못 불러오지만(→ `figma-componentize` 스킬의 TEMP-FONT 참고), **코드에서는 진짜 Pretendard 폰트 파일을 쓴다**. 이미 세팅되어 있다:
 
-- `assets/fonts/Pretendard-{Regular,Medium,Bold,ExtraBold,Black}.otf`
-- 루트 `_layout.tsx`에서 `expo-font`의 `useFonts()`로 로드, 로드 전엔 `null` 반환(스플래시 유지)
-- `tailwind.config.js`의 `fontFamily`에 `pretendard`/`pretendard-medium`/`pretendard-bold`/`pretendard-extrabold`/`pretendard-black` 등록됨 → `className="font-pretendard-bold"` 형태로 사용
-- 새 굵기가 필요하면(SemiBold 등) `assets/fonts/`에 otf 추가 + `_layout.tsx`의 `useFonts` + `tailwind.config.js` `fontFamily` 둘 다 갱신
+- `assets/fonts/Pretendard-{Light,Regular,Medium,SemiBold,Bold,ExtraBold,Black}.otf`
+- 루트 `_layout.tsx`에서 `expo-font`의 `useFonts()`로 로드
+- `tailwind.config.js`의 `fontFamily`에 등록됨 → `className="font-pretendard-bold"` 형태로 사용.
+  Regular만 접미사 없이 `font-pretendard`
+- 새 굵기가 필요하면 `assets/fonts/`에 otf 추가 + `_layout.tsx`의 `useFonts` + `tailwind.config.js`
+  `fontFamily` 둘 다 갱신한다. **이웃 굵기로 근사하지 말 것.** jsDelivr 경로:
+  `orioncactus/pretendard@v1.3.9/packages/pretendard/dist/public/static/Pretendard-<Weight>.otf`
+  (받은 뒤 sfnt 태그가 `OTTO`인지, name 테이블의 이름·버전이 맞는지 확인할 것 —
+  경로가 틀리면 몇백 바이트짜리 에러 페이지가 `.otf`로 저장된다)
 
 ## 그라데이션 / 그라데이션 텍스트
 
@@ -90,22 +102,39 @@ Figma Plugin API에서는 Pretendard를 못 불러오지만(→ `figma-component
 | 컴포넌트 | 파일 | 대응 Figma 컴포넌트 |
 |---|---|---|
 | `Button` | `button.tsx` | `ButtonNextUI` |
+| `SelectButton` | `select-button.tsx` | `SelectButton1~5` (5단계 × gray/white × `inactive`/`active`/`history`) |
 | `TextInputField` | `text-input.tsx` | `TextInput` |
-| `PillGroup` | `pill-group.tsx` | `SelectItem3/4_1/4_2/5` (단일·다중 선택 모두 지원, `columns`/`size` prop으로 배치·크기 조절) |
-| `Slider0To10` | `slider-0-to-10.tsx` | `Select0To10` |
-| `LikertCard` | `likert-card.tsx` | `SelectItem6_Card` (0~5 리커트 척도용) |
+| `PillGroup` | `pill-group.tsx` | `SelectItem3/4_1/4_2/5` — 카드 없는 형태, 여러 줄 wrap |
+| `SelectCard` | `select-card.tsx` | `SelectItem{3,4,6}[_Caption]_Card` — 카드 있는 형태, 한 줄 |
+| `Slider0To10` | `slider-0-to-10.tsx` | `Select0To10` / `Select0To10_Card` (`card` prop) |
+| `LikertCard` | `likert-card.tsx` | `SelectItem6_Card` 중 0~5 숫자 척도 전용. 문자열 선택지는 `SelectCard` |
+| `FeelSelect` | `feel-select.tsx` | `SelectFeel5` / `SelectFeel5_NeedAnswer` (5단계 컨디션) |
+| `InputTimeCard` | `input-time-card.tsx` | `InputTime_Card` |
+| `ButtonBack` | `button-back.tsx` | `ButtonBack` |
 | `DateInputRow` | `date-input-row.tsx` | (대응 컴포넌트 없음 — 생년월일 3분할 입력 전용) |
 | `Checkbox` | `checkbox.tsx` | (대응 컴포넌트 없음 — 약관동의 체크박스) |
 | `GradientText` | `gradient-text.tsx` | (그라데이션 텍스트 범용 유틸) |
-| `StepHeader` | `step-header.tsx` | (뒤로가기+타이틀+진행바+스텝라벨 조합, 화면 전용) |
+| `StepHeader` | `step-header.tsx` | (`ButtonBack`+타이틀+진행바+스텝라벨 조합, 화면 전용) |
 
 새 컴포넌트를 만들면 이 표에 추가한다.
+
+## `history` 상태 — 지난 기록을 다시 보여줄 때
+
+Figma가 필 계열 전체에 세 번째 상태 `*_History`를 추가했다. 일지/상세보기처럼 **이전에 기록한 답을 읽기 전용으로** 되비출 때 쓴다.
+
+- 배경 `#7786A8`, 텍스트 `#F7F8FA`(`SelectFeel5`만 `#F1F1F1`), 그림자 유지
+- 선택된 항목만 `history`가 되고 나머지는 `inactive` 그대로다
+- `disabled` 처리되어 눌리지 않는다
+
+`SelectButton`은 `state` prop(`'inactive' | 'active' | 'history'`)을 받고, 이를 감싸는 `PillGroup`/`SelectCard`/`LikertCard`/`FeelSelect`는 `history` boolean을 넘겨받아 변환한다.
 
 ## 체크리스트
 
 - [ ] PhoneHeader를 코드로 옮기려 하지 않았는가(SafeAreaView로 대체)
 - [ ] 모든 px 값에 `scale()`을 적용했는가
-- [ ] 색상은 하드코딩 대신 토큰을 썼고, `primary`/`brand`를 헷갈리지 않았는가
+- [ ] 색상은 `src/lib/design.ts` 아니면 Figma가 준 hex 그대로인가 (`text-primary-900` 류 금지)
+- [ ] 그림자는 `boxShadow`인가 (`shadow-*`/`elevation` 금지 — AGENTS.md #2)
+- [ ] 선택 상태를 `className` 토글이 아니라 style 값 변경으로 처리했는가 (AGENTS.md #3)
 - [ ] 텍스트에 실제 Pretendard 폰트(`font-pretendard-*`)를 적용했는가
 - [ ] className에 동적 템플릿 리터럴을 쓰지 않았는가
 - [ ] 강조 텍스트가 섞인 링크는 `Pressable`+`router.push`로 만들었는가
