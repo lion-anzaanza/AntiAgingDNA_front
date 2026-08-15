@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -11,7 +11,7 @@ import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { StepHeader } from '@/components/ui/step-header';
 import { GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
-import { useSignUpForm } from '@/lib/sign-up-form';
+import { isDiagnosisComplete, useSignUpForm } from '@/lib/sign-up-form';
 
 const SLEEP_TYPE_OPTIONS = [
   { label: '아침형', icon: require('@/assets/images/auth/sleep-morning.png') },
@@ -28,6 +28,7 @@ const SLEEP_QUALITY_OPTIONS = [
 ];
 const EXERCISE_OPTIONS = ['주 150분 미만', '주 150 ~ 300분', '300분 초과', '거의 안 함'];
 const WORK_TYPE_OPTIONS = ['교대·야간근무', '잦은 출장·시차', '해당없음'];
+
 const DRINK_OPTIONS = ['월 1회 이하', '월 2 ~ 4회', '주 2 ~ 3회', '주 4회 이상', '전혀 안 마심'];
 const SMOKING_OPTIONS = ['비흡연', '과거 흡연', '현재 가끔', '현재 매일'];
 const LIFE_RHYTHM_OPTIONS = ['매우 규칙적이에요', '대체로 규칙적이에요', '다소 불규칙해요', '매우 불규칙해요'];
@@ -39,6 +40,29 @@ const MOOD_STATEMENTS = [
   '상쾌하게 잘 쉬고 일어났다',
   '일상이 흥미로운 일로 가득했다',
 ];
+
+/**
+ * Both multi-selects end in 해당없음, which contradicts every other option in
+ * its list — and the API models these as independent booleans, so "해당없음 +
+ * 자다가 자주 깨요" would serialise to nonsense. Picking it clears the rest;
+ * picking anything else clears it.
+ */
+const NONE_OPTION = '해당없음';
+
+/** `PillGroup` hands back the whole array, so recover which option was hit. */
+function changedOption(previous: string[], next: string[]): string | undefined {
+  return next.find((o) => !previous.includes(o)) ?? previous.find((o) => !next.includes(o));
+}
+
+function toggleExclusive(selected: string[], option: string): string[] {
+  if (option === NONE_OPTION) {
+    return selected.includes(NONE_OPTION) ? [] : [NONE_OPTION];
+  }
+  const withoutNone = selected.filter((o) => o !== NONE_OPTION);
+  return withoutNone.includes(option)
+    ? withoutNone.filter((o) => o !== option)
+    : [...withoutNone, option];
+}
 
 /** SelectButton1 pairs — 75pt wide with a 12pt gutter across the 162pt row. */
 const SLEEP_TYPE_PILL_WIDTH = 75;
@@ -65,13 +89,10 @@ function SectionLabel({ children, caption }: { children: string; caption?: strin
 
 export default function SurveyScreen() {
   const { form, update } = useSignUpForm();
+  const canContinue = isDiagnosisComplete(form);
 
   function toggleSleepQuality(option: string) {
-    update({
-      sleepQuality: form.sleepQuality.includes(option)
-        ? form.sleepQuality.filter((o) => o !== option)
-        : [...form.sleepQuality, option],
-    });
+    update({ sleepQuality: toggleExclusive(form.sleepQuality, option) });
   }
 
   return (
@@ -246,7 +267,10 @@ export default function SurveyScreen() {
             label="해당하는 근무 형태를 모두 선택해주세요"
             options={WORK_TYPE_OPTIONS}
             value={form.workType}
-            onChange={(workType) => update({ workType })}
+            onChange={(next) => {
+              const option = changedOption(form.workType, next);
+              update({ workType: option ? toggleExclusive(form.workType, option) : next });
+            }}
             multiple
             columns={3}
             level={2}
@@ -317,9 +341,12 @@ export default function SurveyScreen() {
         </Text>
 
         <View style={{ marginTop: scale(3) }}>
-          <Link href="/(auth)/sign-up/terms" asChild>
-            <Button label="다음 →" />
-          </Link>
+          <Button
+            label="다음 →"
+            disabled={!canContinue}
+            style={{ opacity: canContinue ? 1 : 0.4 }}
+            onPress={() => router.push('/(auth)/sign-up/terms')}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

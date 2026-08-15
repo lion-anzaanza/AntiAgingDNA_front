@@ -371,11 +371,10 @@ Known and deliberately deferred:
 - **Nothing can show an error.** `TextInputField` has no error prop, Figma's
   `TextInput` has only 입력 전 / 입력 후 / 비밀번호 variants, and the 로그인 screen
   has no space for a failure message. So even a well-specified error response
-  has nowhere to land. Needs a design before auth is wired.
-- **`해당없음` is just another toggle.** In 초기 진단 both multi-selects — 수면의 질
-  and 근무 형태 — let 해당없음 be picked alongside a real answer, which is
-  contradictory and maps to nonsense booleans. Selecting it should clear the
-  others, and vice versa.
+  has nowhere to land — which is why the signup steps *gate* rather than
+  explain: `isPersonalInfoComplete` / `isDiagnosisComplete` keep 다음 disabled,
+  reusing the pattern 약관 동의 already had, and invent no new UI. Telling the
+  user **why** still needs a design.
 - **`scale()` is fixed at module-eval width** (see rule 1). Fine while the app is
   portrait-locked; Android split-screen and foldables would need
   `useWindowDimensions`, which touches every component.

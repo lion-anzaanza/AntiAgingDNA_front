@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { router } from 'expo-router';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -9,7 +9,7 @@ import { SelectButton } from '@/components/ui/select-button';
 import { StepHeader } from '@/components/ui/step-header';
 import { TextInputField } from '@/components/ui/text-input';
 import { scale } from '@/lib/scale';
-import { useSignUpForm } from '@/lib/sign-up-form';
+import { isPersonalInfoComplete, useSignUpForm } from '@/lib/sign-up-form';
 
 const GENDER_OPTIONS = ['남성', '여성', '비공개'];
 const JOB_OPTIONS = ['직장인', '자영업', '학생', '무직', '주부'];
@@ -19,6 +19,7 @@ const JOB_PILL_WIDTH = (186 - JOB_GAP * (JOB_OPTIONS.length - 1)) / JOB_OPTIONS.
 
 export default function PersonalInfoScreen() {
   const { form, update } = useSignUpForm();
+  const canContinue = isPersonalInfoComplete(form);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
@@ -114,9 +115,12 @@ export default function PersonalInfoScreen() {
         </View>
 
         <View style={{ marginTop: scale(27) }}>
-          <Link href="/(auth)/sign-up/survey" asChild>
-            <Button label="다음 →" />
-          </Link>
+          <Button
+            label="다음 →"
+            disabled={!canContinue}
+            style={{ opacity: canContinue ? 1 : 0.4 }}
+            onPress={() => router.push('/(auth)/sign-up/survey')}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

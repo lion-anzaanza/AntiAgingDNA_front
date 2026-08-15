@@ -106,3 +106,65 @@ export function useSignUpForm() {
   }
   return value;
 }
+
+/**
+ * Whether a step may advance.
+ *
+ * There is nowhere to *explain* a problem — Figma gives `TextInput` no error
+ * variant and the screens have no space for a message — so the only honest
+ * enforcement available is the one 약관 동의 already uses: keep 다음 disabled
+ * until the step is answerable. Nothing new is invented, and nothing silently
+ * wrong is submitted.
+ *
+ * "Required" is taken from the API, not from taste: these are exactly the
+ * fields `SignUpRequest` and `DiagnosisRequest` mark as required.
+ */
+export function isPersonalInfoComplete(form: SignUpForm): boolean {
+  return (
+    form.nickname.trim().length > 0 &&
+    isEmailish(form.email) &&
+    form.password.length > 0 &&
+    // Cannot check strength: the server documents no password rule at all
+    // (docs/backend-backlog.md item 19). Matching is ours to check regardless.
+    form.password === form.passwordConfirm &&
+    isRealDate(form.birthYear, form.birthMonth, form.birthDay)
+  );
+}
+
+export function isDiagnosisComplete(form: SignUpForm): boolean {
+  return (
+    form.sleepType !== null &&
+    // Both lists end in 해당없음, so "nothing picked" is genuinely unanswered
+    // rather than a negative answer.
+    form.sleepQuality.length > 0 &&
+    form.workType.length > 0 &&
+    form.exercise !== null &&
+    form.drink !== null &&
+    form.smoking !== null &&
+    form.lifeRhythm !== null
+    // The three sensitivity sliders are required by the API but deliberately
+    // not gated: a slider at 0 is indistinguishable from an untouched one, so
+    // any check here would either block a legitimate 0 or pass an unanswered
+    // question. Blocked on the unanswered-slider design (see AGENTS.md).
+    // socialContactLevel and WHO-5 are optional in the spec.
+  );
+}
+
+/** Not RFC-correct on purpose — just enough to catch a typo before submitting. */
+function isEmailish(value: string): boolean {
+  const trimmed = value.trim();
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+}
+
+/** Rejects 2월 31일 and the like, which the three-box input happily accepts. */
+function isRealDate(year: string, month: string, day: string): boolean {
+  if (!/^\d{4}$/.test(year) || !/^\d{1,2}$/.test(month) || !/^\d{1,2}$/.test(day)) return false;
+  const y = Number(year);
+  const m = Number(month);
+  const d = Number(day);
+  // The API's own floor; the ceiling is just "not in the future".
+  if (y < 1900 || y > new Date().getFullYear()) return false;
+  if (m < 1 || m > 12) return false;
+  const date = new Date(y, m - 1, d);
+  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+}
