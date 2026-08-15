@@ -1,7 +1,6 @@
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,6 +11,7 @@ import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { StepHeader } from '@/components/ui/step-header';
 import { GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
+import { useSignUpForm } from '@/lib/sign-up-form';
 
 const SLEEP_TYPE_OPTIONS = [
   { label: '아침형', icon: require('@/assets/images/auth/sleep-morning.png') },
@@ -64,23 +64,14 @@ function SectionLabel({ children, caption }: { children: string; caption?: strin
 }
 
 export default function SurveyScreen() {
-  const [sleepType, setSleepType] = useState<string | null>(null);
-  const [sleepQuality, setSleepQuality] = useState<string[]>([]);
-  const [sugar, setSugar] = useState(0);
-  const [caffeine, setCaffeine] = useState(0);
-  const [stress, setStress] = useState(0);
-  const [exercise, setExercise] = useState<string | null>(null);
-  const [workType, setWorkType] = useState<string[]>([]);
-  const [drink, setDrink] = useState<string | null>(null);
-  const [smoking, setSmoking] = useState<string | null>(null);
-  const [lifeRhythm, setLifeRhythm] = useState<string | null>(null);
-  const [socialFrequency, setSocialFrequency] = useState<string | null>(null);
-  const [mood, setMood] = useState<Record<string, number>>({});
+  const { form, update } = useSignUpForm();
 
   function toggleSleepQuality(option: string) {
-    setSleepQuality((prev) =>
-      prev.includes(option) ? prev.filter((o) => o !== option) : [...prev, option],
-    );
+    update({
+      sleepQuality: form.sleepQuality.includes(option)
+        ? form.sleepQuality.filter((o) => o !== option)
+        : [...form.sleepQuality, option],
+    });
   }
 
   return (
@@ -128,11 +119,11 @@ export default function SurveyScreen() {
                 marginTop: scale(4),
               }}>
               {SLEEP_TYPE_OPTIONS.map(({ label, icon }) => {
-                const selected = sleepType === label;
+                const selected = form.sleepType === label;
                 return (
                   <Pressable
                     key={label}
-                    onPress={() => setSleepType(label)}
+                    onPress={() => update({ sleepType: label })}
                     style={{
                       width: scale(SLEEP_TYPE_PILL_WIDTH),
                       height: scale(19),
@@ -186,7 +177,7 @@ export default function SurveyScreen() {
                 marginTop: scale(4),
               }}>
               {SLEEP_QUALITY_OPTIONS.map((option) => {
-                const selected = sleepQuality.includes(option);
+                const selected = form.sleepQuality.includes(option);
                 return (
                   <Pressable
                     key={option}
@@ -220,17 +211,20 @@ export default function SurveyScreen() {
             </View>
           </View>
 
-          <Slider0To10 label="당분에 얼마나 민감한가요?" value={sugar} onChange={setSugar} />
-          <Slider0To10 label="카페인에 얼마나 민감한가요?" value={caffeine} onChange={setCaffeine} />
-          <Slider0To10 label="스트레스에 얼마나 민감한가요?" value={stress} onChange={setStress} />
+          <Slider0To10 label="당분에 얼마나 민감한가요?" value={form.sugarSensitivity}
+            onChange={(sugarSensitivity) => update({ sugarSensitivity })} />
+          <Slider0To10 label="카페인에 얼마나 민감한가요?" value={form.caffeineSensitivity}
+            onChange={(caffeineSensitivity) => update({ caffeineSensitivity })} />
+          <Slider0To10 label="스트레스에 얼마나 민감한가요?" value={form.stressSensitivity}
+            onChange={(stressSensitivity) => update({ stressSensitivity })} />
 
           <View>
             <PillGroup
               label="평소 운동량은?"
               caption="중강도 기준으로 답해주세요"
               options={EXERCISE_OPTIONS}
-              value={exercise}
-              onChange={setExercise}
+              value={form.exercise}
+              onChange={(exercise) => update({ exercise })}
               columns={2}
               level={1}
               tone="white"
@@ -251,8 +245,8 @@ export default function SurveyScreen() {
           <PillGroup
             label="해당하는 근무 형태를 모두 선택해주세요"
             options={WORK_TYPE_OPTIONS}
-            value={workType}
-            onChange={setWorkType}
+            value={form.workType}
+            onChange={(workType) => update({ workType })}
             multiple
             columns={3}
             level={2}
@@ -261,8 +255,8 @@ export default function SurveyScreen() {
           <PillGroup
             label="술은 얼마나 자주 마시나요?"
             options={DRINK_OPTIONS}
-            value={drink}
-            onChange={setDrink}
+            value={form.drink}
+            onChange={(drink) => update({ drink })}
             columns={3}
             level={2}
             tone="white"
@@ -270,8 +264,8 @@ export default function SurveyScreen() {
           <PillGroup
             label="담배를 피우시나요?"
             options={SMOKING_OPTIONS}
-            value={smoking}
-            onChange={setSmoking}
+            value={form.smoking}
+            onChange={(smoking) => update({ smoking })}
             columns={4}
             level={3}
             tone="white"
@@ -279,8 +273,8 @@ export default function SurveyScreen() {
           <PillGroup
             label="평소 생활 리듬은 어떤가요?"
             options={LIFE_RHYTHM_OPTIONS}
-            value={lifeRhythm}
-            onChange={setLifeRhythm}
+            value={form.lifeRhythm}
+            onChange={(lifeRhythm) => update({ lifeRhythm })}
             columns={2}
             level={1}
             tone="white"
@@ -288,8 +282,8 @@ export default function SurveyScreen() {
           <PillGroup
             label="평소 사람들과 얼마나 자주 교류하나요?"
             options={SOCIAL_FREQUENCY_OPTIONS}
-            value={socialFrequency}
-            onChange={setSocialFrequency}
+            value={form.socialFrequency}
+            onChange={(socialFrequency) => update({ socialFrequency })}
             columns={2}
             level={1}
             tone="white"
@@ -302,8 +296,8 @@ export default function SurveyScreen() {
                 <LikertCard
                   key={statement}
                   statement={statement}
-                  value={mood[statement] ?? null}
-                  onChange={(v) => setMood((prev) => ({ ...prev, [statement]: v }))}
+                  value={form.mood[statement] ?? null}
+                  onChange={(v) => update({ mood: { ...form.mood, [statement]: v } })}
                 />
               ))}
             </View>

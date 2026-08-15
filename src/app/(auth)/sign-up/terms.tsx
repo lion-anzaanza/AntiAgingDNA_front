@@ -1,5 +1,4 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StepHeader } from '@/components/ui/step-header';
 import { scale } from '@/lib/scale';
+import { useSignUpForm } from '@/lib/sign-up-form';
 
 const TERMS = [
   { key: 'service', label: '[필수] 서비스 이용약관' },
@@ -18,22 +18,18 @@ const TERMS = [
 type TermKey = (typeof TERMS)[number]['key'];
 
 export default function TermsScreen() {
-  const [agreed, setAgreed] = useState<Record<TermKey, boolean>>({
-    service: false,
-    sensitive: false,
-    marketing: false,
-    age: false,
-  });
+  const { form, update } = useSignUpForm();
+  const agreed = form.agreed;
 
   const allAgreed = TERMS.every((term) => agreed[term.key]);
 
   function toggleAll() {
     const next = !allAgreed;
-    setAgreed({ service: next, sensitive: next, marketing: next, age: next });
+    update({ agreed: Object.fromEntries(TERMS.map((term) => [term.key, next])) });
   }
 
   function toggle(key: TermKey) {
-    setAgreed((prev) => ({ ...prev, [key]: !prev[key] }));
+    update({ agreed: { ...agreed, [key]: !agreed[key] } });
   }
 
   return (

@@ -358,12 +358,16 @@ Waiting on a decision — do not resolve these unilaterally:
 
 Known and deliberately deferred:
 
-- **No input validation anywhere.** Password mismatch, malformed email and
-  impossible dates all pass. None of the form state is lifted or persisted
-  either, so 약관 동의 submits nothing — validation should land together with
-  whatever form/state design comes next, not before it. Note the rules cannot be
-  written yet regardless: the API documents no constraint on password, nickname
-  or the identifier (backlog 19).
+- **No input validation anywhere.** Password mismatch and impossible dates all
+  pass. The rules cannot be written yet regardless: the API documents no
+  constraint on password, nickname or the identifier (backlog 19).
+- **The signup draft is lifted but not submitted.** `src/lib/sign-up-form.tsx`
+  holds all three steps' answers, mounted by `(auth)/sign-up/_layout.tsx` so the
+  draft dies when the user leaves the flow. It deliberately stops short of
+  building a `SignUpRequest`: the sensitivity sliders' enum boundaries are the
+  server's to define and the identifier field is unsettled (backlog 2, 6, 18).
+  Values are stored exactly as collected — Korean labels, 0–10 positions,
+  년/월/일 as separate strings.
 - **Nothing can show an error.** `TextInputField` has no error prop, Figma's
   `TextInput` has only 입력 전 / 입력 후 / 비밀번호 variants, and the 로그인 screen
   has no space for a failure message. So even a well-specified error response

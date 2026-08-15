@@ -70,8 +70,9 @@ npx expo lint
   [backend-backlog.md](docs/backend-backlog.md)에 정리돼 있습니다.
 - 인증 없음. 로그인 버튼은 아무것도 하지 않고, 약관 동의는 그냥 탭으로 넘어갑니다.
 - 입력 검증 없음. 비밀번호 불일치·잘못된 이메일·불가능한 날짜가 모두 통과합니다.
-- 폼 상태가 화면 밖으로 나가지 않습니다. 입력값은 화면 이동 시 사라지고,
-  약관 동의 화면이 서버로 보내는 데이터도 없습니다.
+- 회원가입 입력값은 이제 3단계에 걸쳐 **유지됩니다** (`lib/sign-up-form.tsx`).
+  다만 아직 서버로 보내지는 않습니다 — `SignUpRequest`로 변환하려면 백로그의
+  2·6·18번이 먼저 정해져야 합니다.
 
 ## 디렉터리 구조
 
@@ -88,6 +89,7 @@ src/
     scale.ts           Figma 220pt 좌표 → 실기기 dp 변환
     design.ts          그림자·그라디언트 등 Figma 원시값
     motion.ts          오브·DNA 모션 튜닝값 (Figma 기준 아님 — 기기에서 조정)
+    sign-up-form.tsx   회원가입 3단계 공용 입력 상태 (Context)
   global.css           NativeWind 진입점 (_layout.tsx 에서 1회 import)
   constants/, hooks/   템플릿 유틸
 ```
