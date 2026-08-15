@@ -155,6 +155,28 @@ arrow. Light is the only place that weight is used so far.
 8pt line box. Same `#E9F0FF` badge. `Select0To10_History` (`603:1849`, 184×55)
 is the read-only twin and is **not built yet**.
 
+## BottomBar
+
+`457:820` — `BottomBar0`–`BottomBar4` (`496:1958`, `1960`, `1961`, `1959`,
+`1962`). The same 220×41 white bar five times; **only the icon changes**, the
+label stays Regular 7 `#B4B2A8` on a 9pt line box in every variant.
+`BottomBar0` is the all-inactive baseline, and each other variant overlays one
+active icon — which is how the eight assets in `assets/images/tabs/` were told
+apart. `BottomBar1`/`2`/`4` also leave the *active* 개선책 icon visible on top of
+the inactive one; only `BottomBar0` does not (see the slip list in AGENTS.md).
+
+| Tab | Inactive | Active | Size | Top |
+|---|---|---|---|---|
+| 홈 | image 1099 | image 1107 | 25 | 5 |
+| 오늘의 일지 | image 1100 | image 1106 | 28 | 3 |
+| 개선책 | image 1103 | image 1101 | 26 | 4 |
+| MY | image 1102 | image 1105 | 28 | 3 |
+
+Figma centres the four columns at 31.5 / 83.5 / 135.5 / 187.5 rather than even
+quarters of 220; the code lays them out evenly. The active 개선책 icon is also
+stylistically odd — a dark bulb-and-gear where the other three are the blue
+violet gradient.
+
 ## 홈 components
 
 `DNAKind` (`603:1922`) — 30×11, radius 3, hairline shadow

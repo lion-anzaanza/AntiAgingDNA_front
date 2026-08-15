@@ -193,6 +193,34 @@ Routes register themselves from the filesystem — `(auth)/_layout.tsx` declares
 no `<Stack.Screen>` at all and its five routes work. The explicit list in the
 root layout exists only to pin the anchor described above.
 
+### The tab bar is the headless API, and it fights you on layout
+
+Figma's `BottomBar` is a custom design, so `(tabs)/_layout.tsx` uses
+`Tabs`/`TabSlot`/`TabList`/`TabTrigger` from **`expo-router/ui`** rather than
+`NativeTabs`. Note that in 57.x `Tabs` from the root export is deprecated in
+favour of `expo-router/js-tabs`, and neither is what you want here.
+
+Unlike `<Stack>`, these routes do **not** register from the filesystem — a
+`TabTrigger` inside `TabList` is what declares one. So 개선책 and MY, which have
+no screens yet, are rendered as bare `BottomBarButton`s: `parseTriggersFromChildren`
+ignores any child that is not a `TabTrigger`, so they cost nothing and simply do
+not navigate. `(tabs)/explore.tsx` likewise has no trigger and is no longer a tab.
+
+Two layout traps, both of which produced a visibly broken bar:
+
+- **`<TabList asChild>` hands its child `flexDirection: 'row'`.** `BottomBar`
+  therefore *is* the row. An inner wrapper `View` gets no flex, collapses to
+  zero width, and stacks all four tabs on top of each other.
+- **`TabTrigger` hands its child a hardcoded `{flexDirection:'row',
+  justifyContent:'space-between'}`.** `BottomBarButton` composes its own layout
+  *after* the incoming style — the reverse of the usual order — because letting
+  that win turns the column on its side and shoves the icon to the left edge.
+  Only the two triggered tabs broke, which is what pointed at the cause.
+
+`asChild` on `TabList` is understood by trigger discovery (it unwraps exactly
+one extra layer), so nesting the triggers inside `BottomBar` still registers
+the routes.
+
 ## Open items
 
 `npx tsc --noEmit` and `npx expo lint` both pass. Keep them that way.
@@ -285,10 +313,9 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 *beside* the frame rather than inside it, and it reuses the login screen's
 `dna-nice.png`.
 
-- **`BottomBar` is still the gap**, and it is now the obvious next job: 홈 shows
-  the template tab bar underneath the Figma design, and 일지 has none at all.
-  Doing it means replacing `app-tabs.tsx` and pulling `BottomBar0`–`4`, since
-  each variant carries the active icon for one tab.
+- **The tab bar is built** (`ui/bottom-bar.tsx`) and both screens now sit inside
+  it. 개선책 and MY are drawn but inert — they have no screens. `app-tabs.tsx`
+  and `app-tabs.web.tsx` are now unused; left in place as template leftovers.
 - The three remaining 홈 pieces are decorative: two 1×1 glow dots on the CTA
   card and the three sparkles inside `NiceGene` itself (the card-level three
   are drawn). None are legible at device size.
@@ -296,5 +323,5 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
   All are reproduced verbatim where they appear (홈 orb card says "Life DAN",
   the 일지 banner says "LifeDAN", the 홈 CTA says "LifeDNA"). Worth a decision.
 
-Next planned work: `BottomBar` and the tab shell, then the remaining 일지
-screens, then 05_개선책.
+Next planned work: the remaining 일지 screens (메인 · 캘린더 · 상세보기), then
+05_개선책 and 06_마이페이지 — which are also what the two dead tabs are waiting on.

@@ -41,22 +41,23 @@ npx expo lint
 | `(auth)/sign-up/survey` | STEP 2 · 초기 진단 |
 | `(auth)/sign-up/terms` | STEP 3 · 약관 동의 |
 | `(tabs)/home` | 홈 · 메인 ※※ |
-| `journal/today` | 일지 · 오늘의 기록 ※※ |
+| `(tabs)/journal` | 일지 · 오늘의 기록 ※※ |
 
 ※ 회원가입 인트로는 Figma에서 `hidden` 처리된 폐기 초안(`457:738`)을 옮긴 것이라,
 로그인과 다른 구형 DNA 아이콘을 씁니다. 손대기 전 AGENTS.md의 미해결 항목을 보세요.
 
-※※ 두 화면 모두 **Figma의 하단 탭 바(BottomBar)가 없습니다.** 홈에는 Expo 템플릿
-탭 바가 그대로 보이고, 일지는 스택 화면이라 아예 없습니다. BottomBar는 탭 셸
-구조와 함께 만들어야 해서 미착수입니다 — AGENTS.md 참고.
+※※ 두 화면은 Figma의 하단 탭 바 안에 들어 있습니다. 탭은 4개(홈 · 오늘의 일지 ·
+개선책 · MY)지만 **화면이 있는 건 앞의 둘뿐**이고, 개선책·MY는 Figma 그대로
+보이기만 하고 눌러도 아무 일도 없습니다.
 
-홈의 "오늘 기록하기 →"가 일지로 연결됩니다. 두 화면 다 데이터 계층이 없어서
+홈의 "오늘 기록하기 →"가 일지 탭으로 넘어갑니다. 두 화면 다 데이터 계층이 없어서
 숫자·문구는 Figma에 있는 값을 그대로 박아둔 상태입니다.
 
 **아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
 
-- `(tabs)/explore` — "Welcome to Expo" 기본 화면. `(tabs)/home`은 이제 Figma
-  홈 화면이지만, 두 화면을 감싸는 탭 바(`app-tabs.tsx`)는 아직 템플릿입니다.
+- `(tabs)/explore` — "Welcome to Expo" 기본 화면. 이제 탭 바에 없지만
+  `/explore`로는 여전히 열립니다. `components/app-tabs*.tsx`도 더는 쓰이지
+  않습니다 (Figma 탭 바인 `ui/bottom-bar.tsx`가 대신합니다).
 - `components/` 중 `themed-*`, `external-link`, `hint-row`, `web-badge`,
   `animated-icon*`, `app-tabs*`, `ui/collapsible` — 위 탭 화면들이 쓰는
   템플릿 코드.
@@ -76,7 +77,7 @@ src/
   app/                 Expo Router 라우트 (파일 = 경로)
     index.tsx          "/" → 로그인으로 리다이렉트
     (auth)/            가입 플로우 — 구현 완료
-    (tabs)/            가입 이후 앱 — 템플릿 상태
+    (tabs)/            가입 이후 앱 — 홈/일지 구현, 탭 바는 Figma BottomBar
     _layout.tsx        폰트 로드 + global.css + 스택 앵커
   components/ui/       Figma 디자인 시스템 컴포넌트 (collapsible 은 템플릿)
   components/          템플릿 잔여 컴포넌트
@@ -118,6 +119,7 @@ src/
 | `date-input-row` | 생년월일 | 년/월/일 3분할 입력 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
+| `bottom-bar` | BottomBar0~4 | 하단 탭 바 (활성 시 아이콘만 바뀜) |
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
 | `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |
