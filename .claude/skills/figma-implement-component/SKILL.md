@@ -111,6 +111,8 @@ Figma Plugin API에서는 Pretendard를 못 불러오지만(→ `figma-component
 | `FeelSelect` | `feel-select.tsx` | `SelectFeel5` / `SelectFeel5_NeedAnswer` (5단계 컨디션) |
 | `InputTimeCard` | `input-time-card.tsx` | `InputTime_Card` |
 | `ButtonBack` | `button-back.tsx` | `ButtonBack` |
+| `DnaKind` | `dna-kind.tsx` | `DNAKind` (좋음/주의/위험/기본) |
+| `WeeklyInfoCard` | `weekly-info-card.tsx` | `LifeDNA_WeeklyInfo_Card` (+ `_Word`/`_ProgressBar`/`_ScoreBar`) |
 | `DateInputRow` | `date-input-row.tsx` | (대응 컴포넌트 없음 — 생년월일 3분할 입력 전용) |
 | `Checkbox` | `checkbox.tsx` | (대응 컴포넌트 없음 — 약관동의 체크박스) |
 | `GradientText` | `gradient-text.tsx` | (그라데이션 텍스트 범용 유틸) |

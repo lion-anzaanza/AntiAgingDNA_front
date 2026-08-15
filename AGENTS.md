@@ -119,6 +119,23 @@ was rebuilt this way; the transform values come straight out of the
 `get_design_context` output for the instance. Always verify the result
 side-by-side against Figma's own export before committing it.
 
+Three follow-ons, learned while porting 일지 and 홈:
+
+- **`get_design_context` hands you the fill URL directly.** When a node is drawn
+  from a bitmap it appears as `<img src={imgFoo}>`, and that URL is the source
+  asset, alpha intact — no `download_assets` round trip. `NiceGene` on 홈 came
+  from there. `download_assets` on the same node reported no `rawImages` at all.
+- **One bitmap can back several nodes.** The five 만족도 faces are crops of a
+  single sheet, so there is nothing per-face to export. Take the sheet and
+  replay each `<img>`'s `w`/`h`/`left`/`top` percentages against its container
+  box; `assets/images/journal/feel-*.png` were cut that way.
+- **Vector nodes have no fill to fall back on**, and their export is flattened
+  onto the canvas grey `#EAEAEA`. If the icon only ever sits on white — the 홈
+  stat icons do — mapping that flat grey to white is exact for every opaque
+  pixel and leaves only a sub-pixel fringe on the anti-aliased edge. A
+  difference matte is *not* an option: parts of the artwork are themselves near
+  the background colour and would come out semi-transparent.
+
 ## Verifying on the Android emulator
 
 Type-checking is not verification. Every UI change gets looked at on the emulator.
@@ -261,4 +278,23 @@ nothing renders it yet — 상세보기 will be the first. The assumed semantic 
 - `SelectButton*_History` (`#7786A8` / `#F7F8FA`) now exists on all five levels
   and is implemented as `state="history"`.
 
-Next planned work: the remaining 일지 screens, then 03_홈.
+### 홈 — built, and what is still missing
+
+`(tabs)/home.tsx` is 홈/메인 (`597:1466`), replacing the Expo template screen.
+The orb card is a two-page swipe; page two is `457:791`, which Figma parks
+*beside* the frame rather than inside it, and it reuses the login screen's
+`dna-nice.png`.
+
+- **`BottomBar` is still the gap**, and it is now the obvious next job: 홈 shows
+  the template tab bar underneath the Figma design, and 일지 has none at all.
+  Doing it means replacing `app-tabs.tsx` and pulling `BottomBar0`–`4`, since
+  each variant carries the active icon for one tab.
+- The three remaining 홈 pieces are decorative: two 1×1 glow dots on the CTA
+  card and the three sparkles inside `NiceGene` itself (the card-level three
+  are drawn). None are legible at device size.
+- **Figma writes the product name three ways** — LifeDNA, Life DAN, LifeDAN.
+  All are reproduced verbatim where they appear (홈 orb card says "Life DAN",
+  the 일지 banner says "LifeDAN", the 홈 CTA says "LifeDNA"). Worth a decision.
+
+Next planned work: `BottomBar` and the tab shell, then the remaining 일지
+screens, then 05_개선책.

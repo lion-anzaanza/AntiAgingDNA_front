@@ -37,6 +37,8 @@ with `get_metadata` to find its replacement.
 | `457:828` | 회원가입/2 초기 진단 | `(auth)/sign-up/survey.tsx` |
 | `457:829` | 회원가입/3 약관 동의 | `(auth)/sign-up/terms.tsx` |
 | `457:738` | (hidden draft) 시작해보기 | `(auth)/sign-up/index.tsx` |
+| `597:1466` | 홈/메인 | `(tabs)/home.tsx` |
+| `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `(tabs)/home.tsx` |
 | `480:1269` | 일지/오늘의기록(생성) | `journal/today.tsx` |
 | `480:1268` | 일지/메인 | — |
 | `480:1274` | 일지/캘린더 | — |
@@ -152,6 +154,31 @@ arrow. Light is the only place that weight is used so far.
 15pt line box, the handle shrinks from 13×12 to 10×10, and the end labels use a
 8pt line box. Same `#E9F0FF` badge. `Select0To10_History` (`603:1849`, 184×55)
 is the read-only twin and is **not built yet**.
+
+## 홈 components
+
+`DNAKind` (`603:1922`) — 30×11, radius 3, hairline shadow
+`0 0 1px rgba(132,132,132,0.25)`, Medium 6 on a 9pt line box.
+
+| Variant | Background | Text |
+|---|---|---|
+| Good | `#DCF7EF` | `#00A172` |
+| Warn | `#FCEFD8` | `#C57100` |
+| Danger | `#FFEAEB` | `#F53942` |
+| Default | `#FFFFFF` | `#7A7A7A` |
+
+`LifeDNA_WeeklyInfo_Card` (`603:1908`) — 158×61 on `#F2F2F0`, radius 10. A 19×19
+white icon chip at (7,7), ExtraBold 8 title from x 32, and the `_Word` label
+(Bold 5, same three tone colours, 좋음/주의/위험) at the right edge. Then
+`_ProgressBar` (`642:622`, 142×3 at (8,30), white track, `#3F56F6 → #8B3FF6`
+fill at 26.06% / 52.11% / 78.17% for Low/Mid/High) and seven `_ScoreBar`
+(`606:1962`, 3×16 at x 8,12,16,20,24,28,32, filled from the bottom in eighths —
+level *n* fills (n+1)/8) beside a SemiBold 5 `#7A7A7A` sentence from x 43.
+
+The 홈 stat cards, orb card and 일지 CTA are loose shapes, not components; their
+values live in `(tabs)/home.tsx`. Badge colours are their own palette, not the
+tone trio: 조금 부족 `#FBF2E1`/`#E5A64E`, 좋아요 `#E6F4EE`/`#4B9977`,
+높음 `#F9E9E8`/`#D25D53`.
 
 ## Other components
 

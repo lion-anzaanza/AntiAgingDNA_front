@@ -40,19 +40,23 @@ npx expo lint
 | `(auth)/sign-up/personal-info` | STEP 1 · 개인정보 입력 |
 | `(auth)/sign-up/survey` | STEP 2 · 초기 진단 |
 | `(auth)/sign-up/terms` | STEP 3 · 약관 동의 |
+| `(tabs)/home` | 홈 · 메인 ※※ |
 | `journal/today` | 일지 · 오늘의 기록 ※※ |
 
 ※ 회원가입 인트로는 Figma에서 `hidden` 처리된 폐기 초안(`457:738`)을 옮긴 것이라,
 로그인과 다른 구형 DNA 아이콘을 씁니다. 손대기 전 AGENTS.md의 미해결 항목을 보세요.
 
-※※ 일지 섹션 컴포넌트를 실제로 렌더해 검증하려고 만든 화면입니다. 아직 어디서도
-링크되지 않고(`/journal/today`로 직접 들어가야 합니다) 하단 탭 바도 없습니다 —
-BottomBar는 탭 셸 구조와 함께 만들어야 해서 미착수입니다. AGENTS.md 참고.
+※※ 두 화면 모두 **Figma의 하단 탭 바(BottomBar)가 없습니다.** 홈에는 Expo 템플릿
+탭 바가 그대로 보이고, 일지는 스택 화면이라 아예 없습니다. BottomBar는 탭 셸
+구조와 함께 만들어야 해서 미착수입니다 — AGENTS.md 참고.
+
+홈의 "오늘 기록하기 →"가 일지로 연결됩니다. 두 화면 다 데이터 계층이 없어서
+숫자·문구는 Figma에 있는 값을 그대로 박아둔 상태입니다.
 
 **아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
 
-- `(tabs)/home`, `(tabs)/explore` — "Welcome to Expo" 기본 화면. 약관 동의를
-  마치면 여기로 이동합니다.
+- `(tabs)/explore` — "Welcome to Expo" 기본 화면. `(tabs)/home`은 이제 Figma
+  홈 화면이지만, 두 화면을 감싸는 탭 바(`app-tabs.tsx`)는 아직 템플릿입니다.
 - `components/` 중 `themed-*`, `external-link`, `hint-row`, `web-badge`,
   `animated-icon*`, `app-tabs*`, `ui/collapsible` — 위 탭 화면들이 쓰는
   템플릿 코드.
@@ -114,6 +118,8 @@ src/
 | `date-input-row` | 생년월일 | 년/월/일 3분할 입력 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
+| `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
+| `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
 | `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |
 
 **`pill-group`과 `select-card`는 형제입니다.** Figma가 같은 알약 묶음을 카드 없는
@@ -137,6 +143,8 @@ src/
 - `personal-info.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
 - `journal/today.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
   낱개 도형이고, 알약 폭이 균등 그리드가 아니라 글자 길이에 맞춰져 있습니다
+- `(tabs)/home.tsx` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
+  아니고, 오브 카드는 절대 위치로 조립해야 하는 배치입니다
 
 ## 함께 읽을 것
 
