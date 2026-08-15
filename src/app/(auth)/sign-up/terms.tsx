@@ -34,14 +34,19 @@ export default function TermsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <View style={{ flex: 1, paddingHorizontal: scale(17), paddingTop: scale(5) }}>
-        <StepHeader stepLabel="STEP 3   약관 동의" currentStep={3} />
+      <View style={{ flex: 1, paddingHorizontal: scale(18), paddingTop: scale(5) }}>
+        <StepHeader
+          title="약관 동의"
+          backHref="/(auth)/sign-up/survey"
+          stepLabel="STEP 3   약관 동의"
+          currentStep={3}
+        />
 
         <Text
           style={{
             fontSize: scale(12),
             lineHeight: scale(15),
-            marginTop: scale(17),
+            marginTop: scale(15),
             color: '#00352C',
           }}
           className="font-pretendard-bold">
@@ -54,7 +59,7 @@ export default function TermsScreen() {
             flexDirection: 'row',
             alignItems: 'center',
             gap: scale(8),
-            marginTop: scale(23),
+            marginTop: scale(20.5),
           }}>
           <Checkbox checked={allAgreed} onPress={toggleAll} />
           <Text

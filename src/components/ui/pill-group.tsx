@@ -11,17 +11,22 @@ import {
 /**
  * The SelectItem family from Figma: a Bold label over a grid of select pills.
  * Figma insets the pills 12pt from the item's edges and sizes them so the row
- * exactly fills the remaining 162pt, which is what the tables below encode.
+ * exactly fills the rest, which is what the tables below encode.
+ *
+ * **The content column is not the same width on every screen.** 회원가입/2 places
+ * its SelectItems at x=17 w=186, but 회원가입/1 places 성별 at x=18 w=172 — so
+ * the pill width follows from the container, not from a global constant. Pass
+ * `contentWidth` when a screen departs from 186; the pills come out at Figma's
+ * width either way (186 → 75pt at 2 columns, 184 → 48pt at 3).
  */
-const CONTENT_WIDTH = 186;
+const DEFAULT_CONTENT_WIDTH = 186;
 const INNER_INSET = 12;
-const ROW_WIDTH = CONTENT_WIDTH - INNER_INSET * 2;
 const COLUMN_GAP: Record<number, number> = { 1: 0, 2: 12, 3: 8, 4: 5 };
 const ROW_GAP = 6;
 
-function pillWidth(columns: number) {
+function pillWidth(columns: number, contentWidth: number) {
   const gap = COLUMN_GAP[columns] ?? 6;
-  return (ROW_WIDTH - gap * (columns - 1)) / columns;
+  return (contentWidth - INNER_INSET * 2 - gap * (columns - 1)) / columns;
 }
 
 /**
@@ -43,6 +48,8 @@ type PillGroupProps = {
   caption?: string;
   options: string[];
   columns?: 1 | 2 | 3 | 4;
+  /** Width of the column this group sits in, when it is not Figma's usual 186. */
+  contentWidth?: number;
   level?: SelectButtonLevel;
   tone?: SelectButtonTone;
   /** Read-only replay of an earlier day's answer — see `SelectButtonState`. */
@@ -59,11 +66,12 @@ export function PillGroup(props: PillGroupProps) {
     caption,
     options,
     columns = 2,
+    contentWidth = DEFAULT_CONTENT_WIDTH,
     level = 2,
     tone = 'white',
     history = false,
   } = props;
-  const width = scale(pillWidth(columns));
+  const width = scale(pillWidth(columns, contentWidth));
   const labelStyle = LABEL_STYLE[labelTone];
 
   function isSelected(option: string) {

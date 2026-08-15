@@ -115,14 +115,14 @@ export default function SurveyScreen() {
           style={{
             fontSize: scale(12),
             lineHeight: scale(15),
-            marginTop: scale(16),
+            marginTop: scale(14),
             color: '#00352C',
           }}
           className="font-pretendard-bold">
           10가지만 답해주세요
         </Text>
         <Text
-          style={{ fontSize: scale(7), lineHeight: scale(8), marginTop: scale(6), color: '#88877F' }}
+          style={{ fontSize: scale(7), lineHeight: scale(8), marginTop: scale(3.5), color: '#88877F' }}
           className="font-pretendard">
           이 진단으로 나만의 기본 유전자가 만들어지고,{'\n'}일지 기록으로 정교해져요
         </Text>

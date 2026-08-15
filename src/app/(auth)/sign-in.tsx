@@ -22,7 +22,7 @@ export default function SignInScreen() {
           contentFit="contain"
         />
 
-        <View style={{ alignItems: 'center', marginTop: scale(4) }}>
+        <View style={{ alignItems: 'center', marginTop: scale(1.5) }}>
           <GradientText
             colors={['#4B52F6', '#BC40F6']}
             style={{ fontSize: scale(14), lineHeight: scale(15) }}
@@ -33,8 +33,8 @@ export default function SignInScreen() {
         <Text
           style={{
             fontSize: scale(7),
-            lineHeight: scale(10),
-            marginTop: scale(6),
+            lineHeight: scale(15),
+            marginTop: scale(1),
             textAlign: 'center',
             color: '#5F5E5B',
           }}
@@ -42,7 +42,7 @@ export default function SignInScreen() {
           다시 오셨네요, 반가워요!
         </Text>
 
-        <View style={{ marginTop: scale(4), gap: scale(5) }}>
+        <View style={{ marginTop: scale(1.5), gap: scale(5) }}>
           <TextInputField
             label="아이디"
             placeholder="아이디를 입력하세요"
@@ -63,11 +63,11 @@ export default function SignInScreen() {
           <Button label="로그인 →" />
         </View>
 
-        <Pressable onPress={() => router.push('/(auth)/sign-up')} style={{ marginTop: scale(7) }}>
+        <Pressable onPress={() => router.push('/(auth)/sign-up')} style={{ marginTop: scale(4.5) }}>
           <Text
             style={{
               fontSize: scale(7),
-              lineHeight: scale(10),
+              lineHeight: scale(15),
               textAlign: 'center',
               color: '#88877F',
             }}
@@ -82,9 +82,9 @@ export default function SignInScreen() {
         <Text
           style={{
             fontSize: scale(7),
-            lineHeight: scale(10),
+            lineHeight: scale(15),
             marginTop: 'auto',
-            marginBottom: scale(53),
+            marginBottom: scale(50.5),
             textAlign: 'center',
             color: '#88877F',
           }}

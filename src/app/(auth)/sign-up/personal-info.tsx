@@ -13,9 +13,9 @@ import { isPersonalInfoComplete, useSignUpForm } from '@/lib/sign-up-form';
 
 const GENDER_OPTIONS = ['남성', '여성', '비공개'];
 const JOB_OPTIONS = ['직장인', '자영업', '학생', '무직', '주부'];
-/** 직업 sits outside the SelectItem family: five 30pt pills across the full 186pt row. */
+/** 직업 sits outside the SelectItem family: five 30pt pills across the full 184pt row. */
 const JOB_GAP = 8.5;
-const JOB_PILL_WIDTH = (186 - JOB_GAP * (JOB_OPTIONS.length - 1)) / JOB_OPTIONS.length;
+const JOB_PILL_WIDTH = (184 - JOB_GAP * (JOB_OPTIONS.length - 1)) / JOB_OPTIONS.length;
 
 export default function PersonalInfoScreen() {
   const { form, update } = useSignUpForm();
@@ -25,7 +25,7 @@ export default function PersonalInfoScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: scale(17),
+          paddingHorizontal: scale(18),
           paddingTop: scale(5),
           paddingBottom: scale(24),
         }}
@@ -88,6 +88,7 @@ export default function PersonalInfoScreen() {
             value={form.gender}
             onChange={(gender) => update({ gender })}
             columns={3}
+            contentWidth={184}
             level={2}
             tone="white"
           />

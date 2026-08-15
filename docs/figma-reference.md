@@ -44,13 +44,34 @@ with `get_metadata` to find its replacement.
 | `480:1274` | 일지/캘린더 | — |
 | `480:1275` | 일지/상세보기 | — |
 
-Frames are 220×480. The status-bar mock (`PhoneHeader`) occupies the top ~38pt and
-is replaced by `SafeAreaView` in code, so screen `paddingTop` is roughly
-`figmaY - 38`. Horizontal padding is `scale(17)` on the three step screens, giving a 186pt
-content column; 로그인 and 회원가입 인트로 use `scale(18)`.
+Frames are 220 wide and 480 tall, except the scrolling ones — 회원가입/2 is 1272.
 
-The 약관 동의 screen has **no back button and no title** — `StepHeader` omits them
-when `title` is not passed.
+The status-bar mock (`PhoneHeader`) occupies the top ~38pt and is replaced by
+`SafeAreaView` in code, so screen `paddingTop` is roughly `figmaY - 38`. Note
+that a real device's top inset is far smaller than 38pt (≈13pt at 220-scale on
+the test emulator), so the whole content block sits higher than the Figma
+frame — that uniform offset is correct, and only *departures* from it are bugs.
+
+**There is no single content column — check the frame.** Measured off
+`get_metadata`:
+
+| Screen | Left | Width |
+|---|---|---|
+| 로그인/메인 | 18 | 184 |
+| 회원가입/1 개인정보 | 18 | 184 |
+| 회원가입/2 초기 진단 | **17** | **186** (button at 22, Likert cards at 25) |
+| 회원가입/3 약관 동의 | 18 | 184 |
+| 일지/메인 | **19** | 184 |
+
+Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
+184pt column overflowed the row and collapsed the 2×2 grid into one column.
+
+The step progress bar is **180pt wide**, not the content width — segments at
+0–56 / 60–118 / 121–179, fill to 56 / 119 / 180 for steps 1–3.
+
+The 약관 동의 screen **does** have a back button and a title (`약관 동의`,
+`672:1080` / `672:1081`). It did not when it was first built — Figma added them
+later, which is the usual reason to re-pull rather than trust the code.
 
 ## SelectButton — the pill family
 
@@ -75,9 +96,21 @@ levels 1–5. The white tone has only active/inactive.
 
 ## SelectItem — labelled pill groups
 
-Rendered by `src/components/ui/pill-group.tsx`. Pills are inset 12pt from the
-item's edges; the gap is chosen so they exactly fill the remaining 162pt, which is
-why the column gap varies with the column count (2 → 12, 3 → 8, 4 → 5).
+Rendered by `src/components/ui/pill-group.tsx`. The number in `SelectItem<N>` is
+the **option count, not the column count** — `SelectItem4_1` holds four options
+laid out 2×2.
+
+Pills are inset 12pt from the item's edges; the gap is chosen so they exactly
+fill the rest, which is why the column gap varies with the column count
+(2 → 12, 3 → 8, 4 → 5). The remainder is 162pt in a 186-wide item and 160 in a
+184-wide one — pass `contentWidth` when a screen departs from 186. Checked
+against Figma: 186 → 75pt pills at 2 columns, 184 → 48pt at 3.
+
+Instances are not all the same width. 회원가입/1's 성별 is a `SelectItem3_2`
+placed at 172 wide whose pills are flush to its right edge (inset 14 left, 0
+right, gap 7); the shared component renders 12/12 with gap 8, so its first pill
+lands 2pt left of Figma's. Left as-is rather than special-casing one
+hand-resized instance.
 
 | Node | Name | Size | Label | Layout |
 |---|---|---|---|---|

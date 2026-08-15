@@ -9,13 +9,18 @@ import { ButtonBack } from './button-back';
 /**
  * Figma draws the progress bar as one continuous gradient whose width covers
  * the steps completed so far, with the remaining segments left as thinner grey
- * bars. Measured against the 180pt bar: the three segments sit at 0–56, 60–118
- * and 121–179, and the fill runs to 56 / 119 / 180 for steps 1–3.
+ * bars. The three segments sit at 0–56, 60–118 and 121–179, and the fill runs
+ * to 56 / 119 / 180 for steps 1–3.
+ *
+ * The bar is **180pt wide, not the width of the content column** — the three
+ * step screens are 184 or 186 wide, so expressing these as percentages of the
+ * parent stretched the whole bar past Figma's right edge.
  */
-const FILL_RATIO = [56 / 180, 119 / 180, 1];
+const BAR_WIDTH = 180;
+const FILL_WIDTH = [56, 119, 180];
 const SEGMENTS = [
-  { left: 60 / 180, width: 58 / 180 },
-  { left: 121 / 180, width: 58 / 180 },
+  { left: 60, width: 58 },
+  { left: 121, width: 58 },
 ];
 
 type StepHeaderProps = {
@@ -32,7 +37,7 @@ type StepHeaderProps = {
 };
 
 export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHeaderProps) {
-  const fill = FILL_RATIO[currentStep - 1] ?? 0;
+  const fill = FILL_WIDTH[currentStep - 1] ?? 0;
 
   return (
     <View>
@@ -52,7 +57,7 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
         </View>
       ) : null}
 
-      <View style={{ height: scale(5), marginTop: scale(5) }}>
+      <View style={{ width: scale(BAR_WIDTH), height: scale(5), marginTop: scale(5) }}>
         <LinearGradient
           colors={[...GRADIENT_PROGRESS]}
           start={{ x: 0, y: 0.5 }}
@@ -62,7 +67,7 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
             left: 0,
             top: 0,
             height: scale(5),
-            width: `${fill * 100}%`,
+            width: scale(fill),
             borderRadius: scale(3),
           }}
         />
@@ -72,8 +77,8 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
             style={{
               position: 'absolute',
               top: scale(1),
-              left: `${segment.left * 100}%`,
-              width: `${segment.width * 100}%`,
+              left: scale(segment.left),
+              width: scale(segment.width),
               height: scale(3),
               borderRadius: scale(3),
               backgroundColor: '#D3D1C6',
