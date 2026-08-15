@@ -210,6 +210,42 @@ adb shell screenrecord --time-limit 6 --size 540x1200 /sdcard/rec.mp4
 Then measure **consecutive** frames, not every frame against the first — that
 separates continuous motion from a one-time layout settle.
 
+### 12. There is no shared content column — read the frame you are building
+
+Every screen was hand-placed, so the left inset and content width differ per
+frame (17/18/19 left, 180/184/186 wide, 홈 asymmetric at 18 left / 22 right).
+The table is in [docs/figma-reference.md](docs/figma-reference.md), and
+`get_metadata` on the frame answers it in one call.
+
+Assuming one column caused real breakage, not just a soft edge: 회원가입/2's
+수면 유형 pills are sized to fill their row, so a 186pt row in a 184pt column
+overflowed and `flexWrap` dropped the 2×2 grid to one pill per row.
+
+The same applies inside components — `SelectItem*_Card`, `SelectFeel5` and
+`InputTime_Card` are 182 wide in every instance and must carry that width rather
+than fill their parent.
+
+### 13. Compare against Figma by offset consensus, not by eye
+
+Export the frame at scale 4, screencap the emulator, then reduce both to a list
+of element positions and subtract. Every element should be off by the *same*
+amount — that constant is only the difference between Figma's 38pt `PhoneHeader`
+mock and the device's real safe-area inset (≈13pt at 220-scale here). Elements
+that disagree with their own screen's consensus are the bugs.
+
+Two traps in the arithmetic:
+
+- **The export is not always 880px wide.** Overflow (shadows, glows) pads it —
+  홈 comes back 896 with the frame at px 0..879, and 회원가입/3 at 884. Crop to
+  the frame before scaling or every measurement drifts by ~1%.
+- **Figma lays out on line boxes, not ink.** A heading's ink centre sits about
+  0.9pt below its line-box centre, so derive margins from `leading-[Npx]` and
+  use ink only to confirm.
+
+Expo Go wedges on "New update available, downloading…" often enough that a
+capture loop needs to detect that splash and relaunch — otherwise you measure
+the splash and report a broken screen.
+
 ## Verifying on the Android emulator
 
 Type-checking is not verification. Every UI change gets looked at on the emulator.
@@ -320,6 +356,16 @@ and each is listed so the next person does not "fix" the code back.
   guessed: the `image 1099` crop window lands at 0.413–0.593 of the 만족도 sheet,
   which is 보통 (0.420–0.580). The card derives the face from the condition
   instead, since both come from the same value.
+- **Centred elements on 로그인 are each centred on a different axis** — the DNA
+  icon on 112, the wordmark on 111.5, the greeting on 112, 회원가입 on 112.5 and
+  아이디·비밀번호 찾기 on 110.5, while the button is dead-centre on 110. The code
+  centres everything on 110; reproducing the scatter is not worth it.
+- **`SelectItem3_2` on 회원가입/1 is a 172-wide instance** whose pills are flush
+  to its right edge (inset 14 left, 0 right, gap 7) rather than the 12/12 the
+  rest of the family uses. `PillGroup` renders 12/12, so its first pill lands
+  2pt left of Figma's.
+- **회원가입/2's button and Likert cards break its own column** — the frame is
+  17..203 but `ButtonNextUI` sits at 22 and the `SelectItem6_Card`s at 25..207.
 
 ### The backend exists, and nothing is wired to it
 
