@@ -1,9 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { router, type Href } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { type Href } from 'expo-router';
+import { Text, View } from 'react-native';
 
-import { GRADIENT_PROGRESS, SHADOW } from '@/lib/design';
+import { GRADIENT_PROGRESS } from '@/lib/design';
 import { scale } from '@/lib/scale';
+import { ButtonBack } from './button-back';
 
 /**
  * Figma draws the progress bar as one continuous gradient whose width covers
@@ -33,35 +34,11 @@ type StepHeaderProps = {
 export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHeaderProps) {
   const fill = FILL_RATIO[currentStep - 1] ?? 0;
 
-  function handleBack() {
-    if (router.canGoBack()) {
-      router.back();
-    } else if (backHref) {
-      router.replace(backHref);
-    }
-  }
-
   return (
     <View>
       {title ? (
         <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
-          <Pressable
-            onPress={handleBack}
-            style={{
-              width: scale(14),
-              height: scale(13),
-              borderRadius: scale(3),
-              backgroundColor: '#FFFFFF',
-              boxShadow: SHADOW,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text
-              style={{ fontSize: scale(7), lineHeight: scale(10), color: '#696969' }}
-              className="font-pretendard-semibold">
-              ←
-            </Text>
-          </Pressable>
+          <ButtonBack fallbackHref={backHref} />
           <Text
             style={{
               fontSize: scale(12),
