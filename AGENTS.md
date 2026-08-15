@@ -321,9 +321,10 @@ and the enum ↔ UI mapping are in [docs/backend-api.md](docs/backend-api.md).
 
 There is no client, no token storage and no lifted form state, so wiring cannot
 begin until the questions in [docs/backend-backlog.md](docs/backend-backlog.md)
-are answered — five of them are blocking, including the shape of
-`SignUpRequest.agreements`, whether login takes an email or a username, and what
-an error response looks like.
+are answered — the blocking ones include the shape of
+`SignUpRequest.agreements`, what an error response looks like, and the fact that
+login is by 아이디 (settled) while neither the API nor the signup form has such a
+field yet.
 
 **That backlog is a living document.** When you find something the design needs
 and the API cannot do, add it there rather than working around it silently. Two

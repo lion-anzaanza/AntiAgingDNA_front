@@ -53,7 +53,14 @@ declared content type is `*/*` rather than `application/json`.
 
 `agreements` is typed only as `object`, with no properties. Its shape is unknown.
 
-`LoginRequest` — `email`, `password`. Note it is **email**, not a username.
+`LoginRequest` — `email`, `password`.
+
+**The identifier is settled and the spec has not caught up.** Login is by
+**아이디**, not email; email login was a discarded earlier idea (planning,
+2026-08-16). So `LoginRequest.email` is due to be replaced, `SignUpRequest`
+needs the same field — it currently has no way to create an 아이디 at all — and
+whether `email` stays required is still open. Items 2 and 18 in
+`backend-backlog.md`.
 
 ## Diary — `PUT /api/diaries/{date}`
 
@@ -151,5 +158,6 @@ from the reference itself.
 - 나의 LifeDNA 정보 weekly cards — no trend endpoint
 - 날씨 자동 기록 on 일지 — no field, no endpoint
 - 05_개선책 and 06_마이페이지 — nothing at all
-- Token refresh, logout, 아이디·비밀번호 찾기, email-taken check
+- Token refresh, logout, 아이디·비밀번호 찾기, duplicate-identifier check
 - Gender and occupation, which 회원가입 STEP 1 collects
+- An 아이디 field on both signup and login (see above)
