@@ -145,6 +145,16 @@ const STATS: { label: string; value: string; badge: string; bg: string; fg: stri
   },
 ];
 
+/**
+ * Two 1×1 dots on the 오늘의 일지 card, each carrying a 20pt blur and a 10pt
+ * spread — so what you see is a soft bloom about 40pt across, not a dot. Easy to
+ * dismiss by their size and then wonder why the card looks flat.
+ */
+const CTA_GLOWS = [
+  { left: 156, top: 19 },
+  { left: 175, top: 78 },
+];
+
 const BALANCE_AREAS = ['신체', '정신', '환경', '감정', '사회'];
 
 const SLEEP_SCORES: ScoreBarValue[] = [1, 2, 3, 4, 5, 6, 7];
@@ -541,9 +551,30 @@ function JournalCta() {
         height: scale(86),
         borderRadius: scale(10),
         boxShadow: SHADOW,
-        paddingTop: scale(4),
+        // Against the 86pt card: 9 · title 26 · 4.5 · caption 9 · 6.5 · button
+        // 20 · 11. The gaps are load-bearing — the card looks top-heavy if the
+        // content creeps up and leaves the slack at the bottom.
+        paddingTop: scale(9),
         paddingLeft: scale(12),
+        // Keeps the two blooms below from spilling past the rounded corners.
+        overflow: 'hidden',
       }}>
+      {CTA_GLOWS.map((glow) => (
+        <View
+          key={`${glow.left}-${glow.top}`}
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: scale(glow.left),
+            top: scale(glow.top),
+            width: scale(1),
+            height: scale(1),
+            borderRadius: scale(1),
+            backgroundColor: '#9463F8',
+            boxShadow: `0px 0px ${scale(20)}px ${scale(10)}px rgba(255, 255, 255, 0.25)`,
+          }}
+        />
+      ))}
       <Text
         style={{ fontSize: scale(10), lineHeight: scale(13), color: '#FFFFFF' }}
         className="font-pretendard-extrabold">
@@ -553,7 +584,7 @@ function JournalCta() {
         style={{
           fontSize: scale(7),
           lineHeight: scale(9),
-          marginTop: scale(2),
+          marginTop: scale(4.5),
           color: '#E7D7FF',
         }}
         className="font-pretendard-medium">
@@ -564,7 +595,7 @@ function JournalCta() {
         style={{
           width: scale(62),
           height: scale(20),
-          marginTop: scale(7),
+          marginTop: scale(6.5),
           borderRadius: scale(7),
           backgroundColor: '#FFFFFF',
           boxShadow: SHADOW,

@@ -387,9 +387,13 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 - **The tab bar is built** (`ui/bottom-bar.tsx`) and both screens now sit inside
   it. 개선책 and MY are drawn but inert — they have no screens. The template
   `app-tabs.tsx` / `app-tabs.web.tsx` it replaced are gone.
-- Two 1×1 glow dots on the CTA card are skipped; they are not legible at device
-  size. The orb's six highlights **are** all drawn — see rule 9 for why the
-  stacking order matters.
+- Everything on 홈 is drawn, including the orb's six highlights (rule 9 explains
+  why their stacking order matters) and the CTA card's two blooms. Those blooms
+  were skipped at first as "1×1, not legible" — wrong, because each carries a
+  20pt blur and a 10pt spread, so what renders is a soft patch roughly 40pt
+  across. **Judge a decoration by its shadow, not by its size.** Probing the
+  card's right edge showed Figma at 162 / 152 / 160 top-to-bottom against a flat
+  151 in the port; with the blooms it reads 162 / 153 / 162.
 - **Figma writes the product name three ways** — LifeDNA, Life DAN, LifeDAN.
   All are reproduced verbatim where they appear (홈 orb card says "Life DAN",
   the 일지 banner says "LifeDAN", the 홈 CTA says "LifeDNA"). Worth a decision.
