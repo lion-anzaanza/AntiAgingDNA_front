@@ -40,6 +40,11 @@ import { scale } from '@/lib/scale';
 const CARD_WIDTH = 180;
 const CONTENT_INSET = 18;
 /**
+ * 홈 is inset asymmetrically: every section starts at 18 and is 180 wide, so the
+ * right margin is 22. Padding both sides by 18 made each card 4pt too wide.
+ */
+const CONTENT_INSET_RIGHT = 220 - CONTENT_INSET - CARD_WIDTH;
+/**
  * `pagingEnabled` snaps by the scroll view's own width, so each page is a
  * full-width wrapper holding the 180pt card — otherwise the next card peeks in.
  * Fixed at module scope for the same reason `scale()` is: the app is portrait.
@@ -170,7 +175,12 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView contentContainerStyle={{ paddingBottom: scale(24) }}>
-        <View style={{ paddingHorizontal: scale(CONTENT_INSET), paddingTop: scale(10) }}>
+        <View
+          style={{
+            paddingLeft: scale(CONTENT_INSET),
+            paddingRight: scale(CONTENT_INSET_RIGHT),
+            paddingTop: scale(10),
+          }}>
           <View style={{ flexDirection: 'row' }}>
             <Text style={GREETING} className="font-pretendard-extrabold">
               안녕하세요,{' '}
@@ -200,7 +210,10 @@ export default function HomeScreen() {
           scrollEventThrottle={16}
           style={{ marginTop: scale(9) }}>
           {ORB_PAGES.map(({ key, ...orbPage }) => (
-            <View key={key} style={{ width: PAGE_WIDTH, alignItems: 'center' }}>
+            // The page is the full window so paging snaps, but the card itself
+            // lines up with every other section at CONTENT_INSET — centring the
+            // 180pt card in a 220pt page would push it 2pt right of Figma.
+            <View key={key} style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
               <OrbCard {...orbPage} page={page} pageCount={ORB_PAGES.length} />
             </View>
           ))}
@@ -211,14 +224,19 @@ export default function HomeScreen() {
             flexDirection: 'row',
             gap: scale(6),
             marginTop: scale(16),
-            paddingHorizontal: scale(CONTENT_INSET),
+            paddingLeft: scale(CONTENT_INSET),
+            paddingRight: scale(CONTENT_INSET_RIGHT),
           }}>
           {STATS.map((stat) => (
             <StatCard key={stat.label} {...stat} />
           ))}
         </View>
 
-        <View style={{ paddingHorizontal: scale(CONTENT_INSET) }}>
+        <View
+          style={{
+            paddingLeft: scale(CONTENT_INSET),
+            paddingRight: scale(CONTENT_INSET_RIGHT),
+          }}>
           <SectionHeading>오늘의 일지</SectionHeading>
           <JournalCta />
 
