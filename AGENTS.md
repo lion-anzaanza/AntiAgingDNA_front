@@ -314,6 +314,23 @@ and each is listed so the next person does not "fix" the code back.
 - **`BottomBar2` stacks two 개선책 icons** (a dark bulb-and-gear over the plain
   grey bulb). Presumably a layering slip.
 
+### The backend exists, and nothing is wired to it
+
+`https://antiaging-dna.anzaanza.cloud` is live — `GET /health` answers. Its spec
+and the enum ↔ UI mapping are in [docs/backend-api.md](docs/backend-api.md).
+
+There is no client, no token storage and no lifted form state, so wiring cannot
+begin until the questions in [docs/backend-backlog.md](docs/backend-backlog.md)
+are answered — five of them are blocking, including the shape of
+`SignUpRequest.agreements`, whether login takes an email or a username, and what
+an error response looks like.
+
+**That backlog is a living document.** When you find something the design needs
+and the API cannot do, add it there rather than working around it silently. Two
+disagreements are already recorded that would otherwise be papered over in code:
+the diagnosis sensitivity sliders are 0–10 while the API wants four levels, and
+`stressLevel` starts at 1 while the slider starts at 0.
+
 Waiting on a decision — do not resolve these unilaterally:
 
 - **마케팅 정보 수신 is marked `[필수]` and gates signup** (`terms.tsx`). Figma

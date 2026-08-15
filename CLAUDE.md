@@ -21,9 +21,17 @@ Expo / React Native app. The UI is ported from Figma.
 | What exists, what is still template, what has no logic | README below |
 | How to work here, traps, open items | AGENTS below |
 | Figma node IDs and measurements | `docs/figma-reference.md` |
+| API endpoints, schemas, enum ↔ UI mapping | `docs/backend-api.md` |
+| Open questions for the backend team | `docs/backend-backlog.md` |
 
-`docs/figma-reference.md` is a **cache**, not truth — node IDs have already
-churned once. Confirm anything you depend on against Figma itself.
+**Keep `docs/backend-backlog.md` current.** Anything the design needs and the
+API cannot do belongs there the moment you notice it — that document is how the
+backend team hears about it.
+
+`docs/figma-reference.md` and `docs/backend-api.md` are both **caches**, not
+truth. Node IDs have already churned once; the API spec is regenerated with
+`curl -s https://antiaging-dna.anzaanza.cloud/v3/api-docs`. Confirm anything you
+depend on against Figma or the server itself.
 
 @README.md
 

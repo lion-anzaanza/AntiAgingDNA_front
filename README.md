@@ -64,6 +64,10 @@ npx expo lint
 
 **동작하지 않는 것** (UI만 있고 로직이 없습니다)
 
+- **백엔드에 아무것도 연결돼 있지 않습니다.** API는 살아 있고
+  ([backend-api.md](docs/backend-api.md)) 스펙도 정리해뒀지만, HTTP 클라이언트도
+  토큰 저장도 없습니다. 연동 전에 확인이 필요한 것들은
+  [backend-backlog.md](docs/backend-backlog.md)에 정리돼 있습니다.
 - 인증 없음. 로그인 버튼은 아무것도 하지 않고, 약관 동의는 그냥 탭으로 넘어갑니다.
 - 입력 검증 없음. 비밀번호 불일치·잘못된 이메일·불가능한 날짜가 모두 통과합니다.
 - 폼 상태가 화면 밖으로 나가지 않습니다. 입력값은 화면 이동 시 사라지고,
@@ -156,6 +160,10 @@ src/
   꼭 확인해주세요. 미해결 항목과 판단이 필요한 사안도 여기 정리돼 있습니다.
 - **[docs/figma-reference.md](docs/figma-reference.md)** — Figma 노드 ID와
   컴포넌트 치수 캐시.
+- **[docs/backend-api.md](docs/backend-api.md)** — 백엔드 API 레퍼런스. 엔드포인트,
+  스키마, 그리고 **enum ↔ 화면 선택지 대응표**. 연동할 때 여기부터 보세요.
+- **[docs/backend-backlog.md](docs/backend-backlog.md)** — 백엔드에 요청·확인할
+  것들. 디자인에는 있는데 API가 못 하는 게 보이면 **즉시 여기 적어주세요.**
 
 Figma가 항상 기준이며 아직 변경되고 있습니다. 화면을 고치기 전에 반드시 최신
 상태를 다시 확인해주세요.
