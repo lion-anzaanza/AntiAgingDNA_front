@@ -135,7 +135,14 @@ const STATS: { label: string; value: string; badge: string; bg: string; fg: stri
   },
   {
     label: '수분',
-    value: '1.6L',
+    /*
+     * The band, not a litre figure. `waterIntake` is a cup range on the wire
+     * (`THREE_TO_FIVE`), and there is no cup→mL factor anywhere in the data —
+     * inventing one to print `1.6L` would be exactly the kind of made-up
+     * constant this project refuses elsewhere. Backlog item 26; the backend
+     * settled it this way on 2026-08-17.
+     */
+    value: '3~5잔',
     badge: '좋아요',
     bg: '#E6F4EE',
     fg: '#4B9977',

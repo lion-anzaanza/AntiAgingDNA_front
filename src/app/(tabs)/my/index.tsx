@@ -135,7 +135,7 @@ export default function MyPageScreen() {
         </View>
 
         <View style={{ marginTop: scale(4), ...COLUMN }}>
-          <ProfileCard nickname={user?.nickname ?? ''} />
+          <ProfileCard nickname={user?.nickname ?? ''} streakDays={user?.streakDays ?? 0} />
         </View>
 
         <View style={{ marginTop: scale(10), ...COLUMN }}>
@@ -197,7 +197,7 @@ export default function MyPageScreen() {
   );
 }
 
-function ProfileCard({ nickname }: { nickname: string }) {
+function ProfileCard({ nickname, streakDays }: { nickname: string; streakDays: number }) {
   return (
     <View
       style={{
@@ -262,7 +262,7 @@ function ProfileCard({ nickname }: { nickname: string }) {
           colors={[...GRADIENT_BRAND]}
           style={{ fontSize: scale(5), lineHeight: scale(9) }}
           className="font-pretendard">
-          연속 기록 82일째
+          연속 기록 {streakDays}일째
         </GradientText>
       </View>
     </View>
