@@ -8,7 +8,11 @@
 | 무엇이 바뀌었나 | 어떻게 나가나 | 팀원이 받는 법 | 걸리는 시간 |
 |---|---|---|---|
 | JS·화면만 | EAS Update (OTA) | 앱 재시작 | 수십 초 |
-| 네이티브 의존성·`app.json` | EAS Build → TestFlight | TestFlight에서 새 버전 설치 | 10~20분 |
+| 네이티브 의존성·`app.json` | EAS Build | iOS는 TestFlight, Android는 릴리스의 `.apk` | 10~20분 |
+
+iOS와 Android **둘 다** 빌드하고 둘 다 업데이트를 받습니다. 액션의 `platform`은
+빌드뿐 아니라 **업데이트 범위까지** 제한해서, `ios`로 두면 APK를 받은 사람은
+빌드에 박힌 JS에 갇힙니다 — 실제로 한동안 그 상태였습니다.
 
 그 판단은 **fingerprint**가 합니다 — 네이티브 입력을 해시해서 기존 빌드와
 호환되면 JS만 밀어넣습니다. `app.json`의 `runtimeVersion.policy: "fingerprint"`가
@@ -39,6 +43,10 @@
 
 빌드는 여전히 1개, 업데이트만 그 위에 쌓입니다.
 
+**2026-08-17 추가 검증** — 양 플랫폼 구성으로 바꾼 뒤 `v1.0.0-4`에서:
+iOS 빌드 4 → TestFlight 제출 `finished`, Android APK 118MB가 릴리스에 첨부,
+업데이트는 `Platforms: ios`와 `Platforms: android` 양쪽으로 발행됨.
+
 ## GitHub Releases
 
 **네이티브 빌드가 나갈 때만** 릴리스가 만들어집니다 — 태그는
@@ -59,9 +67,19 @@ OTA push가 이미 있는 태그를 다시 만들려다 실패했습니다. 태�
 Actions 분은 무료입니다. 실패한 빌드를 가리키는 릴리스는 "이게 나갔다"는
 릴리스의 의미를 망칩니다.
 
-`.ipa`는 첨부하지 않습니다. iOS는 서명·프로비저닝 때문에 파일만 받아서는 설치할
-수 없어서(그래서 TestFlight를 씁니다) 용량만 차지합니다. 아카이브는 EAS에
-남아 있고 링크로 닿습니다.
+**Android APK는 첨부하고, iOS `.ipa`는 첨부하지 않습니다.** APK는 받아서 바로
+설치되지만(등록 절차 없음 — 실기기 설치까지 확인했습니다), production `.ipa`는
+App Store 서명이라 파일만으로는 설치할 수 없습니다. 그래서 TestFlight가 있는
+것이고, 첨부해봐야 열리지 않는 300MB가 됩니다. iOS 아카이브는 EAS에 남아 있고
+본문 링크로 닿습니다.
+
+APK가 설치 가능하려면 production 프로파일의 `android.buildType`이 `apk`여야
+합니다. EAS 기본값은 `aab`인데, 그건 Google Play가 받는 형식이라 폰에 직접
+설치되지 않습니다.
+
+`auto-submit-builds`는 쓰지 않습니다 — 플랫폼별로 끌 수 없는 전역 옵션이라
+Android를 Play에 올리려다 실패합니다(자격증명 없음). iOS 제출은 명시 단계로
+분리했고, 릴리스와 같은 태그 검사로 막아 같은 빌드가 두 번 제출되지 않습니다.
 
 > 저장소의 기본 워크플로 토큰 권한이 `read`라, `deploy` 잡에만
 > `permissions: contents: write`를 줬습니다. 이게 없으면 릴리스 생성이 403으로
