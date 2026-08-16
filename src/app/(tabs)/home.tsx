@@ -23,6 +23,7 @@ import {
   type ArtworkFrame,
 } from '@/components/ui/living-artwork';
 import { WeeklyInfoCard, type ScoreBarValue } from '@/components/ui/weekly-info-card';
+import { useAuth } from '@/lib/auth';
 import { SHADOW } from '@/lib/design';
 import { MOTION } from '@/lib/motion';
 import { scale } from '@/lib/scale';
@@ -166,6 +167,7 @@ const SLEEP_SCORES: ScoreBarValue[] = [1, 2, 3, 4, 5, 6, 7];
 const WATER_SCORES: ScoreBarValue[] = [4, 2, 5, 6, 3, 2, 7];
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const [page, setPage] = useState(0);
 
   function handlePageScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -189,7 +191,7 @@ export default function HomeScreen() {
               colors={['#4B4CF5', '#8E56FF']}
               style={GREETING}
               className="font-pretendard-black">
-              안자
+              {user?.nickname ?? ''}
             </GradientText>
             <Text style={GREETING} className="font-pretendard-extrabold">
               님!

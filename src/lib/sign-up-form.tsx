@@ -10,14 +10,13 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
  * the behaviour we want for a half-finished signup.
  *
  * **Values are stored exactly as the screens collect them** — Korean option
- * labels, 0–10 slider positions, `년/월/일` as separate strings. Converting to
- * `SignUpRequest` is deliberately *not* done here: the enum boundaries for the
- * three sensitivity sliders belong to the server's scoring logic, and the
- * identifier field is still unsettled. See `docs/backend-backlog.md` items 2,
- * 6 and 18. Add the mapping when those are answered, not before.
+ * labels, `년/월/일` as separate strings. `lib/sign-up-request.ts` turns them
+ * into the wire format; keeping the two apart means the screens never have to
+ * know an enum constant.
  */
 export type SignUpForm = {
   // STEP 1 · 개인정보
+  loginId: string;
   nickname: string;
   email: string;
   password: string;
@@ -31,9 +30,13 @@ export type SignUpForm = {
   // STEP 2 · 초기 진단
   sleepType: string | null;
   sleepQuality: string[];
-  sugarSensitivity: number;
-  caffeineSensitivity: number;
-  stressSensitivity: number;
+  /**
+   * Four levels, not the mock's 0–10 slider: 기획 settled on a 4-point scale and
+   * the API only ever had `NONE`/`SLIGHT`/`MODERATE`/`HIGH` (backlog item 6).
+   */
+  sugarSensitivity: string | null;
+  caffeineSensitivity: string | null;
+  stressSensitivity: string | null;
   exercise: string | null;
   workType: string[];
   drink: string | null;
@@ -48,6 +51,7 @@ export type SignUpForm = {
 };
 
 const EMPTY_FORM: SignUpForm = {
+  loginId: '',
   nickname: '',
   email: '',
   password: '',
@@ -60,11 +64,9 @@ const EMPTY_FORM: SignUpForm = {
 
   sleepType: null,
   sleepQuality: [],
-  // 0 is the slider's resting position, not an answer — see the "sliders cannot
-  // tell 0 from unanswered" item in AGENTS.md.
-  sugarSensitivity: 0,
-  caffeineSensitivity: 0,
-  stressSensitivity: 0,
+  sugarSensitivity: null,
+  caffeineSensitivity: null,
+  stressSensitivity: null,
   exercise: null,
   workType: [],
   drink: null,
@@ -121,6 +123,9 @@ export function useSignUpForm() {
  */
 export function isPersonalInfoComplete(form: SignUpForm): boolean {
   return (
+    // 4–32 characters of letters, digits and underscore — the server's rule, and
+    // still provisional (backlog item 2).
+    /^[A-Za-z0-9_]{4,32}$/.test(form.loginId.trim()) &&
     form.nickname.trim().length > 0 &&
     isEmailish(form.email) &&
     form.password.length > 0 &&
@@ -141,17 +146,18 @@ export function isDiagnosisComplete(form: SignUpForm): boolean {
     form.exercise !== null &&
     form.drink !== null &&
     form.smoking !== null &&
-    form.lifeRhythm !== null
-    // The three sensitivity sliders are required by the API but deliberately
-    // not gated: a slider at 0 is indistinguishable from an untouched one, so
-    // any check here would either block a legitimate 0 or pass an unanswered
-    // question. Blocked on the unanswered-slider design (see AGENTS.md).
+    form.lifeRhythm !== null &&
+    // Now gateable: as four pills these are genuinely unanswered until picked,
+    // which the 0–10 slider could never express.
+    form.sugarSensitivity !== null &&
+    form.caffeineSensitivity !== null &&
+    form.stressSensitivity !== null
     // socialContactLevel and WHO-5 are optional in the spec.
   );
 }
 
 /** Not RFC-correct on purpose — just enough to catch a typo before submitting. */
-function isEmailish(value: string): boolean {
+export function isEmailish(value: string): boolean {
   const trimmed = value.trim();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
 }

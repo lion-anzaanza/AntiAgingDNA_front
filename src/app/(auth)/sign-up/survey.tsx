@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { LikertCard } from '@/components/ui/likert-card';
 import { PillGroup } from '@/components/ui/pill-group';
-import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { StepHeader } from '@/components/ui/step-header';
 import { GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -33,6 +32,14 @@ const DRINK_OPTIONS = ['월 1회 이하', '월 2 ~ 4회', '주 2 ~ 3회', '주 4
 const SMOKING_OPTIONS = ['비흡연', '과거 흡연', '현재 가끔', '현재 매일'];
 const LIFE_RHYTHM_OPTIONS = ['매우 규칙적이에요', '대체로 규칙적이에요', '다소 불규칙해요', '매우 불규칙해요'];
 const SOCIAL_FREQUENCY_OPTIONS = ['거의 안 함', '주 1~2회', '주 3~4회', '거의 매일'];
+/**
+ * Figma still draws these as 0–10 sliders, but 기획 settled on a 4-point scale
+ * and the API only ever had four levels (backlog item 6) — so the mock is the
+ * out-of-date side here. As pills they also stop being ambiguous: an untouched
+ * slider reported 0, which was indistinguishable from a real 0.
+ */
+const SENSITIVITY_OPTIONS = ['전혀 아님', '약간', '보통', '매우'];
+
 const MOOD_STATEMENTS = [
   '밝고 기분이 좋았다',
   '차분하고 편안했다',
@@ -232,12 +239,33 @@ export default function SurveyScreen() {
             </View>
           </View>
 
-          <Slider0To10 label="당분에 얼마나 민감한가요?" value={form.sugarSensitivity}
-            onChange={(sugarSensitivity) => update({ sugarSensitivity })} />
-          <Slider0To10 label="카페인에 얼마나 민감한가요?" value={form.caffeineSensitivity}
-            onChange={(caffeineSensitivity) => update({ caffeineSensitivity })} />
-          <Slider0To10 label="스트레스에 얼마나 민감한가요?" value={form.stressSensitivity}
-            onChange={(stressSensitivity) => update({ stressSensitivity })} />
+          <PillGroup
+            label="당분에 얼마나 민감한가요?"
+            options={SENSITIVITY_OPTIONS}
+            value={form.sugarSensitivity}
+            onChange={(sugarSensitivity) => update({ sugarSensitivity })}
+            columns={4}
+            level={3}
+            tone="white"
+          />
+          <PillGroup
+            label="카페인에 얼마나 민감한가요?"
+            options={SENSITIVITY_OPTIONS}
+            value={form.caffeineSensitivity}
+            onChange={(caffeineSensitivity) => update({ caffeineSensitivity })}
+            columns={4}
+            level={3}
+            tone="white"
+          />
+          <PillGroup
+            label="스트레스에 얼마나 민감한가요?"
+            options={SENSITIVITY_OPTIONS}
+            value={form.stressSensitivity}
+            onChange={(stressSensitivity) => update({ stressSensitivity })}
+            columns={4}
+            level={3}
+            tone="white"
+          />
 
           <View>
             <PillGroup

@@ -39,6 +39,13 @@ export default function PersonalInfoScreen() {
 
         <View style={{ marginTop: scale(23), gap: scale(7) }}>
           <TextInputField
+            label="아이디"
+            placeholder="영문·숫자·_ 4자 이상"
+            value={form.loginId}
+            onChangeText={(loginId) => update({ loginId })}
+            autoCapitalize="none"
+          />
+          <TextInputField
             label="닉네임"
             placeholder="별명을 입력해주세요"
             value={form.nickname}

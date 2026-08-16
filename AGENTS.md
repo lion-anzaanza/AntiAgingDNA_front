@@ -381,34 +381,51 @@ and each is listed so the next person does not "fix" the code back.
 - **회원가입/2's button and Likert cards break its own column** — the frame is
   17..203 but `ButtonNextUI` sits at 22 and the `SelectItem6_Card`s at 25..207.
 
-### The backend exists, and nothing is wired to it
+### The backend is wired for auth
 
-`https://antiaging-dna.anzaanza.cloud` is live — `GET /health` answers. Its spec
-and the enum ↔ UI mapping are in [docs/backend-api.md](docs/backend-api.md).
+`https://antiaging-dna.anzaanza.cloud`. The spec and the enum ↔ UI mapping are
+in [docs/backend-api.md](docs/backend-api.md); the request list is
+[docs/backend-backlog.md](docs/backend-backlog.md), which got its first reply on
+2026-08-16 and unblocked this.
 
-There is no client, no token storage and no lifted form state, so wiring cannot
-begin until the questions in [docs/backend-backlog.md](docs/backend-backlog.md)
-are answered — the blocking ones include the shape of
-`SignUpRequest.agreements`, what an error response looks like, and the fact that
-login is by 아이디 (settled) while neither the API nor the signup form has such a
-field yet.
+- `src/lib/api.ts` — fetch wrapper. Takes the token as an argument rather than
+  reading storage, so it stays free of React. Errors are RFC 9457
+  `problem+json`; `ApiError` carries the parsed body and `messageFor` picks what
+  to show (the server's `title` is already Korean and specific).
+- `src/lib/auth.tsx` — the session. JWT in expo-secure-store, replayed against
+  `GET /api/auth/me` on launch; a token the server rejects is discarded.
+- `src/lib/sign-up-request.ts` — the only place Korean labels become enum
+  constants. Screens never see a constant; this file never sees a component.
+- The tabs are gated by `Stack.Protected` in the root layout, and `(tabs)` pins
+  its own `initialRouteName` — without it the group reopened on whichever tab
+  was last focused, so signing in dropped the user on MY.
 
-**That backlog is a living document.** When you find something the design needs
-and the API cannot do, add it there rather than working around it silently. Two
-disagreements are already recorded that would otherwise be papered over in code:
-the diagnosis sensitivity sliders are 0–10 while the API wants four levels, and
-`stressLevel` starts at 1 while the slider starts at 0.
+Verified end to end against the live server: signup from the app creates the
+account, and `GET /api/dna` comes back with the diagnosis the screens collected
+(아침형 → `MORNING`, 보통/약간/보통 → `MODERATE`/`SLIGHT`/`MODERATE`, 해당없음 →
+both work-style booleans false, optional WHO-5 omitted rather than zero-filled).
+
+**Errors have nowhere to land, so they go through `Alert`.** Figma's `TextInput`
+has no error variant and neither 로그인 nor 약관 동의 has room for a message. The
+platform dialog borrows nothing that has to be designed first; an inline
+treatment is still an open design question.
+
+Still not wired: everything that reads data. 홈, 일지 and 개선책 are all still
+Figma's numbers — `/api/scores`, `/api/diaries` and `/api/dna` are unused apart
+from the verification above, and 개선책 has no endpoints at all (backlog 15).
+
+Three things the backend's reply changed on screen, all done:
+
+- **STEP 1 has an 아이디 field** and login is by `loginId` (items 2/18). Email
+  stays required as a recovery route.
+- **The three 민감도 questions are four pills**, not 0–10 sliders (item 6):
+  기획 settled on a 4-point scale and the API only ever had four levels, so the
+  mock was the out-of-date side. That also retires the "sliders cannot tell 0
+  from unanswered" problem — the step now gates on them.
+- **마케팅 정보 수신 reads `[선택]`** and no longer blocks 가입 (item 1).
 
 Waiting on a decision — do not resolve these unilaterally:
 
-- **마케팅 정보 수신 is marked `[필수]` and gates signup** (`terms.tsx`). Figma
-  says 필수, but Korean 정보통신망법 requires advertising consent to be optional
-  and separable from signup, so a user who declines can never finish. Needs the
-  designer and whoever owns compliance; the code change is one line.
-- **Sliders cannot tell 0 from unanswered.** `useState(0)` means an untouched
-  slider reports the minimum. Fixing it needs a design for what an unanswered
-  slider looks like — Figma specifies `NoSelect` for pill groups but nothing for
-  Select0To10.
 - **Web is half-configured.** `app.json` declares ios/android, yet `.web.tsx`
   variants and `react-dom` are present while `react-native-web` is not. Either
   support web or drop the leftovers; both are product calls.

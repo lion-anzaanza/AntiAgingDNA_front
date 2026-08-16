@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ButtonBack } from '@/components/ui/button-back';
 import { GradientText } from '@/components/ui/gradient-text';
+import { useAuth } from '@/lib/auth';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
@@ -78,6 +79,8 @@ const MENU: {
 ];
 
 export default function MyPageScreen() {
+  const { user, signOut } = useAuth();
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView contentContainerStyle={{ paddingTop: scale(14), paddingBottom: scale(24) }}>
@@ -96,7 +99,7 @@ export default function MyPageScreen() {
         </View>
 
         <View style={{ marginTop: scale(4), ...COLUMN }}>
-          <ProfileCard />
+          <ProfileCard nickname={user?.nickname ?? ''} />
         </View>
 
         <View style={{ marginTop: scale(10), ...COLUMN }}>
@@ -135,7 +138,13 @@ export default function MyPageScreen() {
           </Pressable>
         </View>
 
+        {/*
+          * Figma draws 로그아웃 | 회원탈퇴 as one line. Only 로그아웃 has anywhere
+          * to go — account deletion has no endpoint (the API exposes no DELETE
+          * on the user), so that half stays inert.
+          */}
         <Text
+          onPress={signOut}
           style={{
             marginTop: scale(133.7),
             textAlign: 'center',
@@ -152,7 +161,7 @@ export default function MyPageScreen() {
   );
 }
 
-function ProfileCard() {
+function ProfileCard({ nickname }: { nickname: string }) {
   return (
     <View
       style={{
@@ -190,7 +199,7 @@ function ProfileCard() {
           color: '#00352C',
         }}
         className="font-pretendard-bold">
-        안자
+        {nickname}
       </Text>
       <View style={{ position: 'absolute', left: scale(42), top: scale(22) }}>
         <GradientText

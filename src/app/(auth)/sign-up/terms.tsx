@@ -1,27 +1,52 @@
-import { router } from 'expo-router';
-import { Pressable, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StepHeader } from '@/components/ui/step-header';
+import { messageFor } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { scale } from '@/lib/scale';
 import { useSignUpForm } from '@/lib/sign-up-form';
+import { toSignUpRequest } from '@/lib/sign-up-request';
 
+/**
+ * Figma marks 마케팅 정보 수신 `[필수]`, which would make signup impossible for
+ * anyone who declines — 정보통신망법 requires advertising consent to be optional
+ * and separable. The backend confirmed on 2026-08-16 that the server never
+ * required it and that the screen label is the thing to fix (backlog item 1),
+ * so it reads `[선택]` and does not gate 가입.
+ */
 const TERMS = [
-  { key: 'service', label: '[필수] 서비스 이용약관' },
-  { key: 'sensitive', label: '[필수] 개인정보 민감정보 처리 동의' },
-  { key: 'marketing', label: '[필수] 마케팅 정보 수신' },
-  { key: 'age', label: '[필수] 만 14세 이상입니다' },
+  { key: 'service', label: '[필수] 서비스 이용약관', required: true },
+  { key: 'sensitive', label: '[필수] 개인정보 민감정보 처리 동의', required: true },
+  { key: 'marketing', label: '[선택] 마케팅 정보 수신', required: false },
+  { key: 'age', label: '[필수] 만 14세 이상입니다', required: true },
 ] as const;
 
 type TermKey = (typeof TERMS)[number]['key'];
 
 export default function TermsScreen() {
   const { form, update } = useSignUpForm();
+  const { signUp } = useAuth();
+  const [busy, setBusy] = useState(false);
   const agreed = form.agreed;
 
+  /** The 전체 동의 checkbox still covers everything, required or not. */
   const allAgreed = TERMS.every((term) => agreed[term.key]);
+  const canSubmit = TERMS.every((term) => !term.required || agreed[term.key]) && !busy;
+
+  async function submit() {
+    setBusy(true);
+    try {
+      await signUp(toSignUpRequest(form));
+    } catch (error) {
+      Alert.alert('가입하지 못했어요', messageFor(error));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   function toggleAll() {
     const next = !allAgreed;
@@ -92,9 +117,9 @@ export default function TermsScreen() {
         <View style={{ marginTop: scale(30) }}>
           <Button
             label="가입하고 LifeDNA 만들기 →"
-            disabled={!allAgreed}
-            style={{ opacity: allAgreed ? 1 : 0.4 }}
-            onPress={() => router.replace('/(tabs)/home')}
+            disabled={!canSubmit}
+            style={{ opacity: canSubmit ? 1 : 0.4 }}
+            onPress={submit}
           />
         </View>
       </View>
