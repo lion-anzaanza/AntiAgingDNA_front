@@ -7,7 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "lifedna",
     "userInterfaceStyle": "automatic",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {
       "icon": "./assets/expo.icon"
     },
@@ -29,7 +32,8 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

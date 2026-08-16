@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { AuthProvider, useAuth } from '@/lib/auth';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,11 +45,33 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <AnimatedSplashOverlay />
-      <Stack screenOptions={{ headerShown: false }}>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
+
+/**
+ * `Stack.Protected` is what gates the tabs — re-ordering screens is not enough,
+ * as the anchor comment above explains. While the stored token is still being
+ * read back `user` is `undefined`, and neither guard is open, so nothing renders
+ * for a frame or two rather than flashing 로그인 at someone already signed in.
+ */
+function RootNavigator() {
+  const { user } = useAuth();
+  const signedIn = user != null;
+  const settled = user !== undefined;
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={settled && !signedIn}>
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+      <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" />
-      </Stack>
-    </ThemeProvider>
+      </Stack.Protected>
+    </Stack>
   );
 }

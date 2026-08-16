@@ -10,6 +10,15 @@ import { BottomBar, BottomBarButton } from '@/components/ui/bottom-bar';
  * `(tabs)/explore.tsx` is leftover template. It no longer has a tab, but it is
  * still reachable at `/explore`.
  */
+/**
+ * Pin the tab group's anchor, for the same reason the root layout pins its own:
+ * without it the group reopens on whichever tab was last focused, so signing in
+ * dropped the user on MY instead of 홈.
+ */
+export const unstable_settings = {
+  initialRouteName: 'home',
+};
+
 export default function TabLayout() {
   return (
     <Tabs>

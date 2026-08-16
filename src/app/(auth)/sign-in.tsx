@@ -1,17 +1,42 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { GradientText } from '@/components/ui/gradient-text';
 import { TextInputField } from '@/components/ui/text-input';
+import { messageFor } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { scale } from '@/lib/scale';
 
 export default function SignInScreen() {
+  const { signIn } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const canSubmit = username.trim().length > 0 && password.length > 0 && !busy;
+
+  /*
+   * The server distinguishes 401 (wrong id or password — deliberately not
+   * saying which), 400 with per-field `errors`, and transport failure. None of
+   * them have anywhere to land on this screen: Figma's `TextInput` has no error
+   * state and there is no space for a message. `Alert` is the platform's own
+   * affordance, so it borrows nothing that has to be designed first; a proper
+   * inline treatment is still an open design question (AGENTS.md).
+   */
+  async function submit() {
+    setBusy(true);
+    try {
+      await signIn(username.trim(), password);
+    } catch (error) {
+      Alert.alert('로그인하지 못했어요', messageFor(error));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
@@ -60,7 +85,12 @@ export default function SignInScreen() {
         </View>
 
         <View style={{ marginTop: scale(22) }}>
-          <Button label="로그인 →" />
+          <Button
+            label="로그인 →"
+            disabled={!canSubmit}
+            style={{ opacity: canSubmit ? 1 : 0.4 }}
+            onPress={submit}
+          />
         </View>
 
         <Pressable onPress={() => router.push('/(auth)/sign-up')} style={{ marginTop: scale(4.5) }}>
