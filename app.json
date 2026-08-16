@@ -12,9 +12,10 @@
       "android"
     ],
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "cloud.anzaanza.lifedna"
     },
     "android": {
+      "package": "cloud.anzaanza.lifedna",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -22,6 +23,9 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
     },
     "plugins": [
       "expo-router",
@@ -33,7 +37,8 @@
           "imageWidth": 76
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,

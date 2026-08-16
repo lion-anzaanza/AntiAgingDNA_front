@@ -194,6 +194,8 @@ src/
   스키마, 그리고 **enum ↔ 화면 선택지 대응표**. 연동할 때 여기부터 보세요.
 - **[docs/backend-backlog.md](docs/backend-backlog.md)** — 백엔드에 요청·확인할
   것들. 디자인에는 있는데 API가 못 하는 게 보이면 **즉시 여기 적어주세요.**
+- **[docs/deploy.md](docs/deploy.md)** — `release` 브랜치 → TestFlight 배포.
+  아직 계정 설정이 남아 한 번도 돌지 않았습니다.
 
 Figma가 항상 기준이며 아직 변경되고 있습니다. 화면을 고치기 전에 반드시 최신
 상태를 다시 확인해주세요.

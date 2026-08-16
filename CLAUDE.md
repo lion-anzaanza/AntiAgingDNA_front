@@ -23,6 +23,7 @@ Expo / React Native app. The UI is ported from Figma.
 | Figma node IDs and measurements | `docs/figma-reference.md` |
 | API endpoints, schemas, enum ↔ UI mapping | `docs/backend-api.md` |
 | Open questions for the backend team | `docs/backend-backlog.md` |
+| How the app reaches teammates | `docs/deploy.md` |
 
 **Keep `docs/backend-backlog.md` current.** Anything the design needs and the
 API cannot do belongs there the moment you notice it — that document is how the
