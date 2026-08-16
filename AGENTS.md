@@ -246,6 +246,38 @@ Expo Go wedges on "New update available, downloading…" often enough that a
 capture loop needs to detect that splash and relaunch — otherwise you measure
 the splash and report a broken screen.
 
+### 14. The emulator runs at font scale 1.0; real phones do not
+
+`scale()` handles the width, so a 1080-wide phone and a 1080-wide emulator agree
+to the pixel on every box. What they do **not** agree on is text: RN's `Text`
+honours the system font size, and the test phone was set to `font_scale` 1.1 —
+so every `fontSize: scale(N)` rendered 8–10% larger while every card, pill and
+absolute position stayed put.
+
+One real casualty so far, on 개선책/메인: 오늘의 실천's `70%` shared a fixed 184pt
+row with the label and the two bars as a flex child, and the extra width pushed
+the last glyph off — the phone rendered **`70`**. Figma places that number
+absolutely in its own 30pt box, and doing the same fixes it, which is the
+general lesson: *reproduce the design's absolute placement rather than
+re-deriving it as flex*, because flex is what gets squeezed.
+
+Check it with `adb shell settings get system font_scale` before trusting an
+emulator screenshot of anything in a fixed-size box. Nothing else on 홈, 일지,
+마이페이지 or 개선책 broke at 1.1, but the app has no strategy for larger scales
+— every card in the port has a hard height — and it has never been tried above
+1.1. Whether to opt out of font scaling (pixel-faithful, an accessibility
+regression) or to make the cards flexible (a design-wide change) is unsettled.
+
+Two things that cost time and are worth knowing:
+
+- **Expo Go must match the SDK.** The phone had 54.0.8 against an SDK 57
+  project and refused to open it. The right APK is linked from
+  `https://api.expo.dev/v2/versions/latest` under `sdkVersions['57.0.0']
+  .androidClientUrl`; `adb install -r` upgraded it in place, no uninstall.
+- **Samsung devices answer `pm list packages` for the wrong user.** A Secure
+  Folder profile makes the default query throw a `SecurityException`; pass
+  `--user 0`.
+
 ## Verifying on the Android emulator
 
 Type-checking is not verification. Every UI change gets looked at on the emulator.

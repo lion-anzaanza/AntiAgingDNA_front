@@ -144,16 +144,31 @@ export default function PlanMainScreen() {
               boxShadow: SHADOW,
             }}
           />
-          <GradientText
-            colors={[...GRADIENT_BRAND]}
+          {/*
+            * Figma places the percentage absolutely in its own 30pt box rather
+            * than at the end of the row, and that turns out to matter: as a flex
+            * child it competes with the label and the bars for a fixed 184pt,
+            * and a device with the system font scale turned up dropped the last
+            * glyph — a phone at 1.1 rendered "70" instead of "70%". Absolute,
+            * like the design, it cannot be squeezed.
+            */}
+          <View
             style={{
-              marginLeft: 'auto',
-              fontSize: scale(10),
-              lineHeight: scale(15),
-            }}
-            className="font-pretendard-black">
-            70%
-          </GradientText>
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: scale(30),
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+            }}>
+            <GradientText
+              colors={[...GRADIENT_BRAND]}
+              style={{ fontSize: scale(10), lineHeight: scale(15) }}
+              className="font-pretendard-black">
+              70%
+            </GradientText>
+          </View>
         </View>
 
         <View style={{ marginTop: scale(7.5), ...COLUMN }}>
