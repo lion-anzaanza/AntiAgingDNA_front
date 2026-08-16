@@ -64,13 +64,19 @@ jobs:
 
       - run: npm ci
 
+      # `platform: all` 이라 iOS와 Android 둘 다 fingerprint를 비교하고, 둘 다
+      # 업데이트를 받습니다. 한쪽만 돌리면 그쪽 플랫폼만 OTA가 나가서, APK로 앱을
+      # 받은 팀원은 빌드에 박힌 JS에 갇힙니다 — 실제로 iOS만 나가고 있었습니다.
+      #
+      # `auto-submit-builds` 는 쓰지 않습니다. 플랫폼별로 끌 수 없는 전역 옵션인데,
+      # Android 쪽은 Google Play 자격증명이 없어 제출이 실패합니다. iOS 제출은
+      # 아래에서 명시적으로 합니다.
       - uses: expo/expo-github-action/continuous-deploy-fingerprint@main
         id: deploy
         with:
           profile: production
           branch: release
-          platform: ios
-          auto-submit-builds: true
+          platform: all
 
       # `ios-build-id`는 **빌드를 시작했을 때뿐 아니라 기존 빌드를 재사용했을
       # 때도** 채워집니다 (그 빌드의 ID가 들어옵니다). 그래서 "빌드가 났는지"를
@@ -78,51 +84,93 @@ jobs:
       # 이미 있는 태그를 다시 만들려다 실패했습니다.
       #
       # 대신 **태그가 이미 있는지**로 갈립니다. 결과적으로 멱등해서, 재실행하거나
-      # 같은 빌드로 여러 번 배포해도 릴리스가 중복되지 않습니다.
+      # 같은 빌드로 여러 번 배포해도 제출과 릴리스가 중복되지 않습니다.
 
-      - name: 빌드 정보 조회 (진행 중이면 완료까지 대기)
+      - name: iOS 빌드 완료까지 대기
         if: steps.deploy.outputs.ios-build-id != ''
-        id: build
+        id: ios
         run: |
           set -u
           ID='${{ steps.deploy.outputs.ios-build-id }}'
           STATUS=''
           # 빌드는 보통 10~20분. 저장소가 public이라 Actions 분은 무료라서,
-          # 빌드 성공을 확인하고 릴리스를 만드는 쪽을 택했습니다.
+          # 빌드 성공을 확인하고 제출·릴리스하는 쪽을 택했습니다.
           for _ in $(seq 1 60); do
-            npx eas-cli@latest build:view "$ID" --json > build.json 2>/dev/null || true
-            STATUS=$(jq -r '.status // empty' build.json 2>/dev/null || echo '')
-            echo "status=$STATUS"
+            npx eas-cli@latest build:view "$ID" --json > ios.json 2>/dev/null || true
+            STATUS=$(jq -r '.status // empty' ios.json 2>/dev/null || echo '')
             case "$STATUS" in FINISHED|ERRORED|CANCELED) break;; esac
             sleep 30
           done
+          echo "iOS status=$STATUS"
           # build:view 는 빌드 **페이지** URL을 주지 않습니다 —
-          # `artifacts.buildUrl`은 .ipa 파일입니다. 사람이 볼 곳은 로그·제출
+          # `artifacts.buildUrl`은 아카이브 파일입니다. 사람이 볼 곳은 로그·제출
           # 상태가 함께 있는 대시보드라, app.json 값으로 조립합니다.
           OWNER=$(jq -r '.expo.owner' app.json)
           SLUG=$(jq -r '.expo.slug' app.json)
           {
             echo "status=$STATUS"
-            echo "version=$(jq -r '.appVersion // empty' build.json)"
-            echo "number=$(jq -r '.appBuildVersion // empty' build.json)"
+            echo "version=$(jq -r '.appVersion // empty' ios.json)"
+            echo "number=$(jq -r '.appBuildVersion // empty' ios.json)"
             echo "url=https://expo.dev/accounts/$OWNER/projects/$SLUG/builds/$ID"
           } >> "$GITHUB_OUTPUT"
 
-      # 빌드가 성공했을 때만 릴리스를 만듭니다. 실패한 빌드를 가리키는 릴리스는
-      # "이게 나갔다"는 릴리스의 의미를 망칩니다.
-      - name: GitHub Release 생성
-        if: steps.build.outputs.status == 'FINISHED'
+      - name: 새 릴리스인지 판단
+        if: steps.ios.outputs.status == 'FINISHED'
+        id: gate
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          TAG="v${{ steps.build.outputs.version }}-${{ steps.build.outputs.number }}"
-
-          # 이 빌드로는 이미 릴리스를 냈다는 뜻 — 이번 push는 기존 빌드를
-          # 재사용한 OTA 배포입니다. 업데이트는 릴리스를 만들지 않습니다.
+          TAG="v${{ steps.ios.outputs.version }}-${{ steps.ios.outputs.number }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           if gh release view "$TAG" > /dev/null 2>&1; then
             echo "릴리스 $TAG 는 이미 있습니다. 이번 push는 OTA 업데이트입니다."
-            exit 0
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: TestFlight 제출
+        if: steps.gate.outputs.needed == 'true'
+        run: |
+          # --auto-testflight-setup 은 내부 테스트 그룹이 없으면 만들어 줍니다.
+          npx eas-cli@latest submit --platform ios             --id '${{ steps.deploy.outputs.ios-build-id }}'             --auto-testflight-setup --non-interactive --wait
+
+      - name: Android 빌드 완료까지 대기
+        if: steps.gate.outputs.needed == 'true' && steps.deploy.outputs.android-build-id != ''
+        id: android
+        run: |
+          set -u
+          ID='${{ steps.deploy.outputs.android-build-id }}'
+          STATUS=''
+          for _ in $(seq 1 60); do
+            npx eas-cli@latest build:view "$ID" --json > android.json 2>/dev/null || true
+            STATUS=$(jq -r '.status // empty' android.json 2>/dev/null || echo '')
+            case "$STATUS" in FINISHED|ERRORED|CANCELED) break;; esac
+            sleep 30
+          done
+          echo "Android status=$STATUS"
+          {
+            echo "status=$STATUS"
+            echo "apk=$(jq -r '.artifacts.buildUrl // empty' android.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: GitHub Release 생성
+        if: steps.gate.outputs.needed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='${{ steps.gate.outputs.tag }}'
+
+          # iOS 아카이브는 붙이지 않습니다. App Store 서명이라 파일을 받아도
+          # 기기에 설치할 수 없고(그래서 TestFlight가 있습니다), 받는 사람에게
+          # 열리지 않는 300MB를 안기게 됩니다. Android APK는 반대로 받아서 바로
+          # 설치되므로 붙입니다.
+          ASSET=''
+          if [ -n '${{ steps.android.outputs.apk }}' ]; then
+            curl -fsSL -o "LifeDNA-$TAG.apk" '${{ steps.android.outputs.apk }}'
+            ASSET="LifeDNA-$TAG.apk"
           fi
 
           # 태그는 빌드된 바로 그 커밋을 가리켜야 합니다 — 기본값은 저장소의
@@ -130,13 +178,15 @@ jobs:
           #
           # --notes 는 --generate-notes 가 만든 커밋 목록 **앞에** 붙습니다.
           # 시작 지점은 직전 릴리스를 GitHub이 알아서 잡습니다.
-          gh release create "$TAG" \
-            --target "$GITHUB_SHA" \
-            --title "$TAG" \
-            --generate-notes \
-            --notes "빌드 ${{ steps.build.outputs.number }} — TestFlight에 제출했습니다. Apple 처리에 보통 몇 분 더 걸립니다.
+          gh release create "$TAG" $ASSET             --target "$GITHUB_SHA"             --title "$TAG"             --generate-notes             --notes "## 받는 법
 
-          EAS 빌드: ${{ steps.build.outputs.url }}
+          **iPhone** — TestFlight에서 받으세요. 초대를 못 받으셨다면 알려주세요.
+          빌드 ${{ steps.ios.outputs.number }}를 제출했고, Apple 처리에 보통 몇 분 걸립니다.
 
-          이 목록에는 **네이티브 빌드만** 올라옵니다. 이후 JS·화면 변경은 OTA로
-          나가서 앱을 재시작하면 반영되고, 릴리스를 따로 만들지 않습니다."
+          **Android** — 아래 \`.apk\`를 폰에서 직접 받아 설치하면 됩니다. 등록 절차는
+          없고, \"출처를 알 수 없는 앱\" 설치를 한 번 허용해야 할 수 있습니다.
+
+          설치한 뒤로는 JS·화면 변경이 **앱을 다시 켜면** 알아서 반영됩니다. 이
+          목록에는 네이티브 빌드가 필요한 변경만 올라옵니다.
+
+          EAS 빌드: ${{ steps.ios.outputs.url }}"
