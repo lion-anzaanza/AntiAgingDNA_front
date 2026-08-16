@@ -14,12 +14,14 @@
 호환되면 JS만 밀어넣습니다. `app.json`의 `runtimeVersion.policy: "fingerprint"`가
 그 전제고, Expo 공식 액션 `continuous-deploy-fingerprint`가 비교를 대신합니다.
 
-## 아직 남은 설정
+## 설정 진행 상황
 
-**이 파이프라인은 아직 한 번도 돌지 않았습니다.** 아래는 저장소 밖의 계정 작업이라
-직접 하셔야 합니다.
+**파이프라인은 아직 한 번도 돌지 않았습니다.** 1~3은 끝났고, 남은 건 4·5입니다 —
+둘 다 Apple 로그인을 거치는 대화형 명령이라 터미널에서 직접 실행해야 합니다.
 
-1. **Expo 계정 연결**
+1. ~~Expo 계정 연결~~ — **완료**. `@jiseong02/lifedna`
+   (projectId `563d1ebe-8bca-4256-b0d1-8d2be077cdbd`), `updates.url` 설정됨.
+   <details><summary>당시 사용한 명령</summary>
    ```bash
    npx eas-cli@latest login
    npx eas-cli@latest init             # app.json에 owner / extra.eas.projectId 를 써줍니다
@@ -27,15 +29,16 @@
    ```
    패키지 이름은 `eas-cli`입니다 — `npx eas`로는 실행되지 않습니다
    (`could not determine executable to run`).
-   `eas init`과 `update:configure`가 쓰는 값 없이는 OTA가 어디로 붙을지 모릅니다.
+   </details>
 
-2. **GitHub Secret 등록** — Expo에서 액세스 토큰을 발급해
-   저장소 Settings → Secrets → Actions에 **`EXPO_TOKEN`**으로 넣습니다.
+2. ~~GitHub Secret 등록~~ — **완료**. Expo 토큰 `github-actions-lifedna`를
+   발급해 저장소 Secret `EXPO_TOKEN`으로 등록했습니다.
 
-3. **App Store Connect에 앱 레코드 생성** — 번들 ID `cloud.anzaanza.lifedna`.
-   만들고 나면 앱의 숫자 ID(ascAppId)를 `eas.json`의
-   `submit.production.ios.ascAppId`에 넣어야 합니다. 지금은
-   `REPLACE_WITH_APP_STORE_CONNECT_APP_ID` 자리표시자입니다.
+3. ~~App Store Connect에 앱 레코드 생성~~ — **완료 (2026-08-17)**.
+   Apple Developer 팀 `AD7L447NHY`에 App ID `cloud.anzaanza.lifedna`(설명
+   `LifeDNA`)를 등록하고, App Store Connect에 `LifeDNA` 앱을 만들었습니다
+   (기본 언어 한국어, SKU `lifedna-ios`, 앱 ID `6802059100`).
+   `eas.json`의 `ascAppId`에 반영돼 있습니다.
 
 4. **Apple 자격증명 연결**
    ```bash
