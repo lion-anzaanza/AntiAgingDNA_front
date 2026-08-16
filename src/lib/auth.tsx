@@ -52,6 +52,8 @@ type AuthContextValue = {
   signIn: (loginId: string, password: string) => Promise<void>;
   signUp: (body: SignUpRequest) => Promise<void>;
   signOut: () => Promise<void>;
+  /** Irreversible — the server hard-deletes the account and everything under it. */
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -116,9 +118,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  /*
+   * `DELETE /api/auth/me` removes the account, agreements, diagnosis, diaries
+   * and scores for real — not a soft delete (backlog item 24). The local session
+   * is cleared either way: if the row is already gone, staying signed in to it
+   * helps nobody.
+   */
+  const deleteAccount = useCallback(async () => {
+    try {
+      await request<void>('/api/auth/me', { method: 'DELETE', token });
+    } finally {
+      await SecureStore.deleteItemAsync(TOKEN_KEY).catch(() => {});
+      setToken(null);
+      setUser(null);
+    }
+  }, [token]);
+
   const value = useMemo(
-    () => ({ user, token, signIn, signUp, signOut }),
-    [user, token, signIn, signUp, signOut],
+    () => ({ user, token, signIn, signUp, signOut, deleteAccount }),
+    [user, token, signIn, signUp, signOut, deleteAccount],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

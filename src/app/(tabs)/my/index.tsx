@@ -1,10 +1,19 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
+import {
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ButtonBack } from '@/components/ui/button-back';
 import { GradientText } from '@/components/ui/gradient-text';
+import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -79,7 +88,34 @@ const MENU: {
 ];
 
 export default function MyPageScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, deleteAccount } = useAuth();
+
+  /*
+   * The server hard-deletes; there is no undo and no grace period (backlog item
+   * 24), so this asks first. Figma draws 로그아웃 | 회원탈퇴 as one line with no
+   * dialog of its own, and inventing a whole confirmation screen for it is not
+   * this change's job — the platform's destructive alert says the same thing.
+   */
+  function confirmDelete() {
+    Alert.alert(
+      '회원탈퇴',
+      '계정과 그동안의 일지·점수가 모두 삭제됩니다. 되돌릴 수 없어요.',
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '탈퇴하기',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount();
+            } catch (error) {
+              Alert.alert('탈퇴하지 못했어요', messageFor(error));
+            }
+          },
+        },
+      ],
+    );
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
@@ -139,12 +175,10 @@ export default function MyPageScreen() {
         </View>
 
         {/*
-          * Figma draws 로그아웃 | 회원탈퇴 as one line. Only 로그아웃 has anywhere
-          * to go — account deletion has no endpoint (the API exposes no DELETE
-          * on the user), so that half stays inert.
+          * Figma draws this as one line, so the two halves are separate press
+          * targets inside it rather than two rows.
           */}
         <Text
-          onPress={signOut}
           style={{
             marginTop: scale(133.7),
             textAlign: 'center',
@@ -154,7 +188,9 @@ export default function MyPageScreen() {
             color: '#88877F',
           }}
           className="font-pretendard">
-          로그아웃 | 회원탈퇴
+          <Text onPress={signOut}>로그아웃</Text>
+          {' | '}
+          <Text onPress={confirmDelete}>회원탈퇴</Text>
         </Text>
       </ScrollView>
     </SafeAreaView>
