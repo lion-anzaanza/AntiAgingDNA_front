@@ -4,8 +4,8 @@
  * here rather than being kept in step by hand.
  *
  * These are display labels. Mapping them onto `DiaryRequest`'s enums is in
- * `docs/backend-api.md`; two of them disagree with the API and are unresolved
- * (`exerciseType`'s 기타 and `walkDuration`'s 1시간 — backlog items 8 and 9).
+ * `docs/backend-api.md`, and every one of them has been checked against
+ * `/v3/api-docs` — the four that used to disagree are fixed below.
  */
 export const SLEEP_ONSET = ['5분 이내', '15분 이내', '30분 이내', '1시간 이상'];
 export const MEAL_COUNT = ['0끼', '1끼', '2끼', '3끼', '4끼', '5끼 +'];
@@ -17,8 +17,15 @@ export const CAFFEINE_TIME_WIDTH = [27, 27, 39, 46];
 export const WATER = ['2잔 이하', '3~5잔', '6~7잔', '8잔 이상'];
 export const DID_EXERCISE = ['네', '아니요'];
 export const EXERCISE_MINUTES = ['15분 이하', '30분', '1시간', '1시간 이상'];
-export const EXERCISE_KIND = ['걷기', '유산소', '근력', '기타'];
-export const WALKED = ['30분 이하', '1시간', '2시간', '2시간 이상'];
+/** `STRENGTH_AND_AEROBIC`; the API has no `OTHER`, so 기타 had nothing to map to. */
+export const EXERCISE_KIND = ['걷기', '유산소', '근력', '근력+유산소'];
+/**
+ * `UNDER_30` / `THIRTY_TO_60` / `ONE_TO_TWO_HOURS` / `OVER_2_HOURS`. Figma's
+ * middle two read 1시간 and 2시간, which name the boundary rather than the band
+ * — the backlog caught the second (item 9) and the third turned up in the same
+ * pass.
+ */
+export const WALKED = ['30분 이하', '30분~1시간', '1~2시간', '2시간 이상'];
 export const SAT = ['4시간 이하', '4~8시간', '8~10시간', '10시간 이상'];
 export const SCREEN_TIME = ['2시간 이하', '2~4시간', '4~6시간', '6시간 이상'];
 export const MOOD_RECOVERY = ['안 함', '잠깐', '충분히'];
