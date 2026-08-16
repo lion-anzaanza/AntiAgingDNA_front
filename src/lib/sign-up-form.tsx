@@ -132,7 +132,7 @@ export function isPersonalInfoComplete(form: SignUpForm): boolean {
     // Cannot check strength: the server documents no password rule at all
     // (docs/backend-backlog.md item 19). Matching is ours to check regardless.
     form.password === form.passwordConfirm &&
-    isRealDate(form.birthYear, form.birthMonth, form.birthDay)
+    isBirthYear(form.birthYear)
   );
 }
 
@@ -162,15 +162,13 @@ export function isEmailish(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
 }
 
-/** Rejects 2월 31일 and the like, which the three-box input happily accepts. */
-function isRealDate(year: string, month: string, day: string): boolean {
-  if (!/^\d{4}$/.test(year) || !/^\d{1,2}$/.test(month) || !/^\d{1,2}$/.test(day)) return false;
-  const y = Number(year);
-  const m = Number(month);
-  const d = Number(day);
-  // The API's own floor; the ceiling is just "not in the future".
-  if (y < 1900 || y > new Date().getFullYear()) return false;
-  if (m < 1 || m > 12) return false;
-  const date = new Date(y, m - 1, d);
-  return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+/**
+ * 1900 is the API's own floor and the ceiling is just "not in the future".
+ * Being under 14 is rejected by the server (backlog item 20) rather than here —
+ * it is a moving target, and the server's message is the one worth showing.
+ */
+function isBirthYear(value: string): boolean {
+  if (!/^\d{4}$/.test(value)) return false;
+  const year = Number(value);
+  return year >= 1900 && year <= new Date().getFullYear();
 }

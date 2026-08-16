@@ -148,7 +148,6 @@ src/
 | `input-time-card` | InputTime_Card | 시작/종료 시각 + 소요시간 뱃지 |
 | `slider-0-to-10` | Select0To10 / _Card / _History | 0~10 슬라이더 (`card`·`history` prop) |
 | `text-input` (`TextInputField`) | TextInput | 라벨 + 입력 필드 |
-| `date-input-row` | 생년월일 | 년/월/일 3분할 입력 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
 | `bottom-bar` | BottomBar0~4 | 하단 탭 바 (활성 시 아이콘만 바뀜) |

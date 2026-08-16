@@ -410,6 +410,10 @@ and each is listed so the next person does not "fix" the code back.
   to its right edge (inset 14 left, 0 right, gap 7) rather than the 12/12 the
   rest of the family uses. `PillGroup` renders 12/12, so its first pill lands
   2pt left of Figma's.
+- **회원가입/1 no longer matches Figma, on purpose.** The mock draws 성별, 직업
+  and a 년/월/일 birth date; the backend will not accept any of them and stores
+  only `birthYear` (backlog item 13), so the screen collects six fields and the
+  mock needs updating. `ui/date-input-row.tsx` went with them.
 - **회원가입/2's button and Likert cards break its own column** — the frame is
   17..203 but `ButtonNextUI` sits at 22 and the `SelectItem6_Card`s at 25..207.
 

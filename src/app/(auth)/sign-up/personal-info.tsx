@@ -1,21 +1,20 @@
 import { router } from 'expo-router';
-import { ScrollView, Text, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
-import { DateInputRow } from '@/components/ui/date-input-row';
-import { PillGroup } from '@/components/ui/pill-group';
-import { SelectButton } from '@/components/ui/select-button';
 import { StepHeader } from '@/components/ui/step-header';
 import { TextInputField } from '@/components/ui/text-input';
 import { scale } from '@/lib/scale';
 import { isPersonalInfoComplete, useSignUpForm } from '@/lib/sign-up-form';
 
-const GENDER_OPTIONS = ['남성', '여성', '비공개'];
-const JOB_OPTIONS = ['직장인', '자영업', '학생', '무직', '주부'];
-/** 직업 sits outside the SelectItem family: five 30pt pills across the full 184pt row. */
-const JOB_GAP = 8.5;
-const JOB_PILL_WIDTH = (184 - JOB_GAP * (JOB_OPTIONS.length - 1)) / JOB_OPTIONS.length;
+/**
+ * Figma also draws 성별, 직업 and a 년/월/일 birth date here. The backend will
+ * not take any of them (backlog item 13): 성별·직업 have no place in
+ * `SignUpRequest` and are not used by the scoring, and only `birthYear` is
+ * stored. Collecting fields we cannot send is worse than a screen that differs
+ * from the mock, so they are gone and the mock needs updating.
+ */
 
 export default function PersonalInfoScreen() {
   const { form, update } = useSignUpForm();
@@ -73,53 +72,14 @@ export default function PersonalInfoScreen() {
             onChangeText={(passwordConfirm) => update({ passwordConfirm })}
             secureTextEntry
           />
-        </View>
-
-        <View style={{ marginTop: scale(8) }}>
-          <DateInputRow
-            label="생년월일"
-            year={form.birthYear}
-            month={form.birthMonth}
-            day={form.birthDay}
-            onChangeYear={(birthYear) => update({ birthYear })}
-            onChangeMonth={(birthMonth) => update({ birthMonth })}
-            onChangeDay={(birthDay) => update({ birthDay })}
+          <TextInputField
+            label="출생연도"
+            placeholder="예: 1999"
+            value={form.birthYear}
+            onChangeText={(birthYear) => update({ birthYear: birthYear.replace(/\D/g, '') })}
+            keyboardType="number-pad"
+            maxLength={4}
           />
-        </View>
-
-        <View style={{ marginTop: scale(8) }}>
-          <PillGroup
-            label="성별"
-            labelTone="field"
-            options={GENDER_OPTIONS}
-            value={form.gender}
-            onChange={(gender) => update({ gender })}
-            columns={3}
-            contentWidth={184}
-            level={2}
-            tone="white"
-          />
-        </View>
-
-        <View style={{ marginTop: scale(13) }}>
-          <Text
-            style={{ fontSize: scale(7), lineHeight: scale(10), color: '#88877F' }}
-            className="font-pretendard-bold">
-            직업
-          </Text>
-          <View style={{ flexDirection: 'row', gap: scale(JOB_GAP), marginTop: scale(3) }}>
-            {JOB_OPTIONS.map((option) => (
-              <SelectButton
-                key={option}
-                label={option}
-                state={option === form.job ? 'active' : 'inactive'}
-                onPress={() => update({ job: option })}
-                level={4}
-                tone="white"
-                style={{ width: scale(JOB_PILL_WIDTH) }}
-              />
-            ))}
-          </View>
         </View>
 
         <View style={{ marginTop: scale(27) }}>
