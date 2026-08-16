@@ -1,11 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { ButtonBack } from '@/components/ui/button-back';
 import { GradientText } from '@/components/ui/gradient-text';
+import { WeeklyConditionChart, type ConditionPoint } from '@/components/ui/weekly-condition-chart';
 import { GRADIENT_BRAND, GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
@@ -34,20 +35,54 @@ const PAST_ENTRIES = [
 ];
 
 const CARD_WIDTH = 184;
+const CONTENT_INSET = 19;
 const ROW_HEIGHT = 134.83 / PAST_ENTRIES.length;
+
+/**
+ * `주간_컨디션_그래프` (`585:1436`) is the same 184×95 as 주간_기록 and Figma parks
+ * it directly beneath this frame rather than inside it — the same arrangement as
+ * 홈's second orb card, so the two share one slot as a horizontal swipe. Figma
+ * draws no page dots or hint on either card, unlike 홈's, so none are invented
+ * here; see AGENTS.md.
+ *
+ * Scores round-trip to Figma's own dot positions.
+ */
+const WEEK_CONDITION: ConditionPoint[] = [
+  { label: '8/9', score: 0 },
+  { label: '8/10', score: 8 },
+  { label: '8/11', score: 28 },
+  { label: '8/12', score: 52 },
+  { label: '8/13', score: 80 },
+  { label: '8/14', score: 96 },
+  { label: '8/15', score: 100 },
+];
+const WEEK_CONDITION_SUMMARY = '어제보다 수면 +40분 · 스트레스 −1';
+
+/** `pagingEnabled` snaps by the scroll view's own width — see home.tsx. */
+const PAGE_WIDTH = Dimensions.get('window').width;
+
+/**
+ * 일지/메인 sits at x=19 and is 184 wide, so the right margin is 17. The orb-card
+ * pager has to run full-bleed for its shadow, so the column lives on each
+ * section rather than on the scroll view.
+ */
+const COLUMN = {
+  paddingLeft: scale(CONTENT_INSET),
+  paddingRight: scale(220 - CONTENT_INSET - CARD_WIDTH),
+};
 
 export default function JournalMainScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
-        contentContainerStyle={{
-          // 일지/메인 sits at x=19 and is 184 wide, so the right margin is 17.
-          paddingLeft: scale(19),
-          paddingRight: scale(220 - 19 - CARD_WIDTH),
-          paddingTop: scale(8),
-          paddingBottom: scale(24),
-        }}>
-        <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
+        contentContainerStyle={{ paddingTop: scale(8), paddingBottom: scale(24) }}>
+        <View
+          style={{
+            height: scale(22),
+            flexDirection: 'row',
+            alignItems: 'center',
+            ...COLUMN,
+          }}>
           <ButtonBack fallbackHref="/(tabs)/home" />
           <Text
             style={{
@@ -71,7 +106,18 @@ export default function JournalMainScreen() {
           </Text>
         </View>
 
-        <WeekCard />
+        <ScrollView
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          style={{ marginTop: scale(12) }}>
+          <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
+            <WeekCard />
+          </View>
+          <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
+            <WeeklyConditionChart points={WEEK_CONDITION} summary={WEEK_CONDITION_SUMMARY} />
+          </View>
+        </ScrollView>
 
         <Text
           style={{
@@ -79,6 +125,7 @@ export default function JournalMainScreen() {
             lineHeight: scale(15),
             marginTop: scale(15),
             color: '#00352C',
+            ...COLUMN,
           }}
           className="font-pretendard-bold">
           지난 기록
@@ -91,6 +138,8 @@ export default function JournalMainScreen() {
           end={{ x: 1, y: 1 }}
           style={{
             marginTop: scale(5),
+            marginLeft: scale(CONTENT_INSET),
+            width: scale(CARD_WIDTH),
             borderRadius: scale(10),
             boxShadow: SHADOW,
             overflow: 'hidden',
@@ -133,7 +182,7 @@ export default function JournalMainScreen() {
           ))}
         </LinearGradient>
 
-        <View style={{ marginTop: scale(49) }}>
+        <View style={{ marginTop: scale(49), ...COLUMN }}>
           <Button label="오늘 하루 기록하기" onPress={() => router.push('/journal/today')} />
         </View>
       </ScrollView>
@@ -147,7 +196,6 @@ function WeekCard() {
       style={{
         width: scale(CARD_WIDTH),
         height: scale(95),
-        marginTop: scale(12),
         borderRadius: scale(10),
         backgroundColor: '#FFFFFF',
         boxShadow: SHADOW,

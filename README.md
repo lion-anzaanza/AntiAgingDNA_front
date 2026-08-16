@@ -11,6 +11,8 @@ LifeDNA 만들기 프로젝트.
 - React Native (Expo SDK 57) + Expo Router
 - TypeScript
 - NativeWind (Tailwind CSS)
+- react-native-svg (일지 주간 컨디션 그래프 전용. Expo Go에 포함돼 있어
+  개발용 빌드가 따로 필요하지 않습니다)
 - iOS/Android 타겟 (`app.json`의 `platforms`). 웹은 지원 대상이 아니지만
   템플릿 잔재가 남아 있습니다 — AGENTS.md의 미해결 항목 참고
 
@@ -143,6 +145,7 @@ src/
 | `living-artwork` | (Figma에 모션 없음) | 오브·DNA 상시 미세 운동 + 누름 반응 |
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
+| `weekly-condition-chart` | 주간_컨디션_그래프 | 7일 컨디션 꺾은선 (react-native-svg) |
 | `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |
 
 **`pill-group`과 `select-card`는 형제입니다.** Figma가 같은 알약 묶음을 카드 없는

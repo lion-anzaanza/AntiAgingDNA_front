@@ -282,6 +282,20 @@ MSYS_NO_PATHCONV=1 adb pull /sdcard/s.png ./s.png
   coordinates by the stated factor before passing them to `adb shell input tap`.
 - Expo Go sometimes wedges on "New update available, downloading…" and never
   reaches the app. Metro is fine; force-stop and relaunch.
+- **A wedge at "Bundling 99%…" is the LAN, not your code.** Metro logs a
+  successful bundle while the device sits on the splash, and `logcat` shows
+  `ProtocolException: Expected leading [0-9a-fA-F] character` from
+  `BundleDownloader.processMultipartResponse` — the chunked multipart response
+  breaks in transit. Route around the network instead of debugging the app:
+
+  ```bash
+  adb reverse tcp:8081 tcp:8081
+  adb shell am start -a android.intent.action.VIEW \
+    -d "exp://127.0.0.1:8081/--/journal" host.exp.exponent
+  ```
+
+  Adding a dependency makes this likelier, because the next start rebuilds the
+  whole bundle — allow ~30s for the first one before screenshotting.
 - Give the bundle time before screenshotting, or you photograph the splash and
   read it as a broken screen. Wait on the window first:
   `until adb shell dumpsys window | grep -q ExperienceActivity; do sleep 3; done`
@@ -447,18 +461,37 @@ Still to port from 04_일지:
   it is the tab shell, not a leaf component, so building it means restructuring
   `(tabs)` — and the icons need the `rawImages` treatment (rule 7) plus an
   active/inactive pair per tab that only `BottomBar0`–`4` together supply.
-- **`주간_컨디션_그래프`** (`585:1436`) — still unplaced, and the only thing in
-  일지 that needs a real chart: a vector polyline over seven points, which would
-  mean `react-native-svg` (bundled in Expo Go, so free for the dev loop).
-
-  Where these floating cards belong is readable from **where they sit on the
-  canvas**: Figma parks each one directly beneath its parent frame, same `x`.
-  `일간_컨디션_요약` (`585:1377`) sits under 캘린더 and is built — a day opens the
-  card, and 입력 기록 보기 on the card opens 상세보기. By the same logic the graph
-  belongs to 일지/메인, but that screen has no room for it at 480pt, so confirm
-  with the designer rather than assuming.
 - The 미응답 state of a day with no entry, which is blocked on knowing what
   `GET /api/diaries/{date}` returns for one (backlog 23).
+
+`주간_컨디션_그래프` (`585:1436`) is **built** — `ui/weekly-condition-chart.tsx`,
+and the reason `react-native-svg` is now a dependency (bundled in Expo Go, so
+the dev loop is unchanged).
+
+Where it goes was read off the canvas: Figma parks each floating card directly
+beneath its parent frame at the same `x`. `일간_컨디션_요약` (`585:1377`) sits
+under 캘린더 and opens when a day is tapped; `주간_컨디션_그래프` sits under
+일지/메인 at x=17, is **the same 184×95 as 주간_기록**, and so shares that slot as
+a horizontal swipe — exactly the arrangement 홈 already uses for its second orb
+card (`457:791`, parked beside the frame). That keeps every other element on the
+480pt frame in its Figma position.
+
+Two things Figma does not answer, both left unbuilt rather than invented:
+
+- **The swipe has no affordance.** 홈's orb card carries page dots and a
+  "옆으로 밀어…" hint because Figma draws them; neither 주간_기록 nor the graph
+  has any, so the second page is currently undiscoverable.
+- **Two premium modals are parked under the graph** — `597:1443`
+  (LifeDNA 프리미엄 기능이에요) and the loose `596:1073` group (7일 무료로 먼저
+  사용해보세요), both 162×95. By the same canvas rule they belong to the graph,
+  which reads as the graph being a paid feature. Not built.
+
+Figma draws the line as three objects — a gradient area fill, a 0.5pt gradient
+stroke expressed as a nearly flat path rotated -10.92°, and seven 2pt dots. The
+component regenerates all three from the point scores (Catmull-Rom → cubic
+bezier) rather than tracing them, so it is ready for real data. Checked against
+the export: the generated curve tracks Figma's to within 1.1pt at its worst
+across every column, and the mock scores round-trip to Figma's exact dots.
 
 - `SelectButton*_History` (`#7786A8` / `#F7F8FA`) now exists on all five levels
   and is implemented as `state="history"`.
