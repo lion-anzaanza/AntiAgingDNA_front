@@ -14,46 +14,30 @@
 호환되면 JS만 밀어넣습니다. `app.json`의 `runtimeVersion.policy: "fingerprint"`가
 그 전제고, Expo 공식 액션 `continuous-deploy-fingerprint`가 비교를 대신합니다.
 
-## 설정 진행 상황
+## 설정 완료 — 파이프라인이 돌고 있습니다
 
-**파이프라인은 아직 한 번도 돌지 않았습니다.** 1~3은 끝났고, 남은 건 4·5입니다 —
-둘 다 Apple 로그인을 거치는 대화형 명령이라 터미널에서 직접 실행해야 합니다.
+2026-08-17에 처음부터 끝까지 검증했습니다.
 
-1. ~~Expo 계정 연결~~ — **완료**. `@jiseong02/lifedna`
-   (projectId `563d1ebe-8bca-4256-b0d1-8d2be077cdbd`), `updates.url` 설정됨.
-   <details><summary>당시 사용한 명령</summary>
-   ```bash
-   npx eas-cli@latest login
-   npx eas-cli@latest init             # app.json에 owner / extra.eas.projectId 를 써줍니다
-   npx eas-cli@latest update:configure # updates.url 을 써줍니다
-   ```
-   패키지 이름은 `eas-cli`입니다 — `npx eas`로는 실행되지 않습니다
-   (`could not determine executable to run`).
-   </details>
+| 항목 | 값 |
+|---|---|
+| EAS 프로젝트 | `@jiseong02/lifedna` (`563d1ebe-8bca-4256-b0d1-8d2be077cdbd`) |
+| GitHub Secret | `EXPO_TOKEN` |
+| Apple 팀 | `AD7L447NHY` |
+| App ID | `cloud.anzaanza.lifedna` |
+| App Store Connect 앱 | `LifeDNA` · `6802059100` · SKU `lifedna-ios` |
+| 인증서 / 프로파일 / API Key | EAS 보관 (`eas credentials`로 생성) |
 
-2. ~~GitHub Secret 등록~~ — **완료**. Expo 토큰 `github-actions-lifedna`를
-   발급해 저장소 Secret `EXPO_TOKEN`으로 등록했습니다.
+**수동 최초 빌드는 필요 없었습니다.** fingerprint에 맞는 빌드가 없으면 워크플로가
+알아서 빌드를 시작합니다 — 첫 push가 그대로 첫 빌드가 됐습니다.
 
-3. ~~App Store Connect에 앱 레코드 생성~~ — **완료 (2026-08-17)**.
-   Apple Developer 팀 `AD7L447NHY`에 App ID `cloud.anzaanza.lifedna`(설명
-   `LifeDNA`)를 등록하고, App Store Connect에 `LifeDNA` 앱을 만들었습니다
-   (기본 언어 한국어, SKU `lifedna-ios`, 앱 ID `6802059100`).
-   `eas.json`의 `ascAppId`에 반영돼 있습니다.
+검증 결과:
 
-4. **Apple 자격증명 연결**
-   ```bash
-   npx eas-cli@latest credentials   # 대화형으로 한 번 — EAS가 인증서를 관리하게 둡니다
-   ```
+- **1차 push** — `No existing iOS build found for fingerprint, starting a new build...`
+  → 빌드 `7103a386` (build number 2) → TestFlight 제출 `finished`
+- **2차 push** (빈 커밋, fingerprint 동일) —
+  `Existing iOS build found with matching fingerprint` → **빌드 없이 업데이트만 발행**
 
-5. **최초 네이티브 빌드는 수동으로 한 번**
-   ```bash
-   npx eas-cli@latest build --platform ios --profile production --auto-submit
-   ```
-   `continuous-deploy-fingerprint`는 "비교할 기존 빌드"가 있어야 동작합니다.
-   이 한 번이 기준선입니다.
-
-6. **팀원을 내부 테스터로 초대** — App Store Connect → TestFlight.
-   내부 테스터는 최대 100명이고 심사를 거치지 않습니다.
+빌드는 여전히 1개, 업데이트만 그 위에 쌓입니다.
 
 ## 그다음부터
 
