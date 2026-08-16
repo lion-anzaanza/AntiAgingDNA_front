@@ -12,7 +12,10 @@
       "android"
     ],
     "ios": {
-      "bundleIdentifier": "cloud.anzaanza.lifedna"
+      "bundleIdentifier": "cloud.anzaanza.lifedna",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "cloud.anzaanza.lifedna",
