@@ -536,5 +536,37 @@ Not built, in the order they would matter:
   release binary size. `lottie-react-native` is *not* bundled and would force a
   development build.
 
-Next planned work: the remaining 일지 screens (메인 · 캘린더 · 상세보기), then
-05_개선책 and 06_마이페이지 — which are also what the two dead tabs are waiting on.
+### 개선책 — built
+
+All four screens of 05_사용자_맞춤_개선책 are built and reachable, and the tab is
+a real `TabTrigger` now, so only MY is still an inert button.
+
+메인 (`559:1297`) is the tab root; 맞춤 영양제 (`559:1295`), 주간 리포트
+(`559:1294`) and 한 달 뒤 내 모습 (`523:490`) push on top. Two pieces are shared
+in `components/ui`: `PlanCard` (the icon + title + caption row, which 메인 and
+리포트 draw a point or two apart) and `AreaDeltaCard` (지난 주 대비 영역별 변화,
+identical on 리포트 and 한달뒤).
+
+What is drawn but does nothing:
+
+- **담기 and 3종 정기구독으로 담기** — there is no cart, and the API documents no
+  commerce endpoints at all.
+- **오늘의 실천 rows** mark themselves done locally and reset on unmount. Which
+  six rows a user sees is a data question: the section carries a long note
+  listing the full catalogue per 영역, meant to surface "오늘의 한 가지" against
+  whichever area is lowest that day.
+
+Slips worth a designer's eye, resolved by picking the majority reading:
+
+- **한달뒤내모습 carries `BottomBar4`**, which lights MY rather than 개선책. The
+  bar derives its active tab from the route, so it lights 개선책.
+- **The 오늘의 실천 progress bar does not match its own label** — the filled and
+  empty halves are 70 and 22 wide, which is 76%, beside a "70%".
+- **The 예상 성장 곡선's middle point sits ~2pt below** where a straight 74→81
+  scale puts it, so the drawn curve is less optimistic in the middle than the
+  numbers beside it. The linear scale is used.
+- **The teaser card's stated 151.2° gradient** converts, through the card's
+  184×52 aspect, to a near-vertical ramp that is not what the file renders. The
+  ramp is taken from the export's own corners instead.
+
+Next planned work: 06_마이페이지, which is what the last dead tab is waiting on.

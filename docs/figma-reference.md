@@ -23,7 +23,7 @@ with `get_metadata` to find its replacement.
 | `153:286` | 05_사용자_맞춤_개선책 |
 | `153:288` | 06_마이페이지 |
 
-01, 02 and one screen of 04 are implemented so far. Component library lives under
+01, 02, 03, 04 and 05 are implemented; 06_마이페이지 is untouched. Component library lives under
 `153:290` (컴포넌트), with sub-sections 버튼 `457:700`, 입력 `480:1285`,
 만족도 `457:701`, 범용 `457:820` (BottomBar), 캘린더 `603:1852` and
 나의 LifeDNA 정보 `603:1884`.
@@ -42,7 +42,12 @@ with `get_metadata` to find its replacement.
 | `480:1269` | 일지/오늘의기록(생성) | `journal/today.tsx` |
 | `480:1268` | 일지/메인 | — |
 | `480:1274` | 일지/캘린더 | — |
-| `480:1275` | 일지/상세보기 | — |
+| `480:1275` | 일지/상세보기 | `journal/[date].tsx` |
+| `585:1436` | 주간_컨디션_그래프 | `ui/weekly-condition-chart.tsx` |
+| `559:1297` | 개선책/메인 | `(tabs)/plan/index.tsx` |
+| `559:1295` | 개선책/맞춤영양제 | `(tabs)/plan/supplements.tsx` |
+| `559:1294` | 개선책/주간리포트 | `(tabs)/plan/report.tsx` |
+| `523:490` | 개선책/한달뒤내모습 | `(tabs)/plan/forecast.tsx` |
 
 Frames are 220 wide and 480 tall, except the scrolling ones — 회원가입/2 is 1272.
 
@@ -66,6 +71,10 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 | 일지/오늘의기록 | 18 | 184 | cards inside are 182 |
 | 일지/캘린더 | **17** | **186** | |
 | 일지/상세보기 | 18 | 184 | cards 182, loose rects 184 |
+| 개선책/메인 | 18 | 184 | 한달뒤 teaser at 17 |
+| 개선책/맞춤영양제 | **17** | 184 | |
+| 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 |
+| 개선책/한달뒤내모습 | **17** | 184 | |
 
 Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
 184pt column overflowed the row and collapsed the 2×2 grid into one column.
