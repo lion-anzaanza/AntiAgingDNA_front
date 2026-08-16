@@ -28,6 +28,12 @@ Expo / React Native app. The UI is ported from Figma.
 API cannot do belongs there the moment you notice it — that document is how the
 backend team hears about it.
 
+It is organised by **who has to move next**, not by priority, and the status
+that matters most is 🟡 프론트: the backend answered *and the answer requires a
+screen change*. Filing those as "resolved" is how the work disappears — four of
+them sat unnoticed until a re-read. When a reply lands, decide which side it
+leaves the ball on before closing anything.
+
 `docs/figma-reference.md` and `docs/backend-api.md` are both **caches**, not
 truth. Node IDs have already churned once; the API spec is regenerated with
 `curl -s https://antiaging-dna.anzaanza.cloud/v3/api-docs`. Confirm anything you
