@@ -36,7 +36,7 @@ const DELTAS: AreaDeltas = {
 
 export default function ForecastScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView contentContainerStyle={{ paddingTop: scale(6), paddingBottom: scale(24) }}>
         <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center', ...COLUMN }}>
           <ButtonBack fallbackHref="/plan" />

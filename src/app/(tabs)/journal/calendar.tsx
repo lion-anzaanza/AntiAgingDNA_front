@@ -63,7 +63,7 @@ export default function JournalCalendarScreen() {
   const rows = Array.from({ length: cells.length / 7 }, (_, r) => cells.slice(r * 7, r * 7 + 7));
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: scale(17),

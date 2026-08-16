@@ -16,7 +16,7 @@ const CONTENT_INSET = 17;
 
 export default function WearableScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView contentContainerStyle={{ paddingTop: scale(14), paddingBottom: scale(24) }}>
         <View
           style={{

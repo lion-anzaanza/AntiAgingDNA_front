@@ -67,7 +67,7 @@ export default function JournalTodayScreen() {
   const [metPeople, setMetPeople] = useState<string | null>(null);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: scale(18),

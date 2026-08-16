@@ -80,7 +80,7 @@ export default function JournalDetailScreen() {
   const { date } = useLocalSearchParams<{ date: string }>();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: scale(18),
