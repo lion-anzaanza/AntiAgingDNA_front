@@ -66,6 +66,7 @@ const LINKS: {
     caption: '마그네슘 테아닌 외 2종',
     icon: require('@/assets/images/plan/ic-supplement.png'),
     iconHeight: 25,
+    href: '/plan/supplements',
   },
   {
     key: 'report',
