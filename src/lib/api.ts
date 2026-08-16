@@ -109,3 +109,22 @@ export function messageFor(error: unknown): string {
   if (title && detail) return `${title}\n${detail}`;
   return title ?? detail ?? '요청을 처리하지 못했어요.';
 }
+
+/**
+ * `GET /api/auth/check-login-id` and `check-email` (backlog item 14). Both are
+ * open endpoints answering `{"available": true|false}`.
+ *
+ * Without these the first sign that an 아이디 is taken is a 409 on the *last*
+ * step, three screens after it was typed.
+ */
+export async function checkAvailability(
+  field: 'loginId' | 'email',
+  value: string,
+): Promise<boolean> {
+  const path =
+    field === 'loginId'
+      ? `/api/auth/check-login-id?loginId=${encodeURIComponent(value)}`
+      : `/api/auth/check-email?email=${encodeURIComponent(value)}`;
+  const { available } = await request<{ available: boolean }>(path);
+  return available;
+}

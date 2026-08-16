@@ -1,10 +1,12 @@
 import { router } from 'expo-router';
-import { ScrollView, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { StepHeader } from '@/components/ui/step-header';
 import { TextInputField } from '@/components/ui/text-input';
+import { checkAvailability, messageFor } from '@/lib/api';
 import { scale } from '@/lib/scale';
 import { isPersonalInfoComplete, useSignUpForm } from '@/lib/sign-up-form';
 
@@ -18,7 +20,36 @@ import { isPersonalInfoComplete, useSignUpForm } from '@/lib/sign-up-form';
 
 export default function PersonalInfoScreen() {
   const { form, update } = useSignUpForm();
-  const canContinue = isPersonalInfoComplete(form);
+  const [checking, setChecking] = useState(false);
+  const canContinue = isPersonalInfoComplete(form) && !checking;
+
+  /*
+   * 아이디 and 이메일 duplication is caught here rather than on submit. Signup
+   * only posts from STEP 3, so without this the first sign of a taken 아이디 is
+   * a 409 three screens later, with no way back to the field except 뒤로 twice.
+   *
+   * A failed *check* is not a reason to block: if the network is down the user
+   * still gets the 409 at the end, which is where they were before.
+   */
+  async function next() {
+    setChecking(true);
+    try {
+      const [idFree, emailFree] = await Promise.all([
+        checkAvailability('loginId', form.loginId.trim()),
+        checkAvailability('email', form.email.trim()),
+      ]);
+      const taken = [!idFree && '아이디', !emailFree && '이메일'].filter(Boolean);
+      if (taken.length > 0) {
+        Alert.alert('이미 사용 중이에요', `${taken.join('과 ')}를 다시 정해주세요.`);
+        return;
+      }
+    } catch (error) {
+      console.warn('중복 확인을 건너뜁니다', messageFor(error));
+    } finally {
+      setChecking(false);
+    }
+    router.push('/(auth)/sign-up/survey');
+  }
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
@@ -87,7 +118,7 @@ export default function PersonalInfoScreen() {
             label="다음 →"
             disabled={!canContinue}
             style={{ opacity: canContinue ? 1 : 0.4 }}
-            onPress={() => router.push('/(auth)/sign-up/survey')}
+            onPress={next}
           />
         </View>
       </ScrollView>
