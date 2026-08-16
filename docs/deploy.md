@@ -21,10 +21,12 @@
 
 1. **Expo 계정 연결**
    ```bash
-   npx eas login
-   npx eas init          # app.json에 owner / extra.eas.projectId 를 써줍니다
-   npx eas update:configure   # updates.url 을 써줍니다
+   npx eas-cli@latest login
+   npx eas-cli@latest init             # app.json에 owner / extra.eas.projectId 를 써줍니다
+   npx eas-cli@latest update:configure # updates.url 을 써줍니다
    ```
+   패키지 이름은 `eas-cli`입니다 — `npx eas`로는 실행되지 않습니다
+   (`could not determine executable to run`).
    `eas init`과 `update:configure`가 쓰는 값 없이는 OTA가 어디로 붙을지 모릅니다.
 
 2. **GitHub Secret 등록** — Expo에서 액세스 토큰을 발급해
@@ -37,12 +39,12 @@
 
 4. **Apple 자격증명 연결**
    ```bash
-   npx eas credentials      # 대화형으로 한 번 — EAS가 인증서를 관리하게 둡니다
+   npx eas-cli@latest credentials   # 대화형으로 한 번 — EAS가 인증서를 관리하게 둡니다
    ```
 
 5. **최초 네이티브 빌드는 수동으로 한 번**
    ```bash
-   npx eas build --platform ios --profile production --auto-submit
+   npx eas-cli@latest build --platform ios --profile production --auto-submit
    ```
    `continuous-deploy-fingerprint`는 "비교할 기존 빌드"가 있어야 동작합니다.
    이 한 번이 기준선입니다.
