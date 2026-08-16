@@ -42,6 +42,10 @@ jobs:
   deploy:
     needs: checks
     runs-on: ubuntu-latest
+    # 저장소 기본 토큰 권한이 read라, 릴리스와 태그를 만들려면 여기서 올려야
+    # 합니다. deploy 잡에만 주고 checks 잡은 읽기로 둡니다.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -61,8 +65,62 @@ jobs:
       - run: npm ci
 
       - uses: expo/expo-github-action/continuous-deploy-fingerprint@main
+        id: deploy
         with:
           profile: production
           branch: release
           platform: ios
           auto-submit-builds: true
+
+      # 아래 두 단계는 **네이티브 빌드가 실제로 시작된 경우에만** 돕니다.
+      # `ios-build-id`는 빌드를 띄웠을 때만 채워지므로, OTA로 끝난 push는 여기서
+      # 통째로 건너뜁니다 — 하루에 여러 번 나가는 업데이트마다 릴리스를 만들면
+      # 목록이 금세 쓸모없어집니다.
+
+      - name: 빌드 완료까지 대기
+        if: steps.deploy.outputs.ios-build-id != ''
+        id: build
+        run: |
+          set -u
+          ID='${{ steps.deploy.outputs.ios-build-id }}'
+          STATUS=''
+          # 빌드는 보통 10~20분. 저장소가 public이라 Actions 분은 무료라서,
+          # 빌드 성공을 확인하고 릴리스를 만드는 쪽을 택했습니다.
+          for _ in $(seq 1 60); do
+            npx eas-cli@latest build:view "$ID" --json > build.json 2>/dev/null || true
+            STATUS=$(jq -r '.status // empty' build.json 2>/dev/null || echo '')
+            echo "status=$STATUS"
+            case "$STATUS" in FINISHED|ERRORED|CANCELED) break;; esac
+            sleep 30
+          done
+          {
+            echo "status=$STATUS"
+            echo "version=$(jq -r '.appVersion // empty' build.json)"
+            echo "number=$(jq -r '.appBuildVersion // empty' build.json)"
+            echo "url=$(jq -r '.artifacts.buildUrl // empty' build.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      # 빌드가 성공했을 때만 릴리스를 만듭니다. 실패한 빌드를 가리키는 릴리스는
+      # "이게 나갔다"는 릴리스의 의미를 망칩니다.
+      - name: GitHub Release 생성
+        if: steps.build.outputs.status == 'FINISHED'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="v${{ steps.build.outputs.version }}-${{ steps.build.outputs.number }}"
+          # 태그는 빌드된 바로 그 커밋을 가리켜야 합니다 — 기본값은 저장소의
+          # 기본 브랜치라서 release 브랜치의 커밋과 어긋납니다.
+          #
+          # --notes 는 --generate-notes 가 만든 커밋 목록 **앞에** 붙습니다.
+          # 시작 지점은 직전 릴리스를 GitHub이 알아서 잡습니다.
+          gh release create "$TAG" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
+            --generate-notes \
+            --notes "빌드 ${{ steps.build.outputs.number }} — TestFlight에 제출했습니다. Apple 처리에 보통 몇 분 더 걸립니다.
+
+          EAS 빌드: ${{ steps.build.outputs.url }}
+
+          이 목록에는 **네이티브 빌드만** 올라옵니다. 이후 JS·화면 변경은 OTA로
+          나가서 앱을 재시작하면 반영되고, 릴리스를 따로 만들지 않습니다."

@@ -23,6 +23,8 @@ export type User = {
   email: string;
   nickname: string;
   birthYear: number;
+  /** Consecutive days with a diary entry — the server counts it (backlog 28). */
+  streakDays: number;
 };
 
 type TokenResponse = {

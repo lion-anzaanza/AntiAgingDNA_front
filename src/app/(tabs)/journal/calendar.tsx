@@ -45,7 +45,7 @@ function summaryFor(day: number): DailySummary {
     score: 82,
     grade: '컨디션 좋음',
     sleep: '7.1h',
-    water: '3컵',
+    water: '3~5잔',
     stress: '6/10',
     condition: 4,
     conditionLabel: '좋음',
