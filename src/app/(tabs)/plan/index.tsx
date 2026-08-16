@@ -28,11 +28,6 @@ const COLUMN = {
 };
 
 /**
- * 맞춤 영양제 / 주간 리포트 / 한 달 뒤 내 모습 are the section's other three
- * screens; these cards and the forecast teaser are inert until those land.
- */
-
-/**
  * A row is either still open — a `#E9F0FF` 완료! button — or done, which greys
  * and strikes the label and swaps the button for a mint check.
  */
@@ -112,7 +107,7 @@ export default function PlanMainScreen() {
         </View>
 
         <View style={{ marginTop: scale(8), ...COLUMN }}>
-          <ForecastTeaser />
+          <ForecastTeaser onPress={() => router.push('/plan/forecast')} />
         </View>
 
         <View style={{ marginTop: scale(13), flexDirection: 'row', alignItems: 'center', ...COLUMN }}>
@@ -217,9 +212,9 @@ export default function PlanMainScreen() {
  * unreadable: a grey "?" sits over it and the score reads `??`, because the
  * forecast itself lives behind 한 달 뒤 내 모습.
  */
-function ForecastTeaser() {
+function ForecastTeaser({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable>
+    <Pressable onPress={onPress}>
       <LinearGradient
         colors={['#FDF0FF', '#FFFFFF']}
         locations={[0.234, 0.984]}

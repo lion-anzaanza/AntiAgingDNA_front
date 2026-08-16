@@ -3,6 +3,7 @@ import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg'
 
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
+import { areaPath, splinePath } from '@/lib/spline';
 import { GradientText } from './gradient-text';
 
 /**
@@ -63,32 +64,10 @@ function plot(points: ConditionPoint[]) {
   }));
 }
 
-/**
- * Catmull-Rom through the points, converted to cubic beziers — the same gentle
- * S Figma drew by hand, but derived from the values.
- */
-function splinePath(points: { x: number; y: number }[]) {
-  if (points.length < 2) return '';
-  let d = `M ${points[0].x} ${points[0].y}`;
-  for (let i = 0; i < points.length - 1; i += 1) {
-    const p0 = points[i - 1] ?? points[i];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[i + 2] ?? p2;
-    d += ` C ${p1.x + (p2.x - p0.x) / 6} ${p1.y + (p2.y - p0.y) / 6}`;
-    d += ` ${p2.x - (p3.x - p1.x) / 6} ${p2.y - (p3.y - p1.y) / 6}`;
-    d += ` ${p2.x} ${p2.y}`;
-  }
-  return d;
-}
-
 export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartProps) {
   const plotted = plot(points);
   const line = splinePath(plotted);
-  const last = plotted[plotted.length - 1];
-  const first = plotted[0];
-  // The fill is the same curve, dropped to the baseline and closed.
-  const area = `${line} L ${last.x} ${FILL_BASELINE} L ${first.x} ${FILL_BASELINE} Z`;
+  const area = areaPath(plotted, FILL_BASELINE);
 
   return (
     <View
