@@ -569,4 +569,27 @@ Slips worth a designer's eye, resolved by picking the majority reading:
   184×52 aspect, to a near-vertical ramp that is not what the file renders. The
   ramp is taken from the export's own corners instead.
 
-Next planned work: 06_마이페이지, which is what the last dead tab is waiting on.
+### 마이페이지 — built as far as Figma goes
+
+`Frame 28` (`583:969`) is the MY tab root and `Frame 26` (`583:862`) is
+웨어러블 연동. Every tab in the bar is a real route now.
+
+**The other two frames are not designed.** 데이터 개인정보 (`583:913`) repeats the
+same five-row menu under a different title, and 구독관리 (`585:1399`) is a title
+over an empty 184×160 rectangle. Neither is built and the rows that would open
+them do nothing — inventing content for them is a product decision, not a port.
+
+The five menu icons are a single screenshot sheet cropped per row (rule 7's
+"one bitmap can back several nodes"), cut into `assets/images/my/ic-*.png`.
+
+One slip corrected rather than reproduced: Figma puts the `무료` tier beside
+이용약관 while the icons stay with their labels. The sibling frame shows the same
+values against a different label order, which is what gives it away — a tier
+belongs to 구독 관리, so it sits there.
+
+Nothing behind 연동하기, 개발자 커피사주기 or 로그아웃 | 회원탈퇴: pairing a watch
+needs a native module, and the API has neither wearable nor commerce endpoints.
+
+Next planned work: there is no unported Figma screen left. The open fronts are
+wiring the backend (the backlog got its first reply on 2026-08-16) and the
+motion phases listed above.

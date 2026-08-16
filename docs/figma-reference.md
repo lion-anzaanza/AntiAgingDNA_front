@@ -23,7 +23,8 @@ with `get_metadata` to find its replacement.
 | `153:286` | 05_사용자_맞춤_개선책 |
 | `153:288` | 06_마이페이지 |
 
-01, 02, 03, 04 and 05 are implemented; 06_마이페이지 is untouched. Component library lives under
+Every section is implemented, as far as Figma has drawn it — 06 has two
+undesigned frames (see the screens table). Component library lives under
 `153:290` (컴포넌트), with sub-sections 버튼 `457:700`, 입력 `480:1285`,
 만족도 `457:701`, 범용 `457:820` (BottomBar), 캘린더 `603:1852` and
 나의 LifeDNA 정보 `603:1884`.
@@ -48,6 +49,10 @@ with `get_metadata` to find its replacement.
 | `559:1295` | 개선책/맞춤영양제 | `(tabs)/plan/supplements.tsx` |
 | `559:1294` | 개선책/주간리포트 | `(tabs)/plan/report.tsx` |
 | `523:490` | 개선책/한달뒤내모습 | `(tabs)/plan/forecast.tsx` |
+| `583:969` | 마이페이지 (Frame 28) | `(tabs)/my/index.tsx` |
+| `583:862` | 웨어러블 연동 (Frame 26) | `(tabs)/my/wearable.tsx` |
+| `583:913` | 데이터 개인정보 (Frame 27) | — 미디자인 (메뉴 반복) |
+| `585:1399` | 구독관리 (Frame 25) | — 미디자인 (빈 상자) |
 
 Frames are 220 wide and 480 tall, except the scrolling ones — 회원가입/2 is 1272.
 
@@ -75,6 +80,8 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 | 개선책/맞춤영양제 | **17** | 184 | |
 | 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 |
 | 개선책/한달뒤내모습 | **17** | 184 | |
+| 마이페이지 | **17** | 184 | menu card radius 6, not 10 |
+| 웨어러블 연동 | **17** | 184 | watch is full-bleed 220×220 |
 
 Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
 184pt column overflowed the row and collapsed the 2×2 grid into one column.
