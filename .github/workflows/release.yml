@@ -72,12 +72,15 @@ jobs:
           platform: ios
           auto-submit-builds: true
 
-      # 아래 두 단계는 **네이티브 빌드가 실제로 시작된 경우에만** 돕니다.
-      # `ios-build-id`는 빌드를 띄웠을 때만 채워지므로, OTA로 끝난 push는 여기서
-      # 통째로 건너뜁니다 — 하루에 여러 번 나가는 업데이트마다 릴리스를 만들면
-      # 목록이 금세 쓸모없어집니다.
+      # `ios-build-id`는 **빌드를 시작했을 때뿐 아니라 기존 빌드를 재사용했을
+      # 때도** 채워집니다 (그 빌드의 ID가 들어옵니다). 그래서 "빌드가 났는지"를
+      # 이 값의 유무로 판단할 수 없습니다 — 실제로 그렇게 만들었다가 OTA push에서
+      # 이미 있는 태그를 다시 만들려다 실패했습니다.
+      #
+      # 대신 **태그가 이미 있는지**로 갈립니다. 결과적으로 멱등해서, 재실행하거나
+      # 같은 빌드로 여러 번 배포해도 릴리스가 중복되지 않습니다.
 
-      - name: 빌드 완료까지 대기
+      - name: 빌드 정보 조회 (진행 중이면 완료까지 대기)
         if: steps.deploy.outputs.ios-build-id != ''
         id: build
         run: |
@@ -114,6 +117,14 @@ jobs:
         run: |
           set -euo pipefail
           TAG="v${{ steps.build.outputs.version }}-${{ steps.build.outputs.number }}"
+
+          # 이 빌드로는 이미 릴리스를 냈다는 뜻 — 이번 push는 기존 빌드를
+          # 재사용한 OTA 배포입니다. 업데이트는 릴리스를 만들지 않습니다.
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "릴리스 $TAG 는 이미 있습니다. 이번 push는 OTA 업데이트입니다."
+            exit 0
+          fi
+
           # 태그는 빌드된 바로 그 커밋을 가리켜야 합니다 — 기본값은 저장소의
           # 기본 브랜치라서 release 브랜치의 커밋과 어긋납니다.
           #
