@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { ScrollView, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,11 @@ import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
 import { SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
+import { messageFor, request } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
+import { isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import { toDiaryDraft, toDiaryRequest, type DiaryFields } from '@/lib/diary-request';
 import {
   CAFFEINE_CAPTION,
   CAFFEINE_CUPS,
@@ -48,6 +53,16 @@ import { scale } from '@/lib/scale';
  * `personal-info.tsx`, do not copy them as a pattern for a new screen.
  */
 export default function JournalTodayScreen() {
+  const router = useRouter();
+  const { token } = useAuth();
+  // Pinned for the screen's lifetime so the header, the payload and the path
+  // cannot disagree if the day rolls over while the form is open.
+  const [today] = useState(() => new Date());
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [conditionMissing, setConditionMissing] = useState(false);
+  const scroller = useRef<ScrollView>(null);
+
   const [condition, setCondition] = useState<FeelValue | null>(null);
   const [sleepOnset, setSleepOnset] = useState<string | null>(null);
   const [sleepFeel, setSleepFeel] = useState<FeelValue | null>(null);
@@ -66,9 +81,121 @@ export default function JournalTodayScreen() {
   const [moodRecovery, setMoodRecovery] = useState<string | null>(null);
   const [metPeople, setMetPeople] = useState<string | null>(null);
 
+  /*
+   * `PUT /api/diaries/{date}` replaces the whole entry, so the form has to open
+   * holding whatever is already recorded for today — otherwise saving a second
+   * time in one day wipes the first save's answers. A day with no entry answers
+   * 404 (backlog 23) and simply leaves the form empty.
+   *
+   * Any other failure leaves it empty too. That is safe here because the same
+   * network that fails this read fails the write: an empty form the user then
+   * saves would have to reach the server to destroy anything.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const saved = await request<DiaryFields>(`/api/diaries/${isoDate(today)}`, { token });
+        if (cancelled || !saved) return;
+        const draft = toDiaryDraft(saved);
+        setCondition(draft.condition);
+        setSleepOnset(draft.sleepOnset);
+        setSleepFeel(draft.sleepFeel);
+        setMeals(draft.meals);
+        setJunkFood(draft.junkFood);
+        setCaffeineCups(draft.caffeineCups);
+        setCaffeineTime(draft.caffeineTime);
+        setWater(draft.water);
+        setDidExercise(draft.didExercise);
+        setExerciseMinutes(draft.exerciseMinutes);
+        setExerciseKind(draft.exerciseKind);
+        setWalked(draft.walked);
+        setSat(draft.sat);
+        setStress(draft.stress);
+        setScreenTime(draft.screenTime);
+        setMoodRecovery(draft.moodRecovery);
+        setMetPeople(draft.metPeople);
+      } catch {
+        // 404 — 기록이 없는 날. Nothing to restore.
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [today, token]);
+
+  /*
+   * `conditionLevel` is the only field the server requires, so it is the only
+   * one that can stop a save — every other question may be left blank.
+   *
+   * It used to *disable* the button, which left the user with a dead grey
+   * button and no reason. Figma has an answer for that now: `SelectFeel5`'s
+   * `NeedAnswer` variant (red border + "아직 응답하지 않았어요"). So the button
+   * stays live and the check moved to the press — tapping it with 컨디션 blank
+   * marks the card instead of doing nothing.
+   *
+   * `saving`/`loading` still disable it, but those are not validation: they stop
+   * a double submit and stop a save landing between mount and the restore above,
+   * which would overwrite the day with a form the user never saw.
+   */
+  const busy = saving || loading;
+
+  async function save() {
+    if (condition === null) {
+      setConditionMissing(true);
+      // The card is at the top of a long form and the button is at the bottom,
+      // so marking it is useless unless the user is taken to it.
+      scroller.current?.scrollTo({ y: 0, animated: true });
+      return;
+    }
+    setConditionMissing(false);
+    setSaving(true);
+    try {
+      await request(`/api/diaries/${isoDate(today)}`, {
+        method: 'PUT',
+        token,
+        body: toDiaryRequest({
+          condition,
+          sleepOnset,
+          sleepFeel,
+          meals,
+          junkFood,
+          caffeineCups,
+          caffeineTime,
+          water,
+          didExercise,
+          exerciseMinutes,
+          exerciseKind,
+          walked,
+          sat,
+          stress,
+          screenTime,
+          moodRecovery,
+          metPeople,
+        }),
+      });
+      // 일지 메인 is still Figma's static numbers, so returning to it shows no
+      // trace of the save — hence a confirmation. Replace it with whatever the
+      // design lands on once that screen reads real data.
+      Alert.alert('오늘 기록을 저장했어요', undefined, [{ text: '확인', onPress: leave }]);
+    } catch (error) {
+      Alert.alert('저장하지 못했어요', messageFor(error));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function leave() {
+    if (router.canGoBack()) router.back();
+    else router.replace('/(tabs)/journal');
+  }
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
+        ref={scroller}
         contentContainerStyle={{
           paddingHorizontal: scale(18),
           paddingTop: scale(3),
@@ -94,7 +221,7 @@ export default function JournalTodayScreen() {
               color: '#696969',
             }}
             className="font-pretendard">
-            8월 3일 월요일
+            {koreanDate(today)}
           </Text>
         </View>
 
@@ -117,18 +244,28 @@ export default function JournalTodayScreen() {
           <Text
             style={{ fontSize: scale(7), lineHeight: scale(10), color: '#88877F' }}
             className="font-pretendard">
-            기록할수록 나의 LifeDAN가 더 정교해져요
+            기록할수록 나의 LifeDNA가 더 정교해져요
           </Text>
         </View>
 
         <SectionHeading first>오늘의 컨디션</SectionHeading>
         <FeelSelect
+          needAnswer={conditionMissing}
           label="오늘 하루 컨디션은 어땠나요?"
           value={condition}
-          onChange={setCondition}
+          onChange={(next) => {
+            setCondition(next);
+            setConditionMissing(false);
+          }}
         />
 
         <SectionHeading>수면습관</SectionHeading>
+        {/*
+         * Display-only, and therefore **not saved**: there is no picker behind
+         * `InputTime_Card` in Figma or in code, so 취침·기상 시각 is never
+         * collected and `sleepStartedAt`/`sleepEndedAt` are omitted from the
+         * payload rather than sent as this mock. Backlog item 29.
+         */}
         <InputTimeCard
           label="취침 기상 시각"
           startLabel="취침"
@@ -356,11 +493,21 @@ export default function JournalTodayScreen() {
         </View>
 
         <View style={{ marginTop: scale(39) }}>
-          <Button label="오늘 기록 저장하기 →" />
+          <Button
+            label="오늘 기록 저장하기 →"
+            onPress={save}
+            disabled={busy}
+            style={{ opacity: busy ? 0.4 : 1 }}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+/** The header's `8월 3일 월요일`, which Figma draws as a fixed string. */
+function koreanDate(date: Date) {
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 ${WEEKDAYS_SUN_FIRST[date.getDay()]}요일`;
 }
 
 /**

@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text } from 'react-native';
 
 import { TONE_BG, TONE_TEXT, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -9,17 +9,27 @@ import { scale } from '@/lib/scale';
  * the shared 좋음/주의/위험 trio.
  *
  * Its shadow is a 1pt hairline, not the ambient `SHADOW` every card carries.
+ *
+ * Since the 2026-08-17 re-pull these are also the **tab strip** on 나의 LifeDNA
+ * 정보: pass `onPress` and the chip becomes selectable. Figma shows only the
+ * selected chip in its own grade colour and leaves the rest `default`, so the
+ * caller decides the tone — this component still just draws what it is told.
  */
 type DnaKindProps = {
   label: string;
   tone?: Tone | 'default';
+  onPress?: () => void;
 };
 
-export function DnaKind({ label, tone = 'default' }: DnaKindProps) {
+export function DnaKind({ label, tone = 'default', onPress }: DnaKindProps) {
   const isDefault = tone === 'default';
 
+  // Same element type every render — a Pressable with no handler is inert but
+  // keeps the tree shape identical, which AGENTS.md #3 exists to protect.
   return (
-    <View
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
       style={{
         width: scale(30),
         height: scale(11),
@@ -39,6 +49,6 @@ export function DnaKind({ label, tone = 'default' }: DnaKindProps) {
         className="font-pretendard-medium">
         {label}
       </Text>
-    </View>
+    </Pressable>
   );
 }

@@ -9,7 +9,9 @@ import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
 import { SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
+import { fromIsoDate } from '@/lib/dates';
 import { SHADOW } from '@/lib/design';
+import { toDiaryDraft, type DiaryFields } from '@/lib/diary-request';
 import {
   CAFFEINE_CAPTION,
   CAFFEINE_CUPS,
@@ -37,47 +39,38 @@ import {
   WATER_CAPTION,
 } from '@/lib/journal-options';
 import { scale } from '@/lib/scale';
+import { useApiQuery } from '@/lib/use-api-query';
 
 /**
  * Figma: 일지/상세보기 — `480:1275`. A past day, read back rather than edited:
  * every control is in its `history` state, so the answer that was given shows
  * slate and nothing responds to a tap.
  *
- * The answers below are Figma's mock. Fetching a real day needs
- * `GET /api/diaries/{date}`, and what that returns for a day with no entry is
- * still an open question (docs/backend-backlog.md item 23) — which is also the
- * 미응답 state this screen has but does not yet implement.
+ * The day comes from `GET /api/diaries/{date}` and `toDiaryDraft` turns it back
+ * into the same Korean labels the pills carry — the exact inverse of what
+ * 오늘의 기록 sends. A day with no entry answers 404 (backlog 23); the query
+ * reports that as an error and every control simply stays `inactive`, because
+ * the 미응답 state Figma designed (`SelectFeel5_NeedAnswer`) is not built.
+ *
+ * 취침·기상 시각 and 날씨 have no data behind them at all — backlog 29 and 12.
  */
-const ENTRY = {
-  title: '7월 19일 기록',
-  condition: 4 as const,
-  sleepStart: '오전 01:30',
-  sleepEnd: '오전 07:40',
-  sleepDuration: '6시간 10분',
-  sleepOnset: '15분 이내',
-  sleepFeel: 3 as const,
-  meals: '3끼',
-  junkFood: '1~2회',
-  caffeineCups: '1~2잔',
-  caffeineTime: '오전',
-  water: '3~5잔',
-  didExercise: '네',
-  exerciseMinutes: '30분',
-  exerciseKind: '걷기',
-  walked: '1시간',
-  sat: '4~8시간',
-  stress: 6,
-  screenTime: '2~4시간',
-  moodRecovery: '잠깐',
-  metPeople: '잠깐',
-  weather: '📍 서울 · ☀️ 맑음 · 28°C · 습도 55%',
-};
+const EMPTY: ReturnType<typeof toDiaryDraft> = toDiaryDraft({});
+
+/** `sleepMinutes` is always null (backlog 29), so the card has nothing to show. */
+const NO_TIME = '—';
+
+/** Not in `DiaryResponse` at all — 날씨 자동 기록 has no field yet (backlog 12). */
+const WEATHER_MOCK = '📍 서울 · ☀️ 맑음 · 28°C · 습도 55%';
 
 /** Every control on this screen is read-only, so nothing needs a handler. */
 const READ_ONLY = () => {};
 
 export default function JournalDetailScreen() {
   const { date } = useLocalSearchParams<{ date: string }>();
+  const { data } = useApiQuery<DiaryFields>(`/api/diaries/${date}`);
+  const entry = data ? toDiaryDraft(data) : EMPTY;
+  const day = fromIsoDate(date);
+  const title = `${day.getMonth() + 1}월 ${day.getDate()}일 기록`;
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
@@ -97,7 +90,7 @@ export default function JournalDetailScreen() {
               color: '#000000',
             }}
             className="font-pretendard-extrabold">
-            {ENTRY.title}
+            {title}
           </Text>
           <Text
             style={{
@@ -114,7 +107,7 @@ export default function JournalDetailScreen() {
         <SectionHeading first>이날의 컨디션</SectionHeading>
         <FeelSelect
           label="이날 하루 컨디션은?"
-          value={ENTRY.condition}
+          value={entry.condition}
           onChange={READ_ONLY}
           history
         />
@@ -124,15 +117,15 @@ export default function JournalDetailScreen() {
           label="취침 기상 시각"
           startLabel="취침"
           endLabel="기상"
-          start={ENTRY.sleepStart}
-          end={ENTRY.sleepEnd}
-          duration={ENTRY.sleepDuration}
+          start={NO_TIME}
+          end={NO_TIME}
+          duration={NO_TIME}
         />
         <Gap>
           <SelectCard
             label="잠들기까지 걸린 시간"
             options={SLEEP_ONSET}
-            value={ENTRY.sleepOnset}
+            value={entry.sleepOnset}
             onChange={READ_ONLY}
             history
           />
@@ -140,7 +133,7 @@ export default function JournalDetailScreen() {
         <Gap extra={1}>
           <FeelSelect
             label="수면 만족도"
-            value={ENTRY.sleepFeel}
+            value={entry.sleepFeel}
             onChange={READ_ONLY}
             history
           />
@@ -150,7 +143,7 @@ export default function JournalDetailScreen() {
         <SelectCard
           label="이날의 식사 횟수"
           options={MEAL_COUNT}
-          value={ENTRY.meals}
+          value={entry.meals}
           onChange={READ_ONLY}
           history
         />
@@ -159,7 +152,7 @@ export default function JournalDetailScreen() {
             label="페스트푸드·단 음식"
             caption={JUNK_FOOD_CAPTION}
             options={JUNK_FOOD}
-            value={ENTRY.junkFood}
+            value={entry.junkFood}
             onChange={READ_ONLY}
             history
           />
@@ -174,7 +167,7 @@ export default function JournalDetailScreen() {
                 <SelectButton
                   key={option}
                   label={option}
-                  state={option === ENTRY.caffeineCups ? 'history' : 'inactive'}
+                  state={option === entry.caffeineCups ? 'history' : 'inactive'}
                   level={5}
                   tone="gray"
                   style={{ width: scale(34) }}
@@ -190,7 +183,7 @@ export default function JournalDetailScreen() {
                 <SelectButton
                   key={option}
                   label={option}
-                  state={option === ENTRY.caffeineTime ? 'history' : 'inactive'}
+                  state={option === entry.caffeineTime ? 'history' : 'inactive'}
                   level={5}
                   tone="gray"
                   style={{ width: scale(CAFFEINE_TIME_WIDTH[index]) }}
@@ -205,7 +198,7 @@ export default function JournalDetailScreen() {
             label="수분 섭취량"
             caption={WATER_CAPTION}
             options={WATER}
-            value={ENTRY.water}
+            value={entry.water}
             onChange={READ_ONLY}
             history
           />
@@ -219,7 +212,7 @@ export default function JournalDetailScreen() {
               <SelectButton
                 key={option}
                 label={option}
-                state={option === ENTRY.didExercise ? 'history' : 'inactive'}
+                state={option === entry.didExercise ? 'history' : 'inactive'}
                 level={5}
                 tone="gray"
                 style={{ flex: 1 }}
@@ -232,7 +225,7 @@ export default function JournalDetailScreen() {
               <SelectButton
                 key={option}
                 label={option}
-                state={option === ENTRY.exerciseMinutes ? 'history' : 'inactive'}
+                state={option === entry.exerciseMinutes ? 'history' : 'inactive'}
                 level={5}
                 tone="gray"
                 style={{ width: scale(34) }}
@@ -245,7 +238,7 @@ export default function JournalDetailScreen() {
               <SelectButton
                 key={option}
                 label={option}
-                state={option === ENTRY.exerciseKind ? 'history' : 'inactive'}
+                state={option === entry.exerciseKind ? 'history' : 'inactive'}
                 level={5}
                 tone="gray"
                 style={{ width: scale(34) }}
@@ -258,7 +251,7 @@ export default function JournalDetailScreen() {
           <SelectCard
             label="이날 걸은 시간"
             options={WALKED}
-            value={ENTRY.walked}
+            value={entry.walked}
             onChange={READ_ONLY}
             history
           />
@@ -267,7 +260,7 @@ export default function JournalDetailScreen() {
           <SelectCard
             label="앉아 있던 시간"
             options={SAT}
-            value={ENTRY.sat}
+            value={entry.sat}
             onChange={READ_ONLY}
             history
           />
@@ -277,14 +270,14 @@ export default function JournalDetailScreen() {
         <Slider0To10
           history
           label="이날의 스트레스 지수"
-          value={ENTRY.stress}
+          value={entry.stress}
           onChange={READ_ONLY}
         />
         <Gap>
           <SelectCard
             label="스마트폰 사용 시간 (스크린타임)"
             options={SCREEN_TIME}
-            value={ENTRY.screenTime}
+            value={entry.screenTime}
             onChange={READ_ONLY}
             history
           />
@@ -294,7 +287,7 @@ export default function JournalDetailScreen() {
             label="기분 전환·회복 활동을 했나요?"
             caption={MOOD_RECOVERY_CAPTION}
             options={MOOD_RECOVERY}
-            value={ENTRY.moodRecovery}
+            value={entry.moodRecovery}
             onChange={READ_ONLY}
             history
           />
@@ -304,7 +297,7 @@ export default function JournalDetailScreen() {
             label="이날 사람을 만났나요?"
             caption={MET_PEOPLE_CAPTION}
             options={MET_PEOPLE}
-            value={ENTRY.metPeople}
+            value={entry.metPeople}
             onChange={READ_ONLY}
             history
           />
@@ -349,7 +342,7 @@ export default function JournalDetailScreen() {
               color: '#88877F',
             }}
             className="font-pretendard-bold">
-            {ENTRY.weather}
+            {WEATHER_MOCK}
           </Text>
         </View>
       </ScrollView>

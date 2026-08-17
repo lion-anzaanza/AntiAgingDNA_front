@@ -6,6 +6,7 @@ import Svg, { Circle, Defs, LinearGradient as SvgGradient, Path, Stop } from 're
 import { AreaDeltaCard, type AreaDeltas } from '@/components/ui/area-delta-card';
 import { ButtonBack } from '@/components/ui/button-back';
 import { GradientText } from '@/components/ui/gradient-text';
+import { LivingArtwork } from '@/components/ui/living-artwork';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { areaPath, splinePath } from '@/lib/spline';
@@ -64,6 +65,23 @@ export default function ForecastScreen() {
               borderRadius: scale(10),
               boxShadow: SHADOW,
             }}>
+            {/*
+             * NOT IN FIGMA. `523:490` leaves the top 57.5pt of this card empty —
+             * no orb node, no instance — while its own teaser on 개선책/메인
+             * (`Frame 33`) does carry one, so the blank reads as the artwork
+             * having been dropped from the frame rather than as a design.
+             *
+             * This is the unlocked forecast, so it takes the healthy orb the 홈
+             * card uses rather than 메인's `?` variant, sized to the aspect of
+             * 홈's own 90.28×89.92 box and centred in the empty band. Replace
+             * both the asset and the geometry once the frame is fixed.
+             */}
+            <LivingArtwork
+              source={require('@/assets/images/home/orb-nice.png')}
+              frame={{ left: 69, top: 6, width: 46, height: 45.8 }}
+              sheen
+              accessibilityLabel="30일 뒤 예상 컨디션 오브"
+            />
             <Text
               style={{
                 marginTop: scale(57.5),
