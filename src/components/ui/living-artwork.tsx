@@ -218,14 +218,23 @@ function Sheen({
       pointerEvents="none"
       maskElement={<Image source={source} style={{ width, height }} resizeMode="stretch" />}>
       <Animated.View style={[{ width: band, height: '100%' }, bandStyle]}>
+        {/*
+         * The ramp has to run straight across the band, not corner to corner.
+         * With a diagonal `start`/`end` the gradient finishes well before it has
+         * crossed the band horizontally at most heights, so what you actually
+         * see is the band's own rectangular edge — a hard vertical seam sweeping
+         * over the orb, which reads as a broken screen rather than as light.
+         * Horizontal, the fade always lands on the band's own edges.
+         */}
         <LinearGradient
           colors={[
             'rgba(255,255,255,0)',
             `rgba(255,255,255,${MOTION.sheen.strength})`,
             'rgba(255,255,255,0)',
           ]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          locations={[0, 0.5, 1]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
           style={{ flex: 1 }}
         />
       </Animated.View>
