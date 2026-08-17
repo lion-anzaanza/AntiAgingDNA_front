@@ -19,12 +19,15 @@ const CARD_WIDTH = 182;
  */
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 
+/** 1–5 → 매우나쁨…매우좋음, indexed by `value - 1`. */
+export const FEEL_LABELS = ['매우나쁨', '나쁨', '보통', '좋음', '매우좋음'] as const;
+
 const FEELS: { value: FeelValue; label: string; face: number }[] = [
-  { value: 1, label: '매우나쁨', face: require('@/assets/images/journal/feel-very-bad.png') },
-  { value: 2, label: '나쁨', face: require('@/assets/images/journal/feel-bad.png') },
-  { value: 3, label: '보통', face: require('@/assets/images/journal/feel-normal.png') },
-  { value: 4, label: '좋음', face: require('@/assets/images/journal/feel-good.png') },
-  { value: 5, label: '매우좋음', face: require('@/assets/images/journal/feel-very-good.png') },
+  { value: 1, label: FEEL_LABELS[0], face: require('@/assets/images/journal/feel-very-bad.png') },
+  { value: 2, label: FEEL_LABELS[1], face: require('@/assets/images/journal/feel-bad.png') },
+  { value: 3, label: FEEL_LABELS[2], face: require('@/assets/images/journal/feel-normal.png') },
+  { value: 4, label: FEEL_LABELS[3], face: require('@/assets/images/journal/feel-good.png') },
+  { value: 5, label: FEEL_LABELS[4], face: require('@/assets/images/journal/feel-very-good.png') },
 ];
 
 /** Matches the `SelectButton*_History` slate; only the text differs (#F1F1F1 vs #F7F8FA). */

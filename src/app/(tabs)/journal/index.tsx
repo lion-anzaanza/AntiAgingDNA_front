@@ -5,38 +5,52 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { ButtonBack } from '@/components/ui/button-back';
+import { DiaryStatus, type DiaryStatusKind } from '@/components/ui/diary-status';
 import { GradientText } from '@/components/ui/gradient-text';
 import { WeeklyConditionChart, type ConditionPoint } from '@/components/ui/weekly-condition-chart';
+import {
+  addDays,
+  isoDate,
+  lastDays,
+  mondayFirstIndex,
+  WEEKDAYS_MON_FIRST,
+} from '@/lib/dates';
 import { GRADIENT_BRAND, GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
+import { byDate, gradeFor, scoresPath, type DailyScore, type Grade } from '@/lib/score';
+import { useApiQuery } from '@/lib/use-api-query';
 
 /**
  * Figma: 일지/메인 — `480:1268`. The tab's root: this week at a glance, the
  * last few days, and the way in to today's entry.
  *
- * Static like every other screen — the numbers are Figma's.
+ * One ranged score query feeds all three sections. `dailyTotal` is what says
+ * whether a day was recorded at all — the server's `grade` tracks the smoothed
+ * `displayTotal` and disagrees with the day it labels (backlog 32), so the
+ * faces below are derived from `dailyTotal` against 22's own 70/40 boundaries.
  */
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
-/** Which of those days already has an entry, and which one is today. */
-const RECORDED = [true, true, true, false, false, false, false];
-const TODAY_INDEX = 3;
-
 /**
- * The emoticon comes with the row rather than being derived from the score:
- * the score→band boundaries are the server's to define (backlog item 22), and
- * guessing them here would disagree with its own grading.
+ * Figma's mock rows carried their emoticon rather than deriving it, because the
+ * boundaries were still open (backlog 22, since closed). Those mock scores —
+ * 84 · 79 · 56 · 21 · 8 — land on exactly these three faces under 70/40, so the
+ * design and the deployed boundaries already agree.
+ *
+ * The faces are the `Diary_Status` component now, not literal kaomoji text —
+ * see `ui/diary-status.tsx` for why that matters.
  */
-const PAST_ENTRIES = [
-  { date: '2026-07-30', label: '7월 30일 (수)', face: 'ദ്ദി ˃ ᴗ ˂ )', score: 84 },
-  { date: '2026-07-29', label: '7월 29일 (화)', face: 'ദ്ദി ˃ ᴗ ˂ )', score: 79 },
-  { date: '2026-07-28', label: '7월 28일 (월)', face: '(ง •̀_•́)ง', score: 56 },
-  { date: '2026-07-27', label: '7월 27일 (일)', face: '( •́ ̯•̀ )', score: 21 },
-  { date: '2026-07-26', label: '7월 26일 (토)', face: '( •́ ̯•̀ )', score: 8 },
-];
+const FACES: Record<Grade, DiaryStatusKind> = {
+  GOOD: 'good',
+  WARN: 'warn',
+  DANGER: 'danger',
+};
+
+const PAST_ENTRY_COUNT = 5;
+/** How far back to look for those five rows. */
+const HISTORY_DAYS = 30;
 
 const CARD_WIDTH = 184;
 const CONTENT_INSET = 19;
-const ROW_HEIGHT = 134.83 / PAST_ENTRIES.length;
+const ROW_HEIGHT = 134.83 / PAST_ENTRY_COUNT;
 
 /**
  * `주간_컨디션_그래프` (`585:1436`) is the same 184×95 as 주간_기록 and Figma parks
@@ -45,18 +59,13 @@ const ROW_HEIGHT = 134.83 / PAST_ENTRIES.length;
  * draws no page dots or hint on either card, unlike 홈's, so none are invented
  * here; see AGENTS.md.
  *
- * Scores round-trip to Figma's own dot positions.
+ * Days with no entry are **left out** rather than plotted as 0: `ConditionPoint`
+ * has no empty value, and a floor-level dot would read as a terrible day rather
+ * than a missing one.
  */
-const WEEK_CONDITION: ConditionPoint[] = [
-  { label: '8/9', score: 0 },
-  { label: '8/10', score: 8 },
-  { label: '8/11', score: 28 },
-  { label: '8/12', score: 52 },
-  { label: '8/13', score: 80 },
-  { label: '8/14', score: 96 },
-  { label: '8/15', score: 100 },
-];
-const WEEK_CONDITION_SUMMARY = '어제보다 수면 +40분 · 스트레스 −1';
+const CHART_DAYS = 7;
+/** `어제보다 수면 +40분 · 스트레스 −1` is a server-generated sentence (backlog 27). */
+const CHART_SUMMARY = '';
 
 /** `pagingEnabled` snaps by the scroll view's own width — see home.tsx. */
 const PAGE_WIDTH = Dimensions.get('window').width;
@@ -72,6 +81,40 @@ const COLUMN = {
 };
 
 export default function JournalMainScreen() {
+  const today = new Date();
+  // 주간 기록 runs 월–일, so the week starts on the Monday on or before today.
+  const monday = addDays(today, -mondayFirstIndex(today));
+  const week = Array.from({ length: 7 }, (_, index) => addDays(monday, index));
+  const from = addDays(today, -(HISTORY_DAYS - 1));
+  const to = addDays(monday, 6);
+
+  const { data } = useApiQuery<DailyScore[]>(scoresPath(from, to));
+  const scoreByDate = byDate(data, (row) => row.date);
+  const totalOf = (date: Date) => scoreByDate.get(isoDate(date))?.dailyTotal ?? null;
+
+  const todayIndex = week.findIndex((day) => isoDate(day) === isoDate(today));
+  const recorded = week.map((day) => totalOf(day) !== null);
+
+  const pastEntries = lastDays(addDays(today, -1), HISTORY_DAYS - 1)
+    .reverse()
+    .map((day) => ({ day, total: totalOf(day) }))
+    .filter((entry): entry is { day: Date; total: number } => entry.total !== null)
+    .slice(0, PAST_ENTRY_COUNT)
+    .map(({ day, total }) => ({
+      date: isoDate(day),
+      label: `${day.getMonth() + 1}월 ${day.getDate()}일 (${WEEKDAYS_MON_FIRST[mondayFirstIndex(day)]})`,
+      face: FACES[gradeFor(total)!],
+      score: Math.round(total),
+    }));
+
+  const chartPoints: ConditionPoint[] = lastDays(today, CHART_DAYS)
+    .map((day) => ({ day, total: totalOf(day) }))
+    .filter((point): point is { day: Date; total: number } => point.total !== null)
+    .map(({ day, total }) => ({
+      label: `${day.getMonth() + 1}/${day.getDate()}`,
+      score: Math.round(total),
+    }));
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
@@ -102,7 +145,7 @@ export default function JournalMainScreen() {
               color: '#696969',
             }}
             className="font-pretendard">
-            8월 3일 월요일
+            {today.getMonth() + 1}월 {today.getDate()}일 {WEEKDAYS_MON_FIRST[mondayFirstIndex(today)]}요일
           </Text>
         </View>
 
@@ -112,11 +155,13 @@ export default function JournalMainScreen() {
           showsHorizontalScrollIndicator={false}
           style={{ marginTop: scale(12) }}>
           <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
-            <WeekCard />
+            <WeekCard recorded={recorded} todayIndex={todayIndex} />
           </View>
-          <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
-            <WeeklyConditionChart points={WEEK_CONDITION} summary={WEEK_CONDITION_SUMMARY} />
-          </View>
+          {chartPoints.length === 0 ? null : (
+            <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
+              <WeeklyConditionChart points={chartPoints} summary={CHART_SUMMARY} />
+            </View>
+          )}
         </ScrollView>
 
         <Text
@@ -144,7 +189,7 @@ export default function JournalMainScreen() {
             boxShadow: SHADOW,
             overflow: 'hidden',
           }}>
-          {PAST_ENTRIES.map((entry, index) => (
+          {pastEntries.map((entry, index) => (
             <Pressable
               key={entry.date}
               onPress={() => router.push(`/journal/${entry.date}`)}
@@ -153,7 +198,7 @@ export default function JournalMainScreen() {
                 flexDirection: 'row',
                 alignItems: 'center',
                 paddingHorizontal: scale(5),
-                borderBottomWidth: index < PAST_ENTRIES.length - 1 ? scale(0.3) : 0,
+                borderBottomWidth: index < pastEntries.length - 1 ? scale(0.3) : 0,
                 borderBottomColor: '#D3D1C6',
               }}>
               <Text
@@ -161,17 +206,9 @@ export default function JournalMainScreen() {
                 className="font-pretendard-bold">
                 {entry.label}
               </Text>
-              <Text
-                style={{
-                  marginLeft: 'auto',
-                  fontSize: scale(8),
-                  lineHeight: scale(15),
-                  letterSpacing: scale(-0.8),
-                  color: '#88877F',
-                }}
-                className="font-pretendard">
-                {entry.face}
-              </Text>
+              <View style={{ marginLeft: 'auto' }}>
+                <DiaryStatus kind={entry.face} />
+              </View>
               <Text
                 style={{ fontSize: scale(8), lineHeight: scale(15), color: '#88877F' }}
                 className="font-pretendard">
@@ -190,7 +227,7 @@ export default function JournalMainScreen() {
   );
 }
 
-function WeekCard() {
+function WeekCard({ recorded, todayIndex }: { recorded: boolean[]; todayIndex: number }) {
   return (
     <View
       style={{
@@ -209,7 +246,7 @@ function WeekCard() {
       </Text>
 
       <View style={{ flexDirection: 'row', marginTop: scale(3) }}>
-        {WEEKDAYS.map((day) => (
+        {WEEKDAYS_MON_FIRST.map((day) => (
           <Text
             key={day}
             style={{
@@ -226,9 +263,9 @@ function WeekCard() {
       </View>
 
       <View style={{ flexDirection: 'row', marginTop: scale(4) }}>
-        {WEEKDAYS.map((day, index) => (
+        {WEEKDAYS_MON_FIRST.map((day, index) => (
           <View key={day} style={{ flex: 1, alignItems: 'center' }}>
-            <DayCircle recorded={RECORDED[index]} today={index === TODAY_INDEX} />
+            <DayCircle recorded={recorded[index]} today={index === todayIndex} />
           </View>
         ))}
       </View>
