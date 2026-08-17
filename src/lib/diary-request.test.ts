@@ -74,11 +74,13 @@ describe('toDiaryRequest', () => {
     expect('sleepEndedAt' in request).toBe(false);
   });
 
-  it('omits stressLevel 0, which the server still rejects (backlog 7)', () => {
-    const request = toDiaryRequest({ ...FULL, stress: 0 });
-    expect('stressLevel' in request).toBe(false);
-    // 1 is legal and must survive.
+  it('sends 0 as a real answer, and omits a slider nobody touched (backlog 7)', () => {
+    // The server accepts 0 since 2026-08-18, so 0 has to reach it...
+    expect(toDiaryRequest({ ...FULL, stress: 0 }).stressLevel).toBe(0);
     expect(toDiaryRequest({ ...FULL, stress: 1 }).stressLevel).toBe(1);
+    expect(toDiaryRequest({ ...FULL, stress: 10 }).stressLevel).toBe(10);
+    // ...but an untouched slider must not record "no stress at all".
+    expect('stressLevel' in toDiaryRequest({ ...FULL, stress: null })).toBe(false);
   });
 
   it('throws on a label it does not know, instead of dropping it', () => {
@@ -96,7 +98,7 @@ describe('toDiaryDraft', () => {
     const draft = toDiaryDraft({});
     expect(draft.condition).toBeNull();
     expect(draft.water).toBeNull();
-    expect(draft.stress).toBe(0);
+    expect(draft.stress).toBeNull();
   });
 
   it('treats an out-of-range level as unanswered rather than crashing', () => {
@@ -144,7 +146,8 @@ describe('round trip', () => {
       moodRecovery: 'NONE',
       socialContact: 'RARELY',
       exercised: false,
-      stressLevel: 1,
+      // 0 is the one that used to be dropped; it has to survive now.
+      stressLevel: 0,
     };
     expect(toDiaryRequest(toDiaryDraft(edges) as DiaryAnswers)).toEqual(edges);
   });

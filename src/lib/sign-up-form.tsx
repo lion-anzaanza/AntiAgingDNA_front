@@ -121,12 +121,25 @@ export function useSignUpForm() {
  * "Required" is taken from the API, not from taste: these are exactly the
  * fields `SignUpRequest` and `DiagnosisRequest` mark as required.
  */
+/**
+ * 2–16 characters, Hangul / Latin / digits only — the server's rule, deployed
+ * and verified 2026-08-18 (`SignUpRequest.nickname` carries `minLength: 2`,
+ * `maxLength: 16` and `pattern: ^[가-힣A-Za-z0-9]+$`). Backlog item 19.
+ *
+ * The pattern is the server's verbatim, so it rejects a space and every
+ * separator — which also means a name typed with a space is refused rather than
+ * trimmed into something the user did not write.
+ */
+export function isNickname(value: string): boolean {
+  return /^[가-힣A-Za-z0-9]{2,16}$/.test(value);
+}
+
 export function isPersonalInfoComplete(form: SignUpForm): boolean {
   return (
     // 4–32 characters of letters, digits and underscore — the server's rule, and
     // still provisional (backlog item 2).
     /^[A-Za-z0-9_]{4,32}$/.test(form.loginId.trim()) &&
-    form.nickname.trim().length > 0 &&
+    isNickname(form.nickname) &&
     isEmailish(form.email) &&
     form.password.length > 0 &&
     // Cannot check strength: the server documents no password rule at all

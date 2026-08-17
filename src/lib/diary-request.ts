@@ -124,8 +124,12 @@ export type DiaryAnswers = {
   exerciseKind: string | null;
   walked: string | null;
   sat: string | null;
-  /** `Slider0To10`'s position — see `stressLevel` below. */
-  stress: number;
+  /**
+   * `null` while the slider has never been touched, 0–10 once it has. The
+   * position alone cannot say this: the slider rests at 0, so a 0 that means
+   * "no stress" and a 0 that means "never answered" look identical.
+   */
+  stress: number | null;
   screenTime: string | null;
   moodRecovery: string | null;
   metPeople: string | null;
@@ -193,13 +197,14 @@ export function toDiaryRequest(answers: DiaryAnswers): DiaryRequest {
       walkDuration: lookup('오늘 걸은 시간', WALK_DURATION, answers.walked),
       sittingHours: lookup('앉아 있던 시간', SITTING_HOURS, answers.sat),
       /*
-       * The slider runs 0–10 and the server takes 1–10, and there is no
-       * "unanswered" position to tell 0 apart from untouched (backlog item 7,
-       * still 🟣 기획). Omitting 0 is the half the backend has already settled —
-       * "미응답 시 필드 생략" — and it is also the only reading that cannot post
-       * a value the server rejects.
+       * The server accepts 0 as of 2026-08-18 (backlog 7), so 0 is a real
+       * answer now and is sent. What is *not* sent is a slider nobody touched:
+       * `stress` is null until the user moves it, because the control rests at
+       * 0 and would otherwise record "no stress at all" for every question left
+       * alone. Omitting an unanswered field is the behaviour the backend
+       * confirmed.
        */
-      stressLevel: answers.stress === 0 ? undefined : answers.stress,
+      stressLevel: answers.stress ?? undefined,
       screenTime: lookup('스크린타임', SCREEN_TIME_VALUE, answers.screenTime),
       moodRecovery: lookup('기분 전환·회복 활동', MOOD_RECOVERY_VALUE, answers.moodRecovery),
       socialContact: lookup('오늘 사람을 만났나요', SOCIAL_CONTACT_VALUE, answers.metPeople),
@@ -297,9 +302,9 @@ export function toDiaryDraft(saved: DiaryFields): DiaryDraft {
     exerciseKind: label(REVERSE.exerciseType, saved.exerciseType),
     walked: label(REVERSE.walkDuration, saved.walkDuration),
     sat: label(REVERSE.sittingHours, saved.sittingHours),
-    // The slider has no unanswered position, so a null score rests at 0 and is
-    // omitted again on the next save (see `stressLevel` above).
-    stress: saved.stressLevel ?? 0,
+    // A day with no stress recorded comes back unanswered, not as a 0 — the
+    // slider will still rest at 0 on screen, but the form knows the difference.
+    stress: saved.stressLevel ?? null,
     screenTime: label(REVERSE.screenTime, saved.screenTime),
     moodRecovery: label(REVERSE.moodRecovery, saved.moodRecovery),
     metPeople: label(REVERSE.socialContact, saved.socialContact),
