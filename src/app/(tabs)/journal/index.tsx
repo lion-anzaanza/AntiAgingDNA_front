@@ -118,7 +118,11 @@ export default function JournalMainScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: scale(8), paddingBottom: scale(24) }}>
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: scale(8),
+          paddingBottom: scale(24),
+        }}>
         <View
           style={{
             height: scale(22),
@@ -197,7 +201,11 @@ export default function JournalMainScreen() {
                 height: scale(ROW_HEIGHT),
                 flexDirection: 'row',
                 alignItems: 'center',
-                paddingHorizontal: scale(5),
+                // Figma insets the row 19 on the left and ends the score at
+                // 170 of a 184-wide card — 14 on the right. 5/5 was far tighter
+                // than the design and read as text against the edge.
+                paddingLeft: scale(19),
+                paddingRight: scale(14),
                 borderBottomWidth: index < pastEntries.length - 1 ? scale(0.3) : 0,
                 borderBottomColor: '#D3D1C6',
               }}>
@@ -219,7 +227,17 @@ export default function JournalMainScreen() {
           ))}
         </LinearGradient>
 
-        <View style={{ marginTop: scale(49), ...COLUMN }}>
+      {/*
+        * Figma pushes this to the bottom with a fixed gap measured on its 480pt
+        * frame, but `scale()` converts by *width* — so on a device with a
+        * different aspect ratio the gap lands somewhere else and the screen
+        * either scrolls or leaves a hole. A flexible spacer pins it to the
+        * bottom of the viewport instead, which is what the design means, and
+        * `flexGrow: 1` on the content container is what gives it room to push
+        * against.
+        */}
+      <View style={{ flex: 1, minHeight: scale(24) }} />
+        <View style={{ ...COLUMN }}>
           <Button label="오늘 하루 기록하기" onPress={() => router.push('/journal/today')} />
         </View>
       </ScrollView>
