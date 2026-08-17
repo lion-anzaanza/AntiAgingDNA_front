@@ -76,7 +76,9 @@ export default function JournalTodayScreen() {
   const [exerciseKind, setExerciseKind] = useState<string | null>(null);
   const [walked, setWalked] = useState<string | null>(null);
   const [sat, setSat] = useState<string | null>(null);
-  const [stress, setStress] = useState(0);
+  // null until the slider is touched — the control rests at 0, so the value
+  // alone cannot say whether the user answered (backlog 7).
+  const [stress, setStress] = useState<number | null>(null);
   const [screenTime, setScreenTime] = useState<string | null>(null);
   const [moodRecovery, setMoodRecovery] = useState<string | null>(null);
   const [metPeople, setMetPeople] = useState<string | null>(null);
@@ -371,41 +373,59 @@ export default function JournalTodayScreen() {
                 key={option}
                 label={option}
                 state={option === didExercise ? 'active' : 'inactive'}
-                onPress={() => setDidExercise(option)}
+                onPress={() => {
+                  setDidExercise(option);
+                  if (option !== '네') {
+                    setExerciseMinutes(null);
+                    setExerciseKind(null);
+                  }
+                }}
                 level={5}
                 tone="gray"
                 style={{ flex: 1 }}
               />
             ))}
           </View>
-          <FieldCaption>운동 시간</FieldCaption>
-          <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(3.5) }}>
-            {EXERCISE_MINUTES.map((option) => (
-              <SelectButton
-                key={option}
-                label={option}
-                state={option === exerciseMinutes ? 'active' : 'inactive'}
-                onPress={() => setExerciseMinutes(option)}
-                level={5}
-                tone="gray"
-                style={{ width: scale(34) }}
-              />
-            ))}
-          </View>
-          <FieldCaption>운동 종류</FieldCaption>
-          <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(3.5) }}>
-            {EXERCISE_KIND.map((option) => (
-              <SelectButton
-                key={option}
-                label={option}
-                state={option === exerciseKind ? 'active' : 'inactive'}
-                onPress={() => setExerciseKind(option)}
-                level={5}
-                tone="gray"
-                style={{ width: scale(34) }}
-              />
-            ))}
-          </View>
+          {/*
+            * 운동 시간 and 운동 종류 only make sense once 오늘 운동했나요 is 네.
+            * Figma draws them unconditionally, but answering 아니요 and then
+            * being asked how long you exercised is nonsense — and the two
+            * answers would still be sent. Hiding them also clears them, so a
+            * user who picks 네, answers, then switches to 아니요 does not leave
+            * a contradiction behind in the payload.
+            */}
+          {didExercise === '네' ? (
+            <>
+              <FieldCaption>운동 시간</FieldCaption>
+              <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(3.5) }}>
+                {EXERCISE_MINUTES.map((option) => (
+                  <SelectButton
+                    key={option}
+                    label={option}
+                    state={option === exerciseMinutes ? 'active' : 'inactive'}
+                    onPress={() => setExerciseMinutes(option)}
+                    level={5}
+                    tone="gray"
+                    style={{ width: scale(34) }}
+                  />
+                ))}
+              </View>
+              <FieldCaption>운동 종류</FieldCaption>
+              <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(3.5) }}>
+                {EXERCISE_KIND.map((option) => (
+                  <SelectButton
+                    key={option}
+                    label={option}
+                    state={option === exerciseKind ? 'active' : 'inactive'}
+                    onPress={() => setExerciseKind(option)}
+                    level={5}
+                    tone="gray"
+                    style={{ width: scale(34) }}
+                  />
+                ))}
+              </View>
+            </>
+          ) : null}
         </View>
 
         <View style={{ marginTop: scale(CARD_GAP) }}>
@@ -421,7 +441,14 @@ export default function JournalTodayScreen() {
         </View>
 
         <SectionHeading>기타</SectionHeading>
-        <Slider0To10 card label="오늘 스트레스 지수" value={stress} onChange={setStress} />
+        <Slider0To10
+          card
+          label="오늘 스트레스 지수"
+          // Unanswered renders at 0 like the design; `stress` stays null so
+          // the payload can tell the two apart.
+          value={stress ?? 0}
+          onChange={setStress}
+        />
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
             label="스마트폰 사용 시간 (스크린타임)"

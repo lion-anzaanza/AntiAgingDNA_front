@@ -88,6 +88,72 @@ const ORB_SPARKLES_OVER: Sparkle[] = [
   { left: 95, top: 90.5, size: 3, color: 'rgba(255, 221, 245, 0.75)', glow: GLOW_LARGE },
 ];
 
+/**
+ * The orb has seven states in Figma and `GET /api/scores/*` now answers with
+ * `orbState`, so the artwork follows the score instead of always being the
+ * healthy one. The bands are the server's (0/20/40/55/70/80/90) and sit inside
+ * 22's 70/40 boundaries, so `orbState` and `grade` can never disagree.
+ *
+ * Each `*Gene` symbol carries its **own** three highlight dots, in its own
+ * colour, drawn over the artwork — that is rule 9, and it is why the pair moves
+ * together here rather than the dots being a single shared constant. The
+ * positions are identical across all seven; only the colours change.
+ *
+ * `orbState` tracks `displayTotal`, which is the number this card shows, so it
+ * is the right field *here*. It is the wrong field for anything per-day — see
+ * `score.ts` and backlog 32.
+ */
+type OrbState =
+  | 'DANGER_LOW'
+  | 'DANGER_HIGH'
+  | 'WARN_LOW'
+  | 'WARN_HIGH'
+  | 'GOOD_LOW'
+  | 'GOOD_MID'
+  | 'GOOD_HIGH';
+
+function orbSparkles(small: string, large: string): Sparkle[] {
+  return [
+    { left: 74, top: 87.5, size: 2, color: small, glow: GLOW_SMALL },
+    { left: 107, top: 63.5, size: 2, color: small, glow: GLOW_SMALL },
+    { left: 95, top: 90.5, size: 3, color: large, glow: GLOW_LARGE },
+  ];
+}
+
+const ORB_STATES: Record<OrbState, { artwork: ImageSourcePropType; sparkles: Sparkle[] }> = {
+  DANGER_LOW: {
+    artwork: require('@/assets/images/home/orb-sick.png'),
+    sparkles: orbSparkles('#FBFBFD', '#F8F8FA'),
+  },
+  DANGER_HIGH: {
+    artwork: require('@/assets/images/home/orb-danger.png'),
+    sparkles: orbSparkles('rgba(255,223,223,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  WARN_LOW: {
+    artwork: require('@/assets/images/home/orb-warn.png'),
+    sparkles: orbSparkles('rgba(255,253,145,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  WARN_HIGH: {
+    artwork: require('@/assets/images/home/orb-middle.png'),
+    sparkles: orbSparkles('rgba(255,209,145,0.5)', 'rgba(255,244,221,0.75)'),
+  },
+  GOOD_LOW: {
+    artwork: require('@/assets/images/home/orb-good.png'),
+    sparkles: orbSparkles('rgba(145,226,255,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  GOOD_MID: {
+    artwork: require('@/assets/images/home/orb-better.png'),
+    sparkles: orbSparkles('rgba(255,232,233,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  GOOD_HIGH: {
+    artwork: require('@/assets/images/home/orb-nice.png'),
+    sparkles: ORB_SPARKLES_OVER,
+  },
+};
+
+/** Until the range answers, keep Figma's own orb rather than flashing a state. */
+const DEFAULT_ORB_STATE: OrbState = 'GOOD_HIGH';
+
 const ORB_PAGES: {
   key: string;
   caption: string;
@@ -350,6 +416,9 @@ export default function HomeScreen() {
       ? null
       : Math.round(todayScore) - Math.round(yesterdayScore);
 
+  // Only the first page is 오늘의 컨디션, so only it follows the state.
+  const orbState = scoreByDate.get(isoDate(today))?.orbState ?? DEFAULT_ORB_STATE;
+
   const entry = diaries.data?.[0];
   const draft = entry ? toDiaryDraft(entry) : null;
   const stats = STATS.map((stat) => {
@@ -414,6 +483,8 @@ export default function HomeScreen() {
             <View key={key} style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
               <OrbCard
                 {...orbPage}
+                artwork={index === 0 ? ORB_STATES[orbState].artwork : orbPage.artwork}
+                sparklesOver={index === 0 ? ORB_STATES[orbState].sparkles : orbPage.sparklesOver}
                 // Only the first card is 오늘의 컨디션; 나의 유전자 나선 has no
                 // endpoint behind its own number and keeps Figma's.
                 score={index === 0 && todayScore !== null ? String(Math.round(todayScore)) : orbPage.score}
@@ -453,7 +524,10 @@ export default function HomeScreen() {
               borderRadius: scale(10),
               backgroundColor: '#FFFFFF',
               boxShadow: SHADOW,
-              paddingTop: scale(5.5),
+              // Figma puts the 5개 영역 밸런스 heading's box 10pt below the card
+              // top; 5.5 was measured off the ink, which sits lower in its line
+              // box than the box itself starts.
+              paddingTop: scale(10),
               paddingBottom: scale(10),
               paddingHorizontal: scale(11),
             }}>

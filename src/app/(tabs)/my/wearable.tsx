@@ -17,7 +17,12 @@ const CONTENT_INSET = 17;
 export default function WearableScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <ScrollView contentContainerStyle={{ paddingTop: scale(14), paddingBottom: scale(24) }}>
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingTop: scale(14),
+          paddingBottom: scale(24),
+        }}>
         <View
           style={{
             height: scale(22),
@@ -58,9 +63,18 @@ export default function WearableScreen() {
           resizeMode="contain"
         />
 
+      {/*
+        * Figma pushes this to the bottom with a fixed gap measured on its 480pt
+        * frame, but `scale()` converts by *width* — so on a device with a
+        * different aspect ratio the gap lands somewhere else and the screen
+        * either scrolls or leaves a hole. A flexible spacer pins it to the
+        * bottom of the viewport instead, which is what the design means, and
+        * `flexGrow: 1` on the content container is what gives it room to push
+        * against.
+        */}
+      <View style={{ flex: 1, minHeight: scale(20) }} />
         <View
           style={{
-            marginTop: scale(42),
             paddingLeft: scale(CONTENT_INSET),
             paddingRight: scale(220 - CONTENT_INSET - 184),
           }}>
