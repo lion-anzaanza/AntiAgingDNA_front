@@ -106,7 +106,9 @@ this project describes as disposable — so the auth flow was styled only as a
 side effect of expo-router eagerly loading the template tab screens. Deleting
 that file would have silently killed every `font-pretendard-*` class.
 
-It now lives in `src/app/_layout.tsx`. Keep it there.
+It now lives in `src/app/_layout.tsx`. Keep it there. `src/constants/theme.ts`
+was in fact deleted on 2026-08-17 along with the rest of the template island, and
+nothing broke — precisely because the import had already been moved.
 
 ### 7. Figma node exports come back **without alpha**
 
@@ -187,6 +189,39 @@ Two related notes:
 - `useReducedMotion()` reads the system animator duration scale. If motion looks
   dead on a device or emulator, check `adb shell settings get global
   animator_duration_scale` before suspecting the code.
+
+### 15. An absolutely positioned child is inset from the *border* box
+
+`position: 'absolute'` with `right: 0` does **not** stop at the parent's padding
+— it goes to the parent's outer edge. 개선책/메인 puts `70%` in its own 30pt box
+(rule 14 explains why it must be absolute at all), and inside a row carrying the
+column's `paddingRight` it landed at 190..220 instead of Figma's 172..202: hard
+against the screen edge, outside the card it labels.
+
+An absolute box inside a padded parent has to repeat that padding itself:
+
+```tsx
+const COLUMN = { paddingLeft: scale(18), paddingRight: scale(18) };
+// WRONG — parks against the screen edge
+<View style={{ position: 'absolute', right: 0, width: scale(30) }} />
+// RIGHT
+<View style={{ position: 'absolute', right: COLUMN.paddingRight, width: scale(30) }} />
+```
+
+### 16. A sweeping gradient must run across the band, not corner to corner
+
+`LivingArtwork`'s sheen is a bright band translated across the artwork and masked
+by its silhouette. It was built with `start={{x:0,y:0}} end={{x:1,y:1}}`, and on
+a band far taller than it is wide that diagonal ramp reaches its end stop long
+before it has crossed horizontally — so at most heights the fade is already over
+and what renders is **the band's own rectangular edge**: a hard vertical seam
+sweeping over the orb. The first person to see it on a device said the phone
+looked broken, which is exactly right.
+
+Keep the ramp horizontal (`start={{x:0,y:0.5}} end={{x:1,y:0.5}}` with explicit
+`locations`) so the fade always lands on the band's edges whatever the height.
+The band was also widened and its strength halved at the same time; both live in
+`src/lib/motion.ts`.
 
 ### 11. Diffing screenshots is not looking at them
 
@@ -360,7 +395,8 @@ Unlike `<Stack>`, these routes do **not** register from the filesystem — a
 `TabTrigger` inside `TabList` is what declares one. So 개선책 and MY, which have
 no screens yet, are rendered as bare `BottomBarButton`s: `parseTriggersFromChildren`
 ignores any child that is not a `TabTrigger`, so they cost nothing and simply do
-not navigate. `(tabs)/explore.tsx` likewise has no trigger and is no longer a tab.
+not navigate. (`(tabs)/explore.tsx` used to sit here without a trigger; it and
+the template components only it referenced were deleted on 2026-08-17.)
 
 Two layout traps, both of which produced a visibly broken bar:
 
@@ -379,7 +415,27 @@ the routes.
 
 ## Open items
 
-`npx tsc --noEmit` and `npx expo lint` both pass. Keep them that way.
+`npx tsc --noEmit`, `npx expo lint` and `npm test` all pass. Keep them that way.
+
+### Tests — `src/lib` only, and deliberately so
+
+`jest-expo` + `npm test`. 55 tests across `dates`, `score`, `diary-request` and
+`spline` — the pure logic, where this project's two worst bugs actually lived:
+`toISOString()` filing every morning's diary against yesterday, and the diary
+round trip silently dropping fields under a `PUT` that replaces.
+
+Two habits worth keeping:
+
+- **Assert the server contract, not just the function.** `score.test.ts` asserts
+  that no path builder can ever emit a single-date score URL, because that call
+  writes a row (backlog 31). A rule that only lives in a comment gets edited away.
+- **Mutation-check a new test before trusting it.** These were verified by
+  reintroducing both real bugs and confirming 17 failures across 3 suites. A test
+  that cannot fail is worse than no test.
+
+Screens are not covered. Rendering is verified on the emulator (see below),
+which is what actually catches layout, and component tests would mostly restate
+Figma numbers that the design keeps changing.
 
 ### Figma slips found while porting 일지 — worth a designer's eye
 
@@ -446,9 +502,77 @@ has no error variant and neither 로그인 nor 약관 동의 has room for a mess
 platform dialog borrows nothing that has to be designed first; an inline
 treatment is still an open design question.
 
-Still not wired: everything that reads data. 홈, 일지 and 개선책 are all still
-Figma's numbers — `/api/scores`, `/api/diaries` and `/api/dna` are unused apart
-from the verification above, and 개선책 has no endpoints at all (backlog 15).
+- `src/lib/diary-request.ts` — the diary's counterpart to `sign-up-request.ts`,
+  and 오늘의 기록's 저장 now really writes (`PUT /api/diaries/{date}`). Only
+  `conditionLevel` is required, so unanswered questions are *omitted* rather
+  than rejected; a label missing from a table still throws. Verified against the
+  live server 2026-08-17 — every field round-trips, and `stressLevel: 0` really
+  is a 400, which is why the 0 position is treated as unanswered (backlog 7).
+
+The read side is wired too, as of 2026-08-17 — 홈, 일지/메인, 일지/캘린더 and
+일지/상세보기 all draw live data. Three shared pieces carry it:
+
+- `src/lib/use-api-query.ts` — one authenticated GET, re-run **on focus** rather
+  than on mount, because these screens stay mounted underneath a push and would
+  otherwise show pre-save numbers when 오늘의 기록 pops back.
+- `src/lib/score.ts` — `/api/scores` types plus `gradeFor` / `dayLevelFor` and
+  the two path builders.
+- `src/lib/dates.ts` — local-calendar helpers. `isoDate` moved here out of
+  `today.tsx`; the UTC trap it guards against is described in its header.
+
+**Never call `GET /api/scores/{date}` or `/api/scores/today`.** Reading a single
+date *creates* that date's score row on the server, permanently, and there is no
+way to delete it (`DELETE` → 405) — verified 2026-08-17, backlog 31. A calendar
+drawing one month with per-day fetches would record that whole month. The ranged
+form creates nothing, so `scoresPath` only ever builds a range and a single day
+is a one-day window.
+
+**And do not use the response's `grade`.** It follows `displayTotal`, which is
+smoothed and includes the signup baseline, so it disagrees with the day it
+labels: on the test account 2026-08-09 has `dailyTotal 16.32` and `grade GOOD`,
+while 08-13 has `dailyTotal 94.73` and `grade WARN`. Every per-day surface
+derives its own grade from `dailyTotal` against 22's 70/40 boundaries, and
+`dailyTotal === null` is the only reliable "no entry" test (backlog 32).
+
+Where the data does not exist, the screens show `—` rather than Figma's mock:
+홈's 수면 card (`sleepMinutes` is always null, backlog 29), 취침·기상 시각 on
+상세보기, and 수면 on the 일간 요약 card. Sentences with no server source are left
+empty rather than invented (backlog 27). The one place a Figma value still shows
+through is 홈's three **등급 뱃지** — item 22 graded the total and the five 영역
+scores, neither of which is a grade for 수면·수분·스트레스, so there is no
+threshold to apply (backlog 10, reopened).
+
+개선책 has no endpoints at all (backlog 15).
+
+One layout bug this shook out: 일지/캘린더's card was a fixed `height: scale(186)`,
+measured on Figma's July 2026, which fits in five week rows. August 2026 needs
+six and the 낮음/높음 legend was cut off the bottom. It is a `minHeight` now.
+
+**The list of what is left is in `docs/backend-backlog.md` under "프론트 연동
+현황".** That table exists because the backlog used to track only what the
+*backend* was blocking: the coverage table's ✅ meant "the API can do this", six
+rows were ✅ while nothing was wired, and none of them were being counted as
+work. The coverage table now has two columns — `API` and `화면` — and
+`API ✅ / 화면 ❌` is the front-end queue.
+
+Two traps this screen already stepped in, worth not repeating:
+
+- **`InputTime_Card` is display-only.** Figma draws `오전 01:30 → 오전 07:40` as
+  static shapes with no picker, so 취침·기상 시각 is never collected. Sending the
+  mock values would have recorded a fact that is not true, so the payload omits
+  `sleepStartedAt`/`sleepEndedAt` and `sleepMinutes` is always null (backlog 29).
+- **`PUT /api/diaries/{date}` replaces the entry — it does not merge.** Writing
+  `{conditionLevel: 2}` over a filled day nulls everything else, verified
+  against the server. So the screen `GET`s the day on mount and opens prefilled,
+  and 저장 stays disabled until that read finishes — otherwise a second save on
+  the same day wipes the first, and a save racing the restore wipes it with a
+  form the user never saw. Any future screen writing a diary needs the same
+  load-then-write shape (backlog 30).
+- **The date must come from the device, not from `toISOString()`.** The latter is
+  UTC and names the previous day in KST until 09:00, which would file every
+  morning's diary against yesterday. `isoDate()` in `today.tsx` formats local
+  components; the header string is derived from the same pinned `Date` so the
+  two cannot drift apart.
 
 Three things the backend's reply changed on screen, all done:
 
@@ -460,22 +584,26 @@ Three things the backend's reply changed on screen, all done:
   from unanswered" problem — the step now gates on them.
 - **마케팅 정보 수신 reads `[선택]`** and no longer blocks 가입 (item 1).
 
+Two long-standing "waiting on a decision" items were **settled on 2026-08-17**,
+on the owner's instruction to judge them rather than keep asking:
+
+- **The `tailwind.config.js` colour scales were dropped.** Nothing in `src` had
+  ever referenced them and several values disagreed with Figma, so they were a
+  trap rather than a palette. Only `fontFamily` remains. Colour comes from
+  `src/lib/design.ts` and explicit hex — do not reintroduce a second source of
+  truth. Note that touching this file needs a Metro restart with `--clear`.
+- **Web was dropped rather than supported.** `app.json` already declared only
+  ios/android, `react-native-web` was never installed, and every screen is built
+  on `scale()` off the device width. So `react-dom`, `animated-icon.web.tsx`,
+  `animated-icon.module.css` and `favicon.png` are gone. `react-dom` is an
+  *optional* peer of `expo` and `expo-router`, and removing it was verified with
+  a full `expo export --platform android`, not just a type-check.
+
 Waiting on a decision — do not resolve these unilaterally:
 
-- **Web is half-configured.** `app.json` declares ios/android, yet `.web.tsx`
-  variants and `react-dom` are present while `react-native-web` is not. Either
-  support web or drop the leftovers; both are product calls.
 - **Sign-up intro** (`(auth)/sign-up/index.tsx`) comes from Figma frame
   `457:738`, which is `hidden` — a deprecated draft still using the old upright
   `dna-icon.png` while login uses the tilted `NiceDNA`.
-- **The colour scales in `tailwind.config.js` are dead and slightly wrong.**
-  Nothing in `src` uses `text-primary-900` and friends — the code takes colours
-  from `src/lib/design.ts` and explicit hex — and several values disagree with
-  Figma (`primary.900` `#04342C` vs `#00352C`, `gray.100` `#D3D1C7` vs
-  `#D3D1C6`, `gray.400` `#888780` vs `#88877F`). Reaching for those classes
-  gets you a subtly wrong colour. Either correct them against Figma or drop
-  them; only the `fontFamily` block is actually in use.
-
 Known and deliberately deferred:
 
 - **No input validation anywhere.** Password mismatch and impossible dates all
@@ -494,11 +622,22 @@ Known and deliberately deferred:
   has nowhere to land — which is why the signup steps *gate* rather than
   explain: `isPersonalInfoComplete` / `isDiagnosisComplete` keep 다음 disabled,
   reusing the pattern 약관 동의 already had, and invent no new UI. Telling the
-  user **why** still needs a design.
+  user **why** still needs a design **on the signup steps**; 오늘의 기록 no
+  longer gates (see below).
 - **`scale()` is fixed at module-eval width** (see rule 1). Fine while the app is
   portrait-locked; Android split-screen and foldables would need
   `useWindowDimensions`, which touches every component.
-- `NoSelect` — the red "아직 응답하지 않았어요" state — is designed but not built.
+- **`SelectFeel5_NeedAnswer` is wired, on 오늘의 기록 only.** The 저장 button used
+  to be disabled while 컨디션 was blank, which left a dead grey button and no
+  reason. It is live now and the check moved to the press: tapping it with
+  컨디션 blank marks that card red, prints "아직 응답하지 않았어요" and scrolls the
+  form back to it — the card is at the top and the button at the bottom, so
+  marking it without scrolling would be invisible. Answering clears the mark.
+  `saving`/`loading` still disable the button, but those are not validation:
+  they stop a double submit and stop a save landing before the restore.
+  The signup steps still gate, because their controls have no NeedAnswer variant.
+- `NoSelect` (`485:35`, the 186×82 standalone card) is still unbuilt; only the
+  `SelectFeel5` variant of the unanswered state exists.
 - `SelectItem5_2` carries a stray `"2002"` text node (left over from a year
   picker) behind the pills; intentionally not reproduced.
 ### 일지 — built, and what is still missing
@@ -514,8 +653,10 @@ Still to port from 04_일지:
   it is the tab shell, not a leaf component, so building it means restructuring
   `(tabs)` — and the icons need the `rawImages` treatment (rule 7) plus an
   active/inactive pair per tab that only `BottomBar0`–`4` together supply.
-- The 미응답 state of a day with no entry, which is blocked on knowing what
-  `GET /api/diaries/{date}` returns for one (backlog 23).
+- The 미응답 state of a day with no entry. **No longer blocked** — backlog 23 is
+  closed: a day with no entry answers **404**, and the ranged list simply omits
+  it. It is unbuilt because 상세보기 does not read the API yet, not because the
+  answer is missing.
 
 `주간_컨디션_그래프` (`585:1436`) is **built** — `ui/weekly-condition-chart.tsx`,
 and the reason `react-native-svg` is now a dependency (bundled in Expo Go, so
@@ -567,8 +708,10 @@ The orb card is a two-page swipe; page two is `457:791`, which Figma parks
   card's right edge showed Figma at 162 / 152 / 160 top-to-bottom against a flat
   151 in the port; with the blooms it reads 162 / 153 / 162.
 - **Figma writes the product name three ways** — LifeDNA, Life DAN, LifeDAN.
-  All are reproduced verbatim where they appear (홈 orb card says "Life DAN",
-  the 일지 banner says "LifeDAN", the 홈 CTA says "LifeDNA"). Worth a decision.
+  **Decided 2026-08-17: the name is `LifeDNA` and the other two are typos.** The
+  홈 orb caption and the 일지 banner were corrected; Figma still carries them, so
+  do not "restore" them from the mock. Nothing else in `src` spells it any other
+  way — `grep -rn "Life DAN\|LifeDAN" src/` should stay empty.
 
 ### Motion — phase 1 only
 
@@ -576,6 +719,16 @@ The orb and the helix breathe, drift, twinkle, counter-rotate their rings, carry
 a sheen sweep, and squash when pressed. All Reanimated, no new dependency, all
 tunable from `src/lib/motion.ts`. **Figma specifies no motion** — the numbers
 there are a starting point for the designer to react to on a device, not a spec.
+
+The first hardware review (2026-08-17) moved two of them, and both corrections
+were things a simulator could not have told you:
+
+- **breathe 2.5% → 5.5%**, period 4000 → 4600. The old comment claimed anything
+  past 3% "starts to pulse"; on a real screen 2.5% was simply invisible. The
+  extra travel is paid for with extra time, which is what keeps it a breath.
+- **sheen strength 0.28 → 0.16, bandRatio 0.45 → 0.7**, alongside the gradient
+  fix in rule 16 — the seam was the real complaint, but the band was also too
+  bright and too narrow once it stopped being clipped.
 
 Not built, in the order they would matter:
 
@@ -621,6 +774,62 @@ Slips worth a designer's eye, resolved by picking the majority reading:
 - **The teaser card's stated 151.2° gradient** converts, through the card's
   184×52 aspect, to a near-vertical ramp that is not what the file renders. The
   ramp is taken from the export's own corners instead.
+
+#### 개선책 — re-pulled 2026-08-17 after a design review
+
+Four things changed on 개선책/메인 and 한달뒤내모습; all four came from looking at
+the running app rather than from the type-checker.
+
+- **오늘의 실천 rows are checkboxes now.** Figma replaced the `#E9F0FF` 완료! pill
+  with a 13×13 `rounded-[3px]` box at x=172 (`Rectangle 3091`–`3795`): `#F2E4FF`
+  while open, `#B3B3B3` with a `#686868` `∨` once done. The pill is gone.
+- **The strike on a completed row is `textDecorationLine`, not a drawn View.**
+  The old 0.5pt View sat at `top: '50%'` of the label box, and with `lineHeight`
+  15 on a 7pt font the ink rides high in that box — so the geometric middle fell
+  *below* the glyphs and it read as an underline. Font metrics get it right;
+  geometry guessed from the line box does not.
+- **한달뒤내모습's hero card has no orb in Figma.** `523:490` leaves the top 57.5pt
+  of the 184×110 card empty — no node, no instance — while its own teaser on
+  메인 (`Frame 33`) does carry one. Read as a dropped layer, not a design, so the
+  screen draws 홈's `orb-nice.png` there, centred and breathing, with a comment
+  saying so. **Worth a designer's eye**; replace once the frame is fixed.
+- **Every orb breathes.** 개선책's teaser and the forecast hero both go through
+  `LivingArtwork` now rather than a plain `<Image>`, so the motion phase-1 work
+  applies everywhere an orb appears, not just on 홈.
+
+### 앱 아이콘 — Figma `Logo`, 2026-08-17
+
+Figma grew a `Logo` component (`730:1894`, 213×213) — a pastel "LD" monogram on
+a gradient — and it is now the app icon. It replaced a DNA helix that had been
+set by hand, which was the right call only until the design file had an answer
+of its own.
+
+Three things worth knowing before touching these files again:
+
+- **The glyph cannot be cut out of the artwork.** It is one flat bitmap, and the
+  monogram's glossy highlights are *less* saturated than the gradient behind
+  them, so every threshold or difference matte eats them — rule 7's warning,
+  exactly. Every output therefore uses the whole artwork.
+- **The Android artwork lives in the `backgroundImage` layer and the foreground
+  is a transparent PNG.** Background is the layer meant to be full-bleed and
+  croppable. Putting the art in the foreground instead would need it inset to
+  the 61% safe zone, and the glyph already fills 69% — shrinking it leaves a
+  ring of flat colour that cannot match a gradient on all four edges. Checked
+  against circle, rounded-square and squircle masks; the monogram reads in all
+  three.
+- **`monochromeImage` was dropped, not replaced.** It still held Expo's template
+  "A", so Android's themed-icon mode was showing the template mark. A monochrome
+  LD is a design deliverable — do not derive one from the glossy gradient.
+
+**The source is only 426px.** That is the largest Figma has (`get_screenshot`
+returns 213), so `icon.png` is a 2.4× upscale. It survives because the artwork is
+smooth, but **ask the designer for a 1024px master** before this ships anywhere
+that matters.
+
+Icons and splash are `app.json` changes, so they need an **EAS Build**, not an
+OTA update — Expo Go cannot show them either, which is why this one was verified
+by rendering the generated assets under each platform's mask rather than on the
+emulator.
 
 ### 마이페이지 — built as far as Figma goes
 

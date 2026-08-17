@@ -1,12 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
+import { Pressable, ScrollView, Text, View, type ImageSourcePropType } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { ButtonBack } from '@/components/ui/button-back';
 import { GradientText } from '@/components/ui/gradient-text';
+import { LivingArtwork } from '@/components/ui/living-artwork';
 import { PlanCard } from '@/components/ui/plan-card';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -28,8 +29,12 @@ const COLUMN = {
 };
 
 /**
- * A row is either still open — a `#E9F0FF` 완료! button — or done, which greys
- * and strikes the label and swaps the button for a mint check.
+ * A row is either still open or done, which greys and strikes the label and
+ * puts a check in its box.
+ *
+ * Figma replaced the old `#E9F0FF` 완료! pill with a plain 13×13 checkbox
+ * (`Rectangle 3091`–`3795`, re-pulled 2026-08-17): pale `#F2E4FF` while open,
+ * grey `#B3B3B3` with a `∨` once done.
  */
 type Action = { label: string; done: boolean };
 
@@ -42,10 +47,15 @@ const ACTIONS: Action[] = [
   { label: '아침식사 챙겨 먹기', done: false },
 ];
 
-/** Row pitch inside the 오늘의 실천 card, measured off the chips. */
+/** Row pitch inside the 오늘의 실천 card, measured off the boxes. */
 const ROW_PITCH = 20;
-const CHIP_WIDTH = 25;
-const CHIP_HEIGHT = 13;
+
+/** `Rectangle 3091` sits at x=172, 13×13, inside a card that ends at 202. */
+const CHECKBOX_SIZE = 13;
+const CHECKBOX_RIGHT = 202 - 172 - CHECKBOX_SIZE;
+const CHECKBOX_OPEN = '#F2E4FF';
+const CHECKBOX_DONE = '#B3B3B3';
+const CHECK_STROKE = '#686868';
 
 const LINKS: {
   key: string;
@@ -151,11 +161,17 @@ export default function PlanMainScreen() {
             * and a device with the system font scale turned up dropped the last
             * glyph — a phone at 1.1 rendered "70" instead of "70%". Absolute,
             * like the design, it cannot be squeezed.
+            *
+            * `right` has to repeat the column's own right padding: an absolutely
+            * positioned child is inset from its parent's *border* box, not from
+            * the padding box, so `right: 0` parked the box at 190..220 when
+            * Figma puts it at 172..202 — hard against the screen edge and out of
+            * the card's column.
             */}
           <View
             style={{
               position: 'absolute',
-              right: 0,
+              right: COLUMN.paddingRight,
               top: 0,
               bottom: 0,
               width: scale(30),
@@ -248,16 +264,10 @@ function ForecastTeaser({ onPress }: { onPress: () => void }) {
           overflow: 'hidden',
         }}>
         {/* The bitmap overhangs its 37.3×35 box — the glow — so it is drawn larger. */}
-        <Image
+        <LivingArtwork
           source={require('@/assets/images/plan/orb-unknown.png')}
-          style={{
-            position: 'absolute',
-            left: scale(13.06),
-            top: scale(2.0),
-            width: scale(57.157),
-            height: scale(55),
-          }}
-          resizeMode="stretch"
+          frame={{ left: 13.06, top: 2.0, width: 57.157, height: 55 }}
+          accessibilityLabel="한 달 뒤 예상 컨디션 오브"
         />
         {SPARKLES.map((sparkle) => (
           <View
@@ -354,68 +364,47 @@ const SPARKLES = [
 function ActionRow({ action, onComplete }: { action: Action; onComplete: () => void }) {
   return (
     <View style={{ height: scale(ROW_PITCH), flexDirection: 'row', alignItems: 'center' }}>
-      <View style={{ marginLeft: scale(20), flexShrink: 1 }}>
-        <Text
-          style={{
-            fontSize: scale(7),
-            lineHeight: scale(15),
-            color: action.done ? '#B4B2A8' : '#2C2C2A',
-          }}
-          className="font-pretendard-medium">
-          {action.label}
-        </Text>
-        {action.done ? (
-          <View
-            style={{
-              position: 'absolute',
-              left: scale(-3),
-              right: scale(-3),
-              top: '50%',
-              height: scale(0.5),
-              backgroundColor: '#B4B2A8',
-            }}
-          />
-        ) : null}
-      </View>
+      <Text
+        style={{
+          marginLeft: scale(20),
+          flexShrink: 1,
+          fontSize: scale(7),
+          lineHeight: scale(15),
+          color: action.done ? '#B4B2A8' : '#2C2C2A',
+          /*
+           * The strike used to be a hand-drawn 0.5pt View at `top: '50%'` of the
+           * label box, which landed *under* the glyphs rather than through them:
+           * with `lineHeight` 15 on a 7pt font the ink sits in the upper part of
+           * the line box, so the box's geometric middle is below the text and it
+           * read as an underline. `textDecorationLine` is positioned from the
+           * font's own metrics, so it cannot drift.
+           */
+          textDecorationLine: action.done ? 'line-through' : 'none',
+        }}
+        className="font-pretendard-medium">
+        {action.label}
+      </Text>
 
-      {action.done ? (
-        <View
-          style={{
-            marginLeft: 'auto',
-            marginRight: scale(11),
-            width: scale(CHIP_WIDTH),
-            height: scale(CHIP_HEIGHT),
-            borderRadius: scale(10),
-            backgroundColor: '#DCF7EF',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Svg width={scale(5)} height={scale(4)} viewBox="0 0 5 4">
-            <Path d="M0.5 0.5L2.5 3.5" stroke="#00A172" strokeLinecap="round" />
-            <Path d="M4.5 0.5L2.5 3.5" stroke="#00A172" strokeLinecap="round" />
+      <Pressable
+        onPress={action.done ? undefined : onComplete}
+        disabled={action.done}
+        style={{
+          marginLeft: 'auto',
+          marginRight: scale(CHECKBOX_RIGHT),
+          width: scale(CHECKBOX_SIZE),
+          height: scale(CHECKBOX_SIZE),
+          borderRadius: scale(3),
+          backgroundColor: action.done ? CHECKBOX_DONE : CHECKBOX_OPEN,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        {action.done ? (
+          <Svg width={scale(4.33)} height={scale(3.25)} viewBox="0 0 5.33 4.25">
+            <Path d="M0.5 0.5L2.667 3.75" stroke={CHECK_STROKE} strokeLinecap="round" />
+            <Path d="M4.833 0.5L2.667 3.75" stroke={CHECK_STROKE} strokeLinecap="round" />
           </Svg>
-        </View>
-      ) : (
-        <Pressable
-          onPress={onComplete}
-          style={{
-            marginLeft: 'auto',
-            marginRight: scale(11),
-            width: scale(CHIP_WIDTH),
-            height: scale(CHIP_HEIGHT),
-            borderRadius: scale(10),
-            backgroundColor: '#E9F0FF',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <GradientText
-            colors={[...GRADIENT_BRAND]}
-            style={{ fontSize: scale(7), lineHeight: scale(10) }}
-            className="font-pretendard-semibold">
-            완료!
-          </GradientText>
-        </Pressable>
-      )}
+        ) : null}
+      </Pressable>
     </View>
   );
 }

@@ -29,6 +29,7 @@ npx expo start --android   # 안드로이드 에뮬레이터로 바로 열기
 ```bash
 npx tsc --noEmit
 npx expo lint
+npm test
 ```
 
 ## 현재 상태
@@ -76,26 +77,38 @@ npx expo lint
 "오늘 기록하기 →"는 오늘의 기록으로 바로 갑니다. **전부 데이터 계층이 없어서
 숫자·문구는 Figma 값을 그대로 박아둔 상태입니다.**
 
-**아직 손대지 않은 것** — Expo 템플릿 그대로입니다. 잘못된 게 아니라 미착수 상태입니다.
-
-- `(tabs)/explore` — "Welcome to Expo" 기본 화면. 이제 탭 바에 없지만
-  `/explore`로는 여전히 열립니다. 템플릿 탭 바(`components/app-tabs*.tsx`)는
-  Figma 탭 바(`ui/bottom-bar.tsx`)로 대체되면서 삭제했습니다.
-- `components/` 중 `themed-*`, `external-link`, `hint-row`, `web-badge`,
-  `animated-icon*`, `ui/collapsible` — 위 탭 화면들이 쓰는 템플릿 코드.
-- `constants/theme.ts`, `hooks/` — 템플릿의 라이트/다크 테마 유틸.
+**템플릿 잔재는 2026-08-17에 전부 삭제했습니다.** Figma 화면이 모두 포팅돼서
+템플릿에서 더 가져올 게 없어졌기 때문입니다. `(tabs)/explore`와 그것만
+살려두고 있던 `themed-*` · `external-link` · `hint-row` · `web-badge` ·
+`ui/collapsible` · `constants/` · `hooks/`가 함께 없어졌습니다.
+`components/animated-icon*`는 스플래시에 실제로 쓰이므로 남아 있습니다.
 
 **동작하지 않는 것** (UI만 있고 로직이 없습니다)
 
 - **인증은 연결돼 있습니다.** 로그인·회원가입이 실제 서버로 나가고, JWT는
   expo-secure-store에 저장돼 재실행 시 복원됩니다. 탭은 `Stack.Protected`로
   막혀 있습니다.
-- **데이터를 읽는 쪽은 아직입니다.** 홈·일지·개선책의 숫자는 전부 Figma 값
-  그대로이고 `/api/scores`·`/api/diaries`·`/api/dna`는 쓰이지 않습니다.
-  개선책은 아직 엔드포인트 자체가 없습니다.
-- 입력 검증은 **다음 버튼 비활성화까지만** 있습니다. 왜 막혔는지는 알려주지
-  못합니다 — 디자인에 입력 필드의 에러 상태가 없습니다. 서버가 거절한 경우만
-  `Alert`로 서버 메시지를 그대로 보여줍니다.
+- **일지 저장도 연결돼 있습니다.** 오늘의 기록의 저장 버튼이
+  `PUT /api/diaries/{date}`로 실제 저장합니다 (`lib/diary-request.ts`가 한국어
+  선택지를 enum으로 옮깁니다). 다만 **취침·기상 시각은 빠집니다** — 시간 피커가
+  디자인에 없어서 수집 자체가 안 됩니다 (백로그 29).
+- **읽는 쪽도 연결됐습니다.** 홈·일지 메인·캘린더·상세보기가 전부 실제
+  데이터를 그립니다 (`GET /api/scores?from&to`, `GET /api/diaries`).
+  `src/lib/use-api-query.ts`가 공용 조회 훅이고, `src/lib/score.ts`가 점수를
+  등급·캘린더 색·얼굴로 바꿉니다. **단일 날짜 점수 조회는 쓰지 않습니다** —
+  `GET /api/scores/{date}`는 조회만 해도 그 날짜의 점수 행을 만듭니다
+  (백로그 31). 개선책은 아직 엔드포인트 자체가 없습니다.
+- **못 채운 자리는 `—`로 둡니다.** 홈의 수면 카드(`sleepMinutes`가 항상 null,
+  백로그 29), 5개 영역 중 감정·환경(백로그 33), 캘린더 코멘트와 그래프 요약
+  문장(백로그 27)이 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
+  그대로 박혀 있습니다** — 지표별 등급 규칙이 없습니다(백로그 10).
+  **무엇이 남았는지는 `docs/backend-backlog.md`의 "프론트 연동 현황" 표가
+  목록입니다.**
+- 입력 검증은 화면마다 다릅니다. **오늘의 기록은 저장을 누르면 미응답 항목을
+  빨갛게 표시**하고 그 자리로 스크롤합니다(`SelectFeel5_NeedAnswer`). 회원가입
+  단계는 여전히 **다음 버튼 비활성화**까지만이라 왜 막혔는지 알려주지 못합니다 —
+  그 컨트롤들에는 미응답 디자인이 없습니다. 서버가 거절한 경우만 `Alert`로
+  서버 메시지를 그대로 보여줍니다.
 - 회원가입 입력값은 3단계에 걸쳐 유지되고(`lib/sign-up-form.tsx`),
   `lib/sign-up-request.ts`가 서버 enum으로 변환해 실제로 전송합니다.
 

@@ -66,12 +66,14 @@ const MENU: {
     iconWidth: 14,
     iconHeight: 14,
     value: '무료',
+    href: '/my/subscription',
   },
   {
     label: '데이터 개인정보',
     icon: require('@/assets/images/my/ic-privacy.png'),
     iconWidth: 14,
     iconHeight: 13,
+    href: '/my/privacy',
   },
   {
     label: '이용약관',

@@ -18,16 +18,25 @@ description: lifeDNA 앱(React Native/Expo)에서 Figma 화면(들)을 실제 �
 | Figma 섹션 | 내용 | 코드 위치 |
 |---|---|---|
 | `00_디자인_시스템` (`457:658`) | 컬러 스타일 + 재사용 컴포넌트 원본 | `tailwind.config.js`(색상 토큰), `src/components/ui/`(컴포넌트) |
-| `01_회원가입` (`153:281`) | 회원가입 플로우 | `src/app/(auth)/sign-up/` |
-| `01_로그인` (`457:659`) | 로그인 플로우 | `src/app/(auth)/sign-in.tsx` |
-| `02_홈` (`153:282`) | 홈 화면 | `src/app/(tabs)/` |
-| `03_일지` (`153:284`) | 일지 화면 | `src/app/(tabs)/` (예정) |
-| `04_사용자_맞춤_개선책` (`153:286`) | 맞춤 개선책 화면 | `src/app/` 하위 별도 라우트 (예정) |
-| `05_한_달_뒤_모습` (`153:288`) | 한 달 뒤 모습 화면 | `src/app/` 하위 별도 라우트 (예정) |
+| `01_로그인` (`457:659`) | 로그인 | `src/app/(auth)/sign-in.tsx` |
+| `02_회원가입` (`153:281`) | 회원가입 3스텝 | `src/app/(auth)/sign-up/` |
+| `03_홈` (`153:282`) | 홈 | `src/app/(tabs)/home.tsx` |
+| `04_일지` (`153:284`) | 일지 메인·오늘의 기록·캘린더·상세보기 | `src/app/(tabs)/journal/` |
+| `05_사용자_맞춤_개선책` (`153:286`) | 개선책 메인·영양제·리포트·한달뒤 | `src/app/(tabs)/plan/` |
+| `06_마이페이지` (`153:288`) | 마이페이지·웨어러블·개인정보·구독관리 | `src/app/(tabs)/my/` |
+
+**섹션 번호는 이름의 일부다** — 한때 이 표가 한 칸씩 밀려 있었고(`02_홈`으로 적힌 것이 실제로는 `03_홈`), 마지막 줄은 존재하지도 않는 `05_한_달_뒤_모습`을 가리키고 있었다. 한 달 뒤 내 모습은 독립 섹션이 아니라 `05_사용자_맞춤_개선책` 안의 프레임(`523:490`)이다. 노드 ID가 맞더라도 이름이 어긋나면 다음 사람이 엉뚱한 섹션을 찾는다 — 표를 고칠 땐 `get_metadata`로 이름까지 확인한다.
 
 실제 라우트 이름·경로는 화면 흐름(뒤로가기/탭 구조)을 `get_design_context`로 확인한 뒤 착수 시점에 확정한다. 위 매핑은 "어느 Figma 섹션이 어느 화면 묶음인지" 참고용이지 최종 라우트명을 강제하지 않는다.
 
-**진행 상태**: `01_로그인`, `01_회원가입`은 Figma 컴포넌트화 + 코드 구현까지 완료. `02_홈`은 Figma 컴포넌트화만 완료(선택형 UI 없는 대시보드라 코드 구현도 상대적으로 단순할 것). `03_일지`/`04_사용자_맞춤_개선책`/`05_한_달_뒤_모습`은 디자인이 아직 진행 중이므로 착수 전에 사용자에게 최신 상태를 확인할 것.
+**진행 상태 (2026-08-17 기준)**: **일곱 섹션 모두 코드 구현 완료.** 미포팅 화면은 없다. 남아 있는 것은 새로 그려지거나 바뀐 부분을 따라가는 일이고, 착수 전에 **반드시 Figma를 다시 당겨 대조한다** — 이미 여러 번 바뀌었다(`완료!` 알약 → 체크박스, 지난 기록 카오모지 텍스트 → `Diary_Status` 컴포넌트, 마이페이지의 미디자인 두 화면 완성).
+
+현재 알려진 진행 중 항목:
+
+- **나의 LifeDNA 정보 카드**(홈)가 탭 구조로 재설계됐고 **디자인이 미완성**이다 — 감정·사회·환경 탭에 아이콘이 없고, 한 프레임은 정신 칩이 빠져 있으며, 다른 프레임은 두 탭이 동시에 선택 상태다. 코드는 임시 아이콘으로 붙여둔 상태.
+- `Logo` 컴포넌트(`730:1894`)가 새로 생겼다 — 앱 아이콘용.
+
+바뀐 노드 ID와 재대조 결과는 `docs/figma-reference.md`의 "2026-08-17 재대조에서 바뀐 것" 표에 정리돼 있다. 서버를 붙이는 작업은 `backend-wire` 스킬을 쓴다.
 
 ## 라우팅 구조
 
@@ -52,11 +61,20 @@ UI 작업은 실제로 띄워서 확인하기 전엔 끝난 게 아니다. `run`
 
 1. 에뮬레이터 기동: `emulator -avd <AVD이름> -no-snapshot-load` 백그라운드 실행 → `adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 2; done'`으로 부팅 대기.
 2. 번들러 기동: `npx expo start --android --port <포트>` 백그라운드 실행 (Expo Go로 자동 설치·실행됨).
-3. **스크린샷은 `adb shell screencap` + `adb pull`로 뜬다.** Git Bash(MSYS)에서는 `/sdcard/...` 같은 POSIX 경로가 Windows 경로로 오작동 변환되니 원격 경로가 들어가는 명령에 `MSYS_NO_PATHCONV=1`을 붙인다. 로컬 목적지는 현재 디렉터리 상대경로(`./emulator-screen.png`)로 pull한 뒤 `Read` 툴로 연다.
-4. **특정 화면으로 바로 이동해서 확인하려면 딥링크를 쓴다**: `adb shell am start -a android.intent.action.VIEW -d "exp://<번들러host:port>/--/<라우트경로>"` (그룹 폴더명은 URL에서 빠진다 — `(auth)/sign-in` → `/sign-in`).
-5. **탭으로 상호작용을 검증할 땐 좌표 스케일을 주의한다.** 스크린샷 뷰어가 "displayed at WxH, multiply by N" 식으로 축소해서 보여주면, 그 이미지에서 읽은 좌표에 N을 곱해야 실제 기기 좌표가 된다(`adb shell input tap`은 실기기 해상도 기준).
-6. **Fast Refresh는 이전 라우트를 유지한다.** 코드 수정 직후 딥링크로 다른 화면을 열어도, 겹쳐서 온 Fast Refresh가 이전 화면으로 되돌려 놓을 수 있다. 확실히 초기화하려면 `adb shell am force-stop host.exp.exponent` 후 딥링크를 다시 연다(콜드 스타트라 스플래시~로드까지 몇 초 더 걸림, 첫 딥링크가 무시되고 기본 라우트로 뜰 수 있으니 한 번 더 같은 딥링크를 보낸다).
-7. 체크박스/필 선택 같은 상태 토글, 화면 간 이동(다음 버튼/링크/뒤로가기)까지 실제로 탭해서 확인한다. 렌더만 확인하고 끝내지 않는다.
+3. **`adb reverse tcp:8081 tcp:8081`을 걸고 `127.0.0.1`로 접속한다.** LAN을 타면 번들이 전송 중에 깨져서 기기가 스플래시에 멈춰 있는데 Metro 로그에는 번들 성공이 찍힌다 — 코드 문제로 오인하기 딱 좋다. `logcat`에 `BundleDownloader.processMultipartResponse`의 `ProtocolException: Expected leading [0-9a-fA-F] character`가 보이면 이 경우다. 네트워크를 우회하는 게 답이지 앱을 디버깅할 일이 아니다.
+
+   ```bash
+   adb reverse tcp:8081 tcp:8081
+   adb shell am start -a android.intent.action.VIEW \
+     -d "exp://127.0.0.1:8081/--/journal" host.exp.exponent
+   ```
+
+   터널은 조용히 풀린다 — 화면이 안 뜨면 `adb reverse --list`부터 확인하고 다시 건다. 의존성을 추가한 직후에는 번들을 통째로 다시 만들기 때문에 첫 로드에 30초쯤 걸린다. **스크린샷 전에 창이 뜰 때까지 기다린다**: `until adb shell dumpsys window | grep -q ExperienceActivity; do sleep 3; done` — 안 그러면 스플래시를 찍어놓고 화면이 깨졌다고 읽는다.
+4. **스크린샷은 `adb shell screencap` + `adb pull`로 뜬다.** Git Bash(MSYS)에서는 `/sdcard/...` 같은 POSIX 경로가 Windows 경로로 오작동 변환되니 원격 경로가 들어가는 명령에 `MSYS_NO_PATHCONV=1`을 붙인다. 로컬 목적지는 현재 디렉터리 상대경로(`./emulator-screen.png`)로 pull한 뒤 `Read` 툴로 연다.
+5. **특정 화면으로 바로 이동해서 확인하려면 딥링크를 쓴다**: `adb shell am start -a android.intent.action.VIEW -d "exp://127.0.0.1:8081/--/<라우트경로>"` (그룹 폴더명은 URL에서 빠진다 — `(auth)/sign-in` → `/sign-in`).
+6. **탭으로 상호작용을 검증할 땐 좌표 스케일을 주의한다.** 스크린샷 뷰어가 "displayed at WxH, multiply by N" 식으로 축소해서 보여주면, 그 이미지에서 읽은 좌표에 N을 곱해야 실제 기기 좌표가 된다(`adb shell input tap`은 실기기 해상도 기준).
+7. **Fast Refresh는 이전 라우트를 유지한다.** 코드 수정 직후 딥링크로 다른 화면을 열어도, 겹쳐서 온 Fast Refresh가 이전 화면으로 되돌려 놓을 수 있다. 확실히 초기화하려면 `adb shell am force-stop host.exp.exponent` 후 딥링크를 다시 연다(콜드 스타트라 스플래시~로드까지 몇 초 더 걸림, 첫 딥링크가 무시되고 기본 라우트로 뜰 수 있으니 한 번 더 같은 딥링크를 보낸다).
+8. 체크박스/필 선택 같은 상태 토글, 화면 간 이동(다음 버튼/링크/뒤로가기)까지 실제로 탭해서 확인한다. 렌더만 확인하고 끝내지 않는다.
 
 ## 체크리스트
 

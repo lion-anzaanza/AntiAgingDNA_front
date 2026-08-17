@@ -11,8 +11,14 @@
  * starting point to react to, not a spec.
  */
 export const MOTION = {
-  /** A slow swell. Past about 3% it stops reading as breath and starts to pulse. */
-  breathe: { period: 4000, amplitude: 0.025 },
+  /**
+   * A slow swell. 2.5% was the original guess and it was too shy to notice on a
+   * device — the first review of it on hardware asked for "더 크게". 5.5% over a
+   * slightly longer period keeps the same easing and still reads as breath
+   * rather than a pulse: the extra travel is paid for with extra time, which is
+   * what separates the two.
+   */
+  breathe: { period: 4600, amplitude: 0.055 },
 
   /**
    * The two axes deliberately have no short common multiple, so the path never
@@ -30,7 +36,7 @@ export const MOTION = {
    * A band of light crossing the artwork's own silhouette, then a rest, so it
    * reads as a pulse rather than a barber pole.
    */
-  sheen: { sweep: 2400, rest: 4600, strength: 0.28, bandRatio: 0.45 },
+  sheen: { sweep: 2400, rest: 4600, strength: 0.16, bandRatio: 0.7 },
 
   /**
    * Press feedback. The overshoot is not a number — it falls out of a lightly
