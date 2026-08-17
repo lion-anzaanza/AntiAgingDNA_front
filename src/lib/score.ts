@@ -19,6 +19,23 @@ import { isoDate } from '@/lib/dates';
  */
 export type Grade = 'GOOD' | 'WARN' | 'DANGER';
 
+/**
+ * The orb's seven bands, deployed 2026-08-18. They subdivide 22's 70/40
+ * boundaries (0/20/40/55/70/80/90), so `orbState` and `grade` never disagree.
+ *
+ * Like `grade`, this follows `displayTotal` — the smoothed level, not the day.
+ * That is exactly right for the orb card, which shows `displayTotal`, and wrong
+ * for anything per-day.
+ */
+export type OrbState =
+  | 'DANGER_LOW'
+  | 'DANGER_HIGH'
+  | 'WARN_LOW'
+  | 'WARN_HIGH'
+  | 'GOOD_LOW'
+  | 'GOOD_MID'
+  | 'GOOD_HIGH';
+
 export type AreaScores = {
   physical: number | null;
   mental: number | null;
@@ -36,8 +53,32 @@ export type DailyScore = {
   /** Always present — falls back to the diagnosis baseline. */
   displayTotal: number | null;
   grade: Grade | null;
+  orbState: OrbState | null;
   scoringVersion: string;
 };
+
+/**
+ * `GET /api/scores/items?from&to` — one row per recorded day with the sleep and
+ * water atoms behind 나의 LifeDNA 정보's weekly cards (deployed 2026-08-18).
+ *
+ * `sleepMinutes`, `sleepScore` and `sleepGrade` are always null in practice:
+ * they derive from 취침·기상 시각, which no screen can collect (backlog 29).
+ * There is no stress equivalent at all, so 홈's third badge stays unresolved
+ * (backlog 10).
+ */
+export type ItemTrend = {
+  date: string;
+  sleepMinutes: number | null;
+  sleepScore: number | null;
+  sleepGrade: Grade | null;
+  waterIntake: string | null;
+  waterScore: number | null;
+  waterGrade: Grade | null;
+};
+
+export function itemsPath(from: Date, to: Date): string {
+  return `/api/scores/items?from=${isoDate(from)}&to=${isoDate(to)}`;
+}
 
 /**
  * The 70/40 boundaries the backend deployed for `grade` (backlog 22), applied

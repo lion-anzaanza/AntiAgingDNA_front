@@ -94,7 +94,7 @@ export default function PlanMainScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <ScrollView contentContainerStyle={{ paddingTop: scale(7), paddingBottom: scale(24) }}>
+      <ScrollView contentContainerStyle={{ paddingTop: scale(7), paddingBottom: scale(40) }}>
         <View style={{ flexDirection: 'row', alignItems: 'flex-start', ...COLUMN }}>
           <ButtonBack fallbackHref="/home" />
           <View style={{ marginLeft: scale(9) }}>
@@ -190,7 +190,10 @@ export default function PlanMainScreen() {
         <View style={{ marginTop: scale(7.5), ...COLUMN }}>
           <View
             style={{
-              height: scale(129),
+              // Was a fixed 129, which is exactly 9 + 6 rows of 20 — so any row
+              // that grows (a longer label wrapping, a larger system font) is
+              // clipped rather than making the card taller.
+              minHeight: scale(129),
               borderRadius: scale(10),
               backgroundColor: '#FFFFFF',
               boxShadow: SHADOW,

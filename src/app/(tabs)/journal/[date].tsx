@@ -270,7 +270,7 @@ export default function JournalDetailScreen() {
         <Slider0To10
           history
           label="이날의 스트레스 지수"
-          value={entry.stress}
+          value={entry.stress ?? 0}
           onChange={READ_ONLY}
         />
         <Gap>

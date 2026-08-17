@@ -601,6 +601,18 @@ on the owner's instruction to judge them rather than keep asking:
 
 Waiting on a decision — do not resolve these unilaterally:
 
+- **Body text is Figma's `#00352C`, a dark green, and an iOS tester read it as
+  a bug** ("전체 폰트 색상 블랙으로 수정 (현재 진한초록색으로 보임)"). It is
+  Primary 900 in the design system and appears in **20 files** — section
+  headings, card titles, and the labels inside every shared `SelectCard` /
+  `PillGroup` / `FeelSelect`. Changing it on one screen would split 오늘의 기록
+  from 상세보기, which share those components; changing it globally overrides
+  Figma. The designer has to say which.
+- **The orb sheen was reported as "삭제" by the same tester**, but they were
+  looking at the build where it swept a hard vertical seam across the artwork
+  (rule 16). It is a soft horizontal band now. Whether to keep it at all is a
+  design call, not a bug.
+
 - **Sign-up intro** (`(auth)/sign-up/index.tsx`) comes from Figma frame
   `457:738`, which is `hidden` — a deprecated draft still using the old upright
   `dna-icon.png` while login uses the tilted `NiceDNA`.
