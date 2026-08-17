@@ -11,7 +11,9 @@ Expo / React Native app. The UI is ported from Figma.
 - **Look at UI changes running on the emulator.** A passing type-check is not
   verification, and neither is a deep link alone — cold start the app plain when
   you touch anything on an entry path.
-- `npx tsc --noEmit` and `npx expo lint` both pass today. Keep them passing.
+- `npx tsc --noEmit`, `npx expo lint` and `npm test` all pass today. Keep them
+  passing. The tests cover `src/lib`'s pure logic — that is where both of the
+  worst bugs so far lived (the UTC date drift and the diary round trip).
 - Do not resolve anything under "waiting on a decision" in AGENTS.md on your own.
 
 ## Where to look
