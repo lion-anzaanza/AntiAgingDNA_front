@@ -41,6 +41,21 @@ for (const n of v4.findAll(n => NAME.test(n.name))) {
 return out;
 ```
 
+이름이 없는 요소는 이 스크립트로 안 잡힌다. 그럴 땐 **안에 든 글자로 찾는다** —
+뒤로가기 칩은 `←` 텍스트와 그 옆 사각형이 열쇠였다:
+
+```js
+const v4 = await figma.getNodeByIdAsync('1363:1533');
+const hits = v4.findAll(n => n.type === 'TEXT' && n.characters.trim() === '←');
+return hits.map(t => {
+  const box = t.parent.findOne(c => c !== t && 'cornerRadius' in c && c.width < 30);
+  return `${t.parent.name} | ${box ? `${box.width.toFixed(2)}x${box.height.toFixed(2)} r${box.cornerRadius}` : '-'}`;
+});
+```
+
+v4 전체를 `findAll`로 돌면서 `isMask` 같은 속성을 읽을 때는 `'isMask' in n`으로
+먼저 거른다 — SECTION 노드에서 읽으면 스크립트가 죽는다.
+
 결과에서 크기가 **맥락마다 일관되게** 다르면(회원가입 필 24.8, 일지 필 18.1) 변형이고,
 **같은 맥락에서** 제각각이면 실수다 — 다수결로 정해 인벤토리에 적는다.
 

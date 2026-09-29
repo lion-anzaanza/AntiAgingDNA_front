@@ -25,6 +25,9 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
 - **로그인 화면·회원가입은 로그인된 상태에서 딥링크로 열리지 않는다**
   (`Stack.Protected`). MY → 로그아웃으로 나간다. 원래 폴더의 세션도 같이 풀린다 —
   다시 들어갈 계정이 없으면 회원가입으로 새로 만든다(사용자가 허락함).
+- 앱이 한동안 놀고 있었으면 첫 딥링크가 런처에 떨어질 때가 있다. 같은 딥링크를
+  다시 보내고 `until adb shell dumpsys window | grep -q "mCurrentFocus.*ExperienceActivity"`로
+  기다린다.
 - 탭 이동은 딥링크(`--/my`)가 무시될 때가 있다. 하단 탭을 좌표로 누른다.
   스크린샷이 축소돼 보이면 좌표에 표시된 배율(1080 폭이면 ×1.2)을 곱한다.
 
@@ -53,6 +56,21 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
 - 입력창처럼 Figma와 **글자가 다른** 띠(값 "nosleep" vs 자리표시 문구)
 - 비활성 버튼처럼 투명도가 낮아 잉크가 옅은 띠
 - 화면 **아래에 붙인** 요소 — 기기 높이가 달라 합의값이 적용되지 않는다
+
+## 작은 요소 재기 (칩, 카드 가장자리)
+
+`compare_bands.py`는 흰 칩·흰 카드처럼 배경과 거의 같은 색을 못 본다. 요소 하나는
+창을 지정해서 잰다:
+
+```bash
+python .claude/skills/figma-redesign/scripts/measure_box.py figma.png device.png 9 42 26 58 --offset 24.8
+```
+
+`X0 Y0 X1 Y1`은 Figma 프레임 pt 좌표, `--offset`은 그 화면의 `compare_bands` 합의값.
+두 이미지의 경계 상자와 차이(왼쪽·위·폭·높이)를 출력한다. 창 안에 다른 요소가
+걸리지 않게 좁게 잡는다. 기본 `--threshold 30`은 `border/soft` 테두리는 잡고 그림자는
+거른다 — 로그인 입력창에서 Figma 197.5×27.25, 기기 197.6×27.1로 맞았다. 값을 낮추면
+그림자까지 잡혀 상자가 창 끝까지 번진다.
 
 ## 공용 컴포넌트를 바꿨다면
 
