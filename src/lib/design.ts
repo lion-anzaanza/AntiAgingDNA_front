@@ -1,10 +1,16 @@
 /**
- * Raw design values lifted from the lifeDNA Figma file. Every surface in the
- * design carries the same soft ambient shadow, and selection states reuse one
- * of three gradients, so both live here rather than being retyped per file.
+ * Raw design values lifted from the lifeDNA Figma file — shadows, gradients,
+ * tones and the v4 colour tokens — so they live here rather than being retyped
+ * per file. v4 surfaces carry `SHADOW_V4` and pastel fills use
+ * `GRADIENT_PASTEL`; the older `SHADOW` and `GRADIENT_BRAND` remain only where
+ * v4 still draws them.
  */
 
-/** `0px 0px 4px 0px rgba(169,169,169,0.25)` on every card, field and pill. */
+/**
+ * `0px 0px 4px 0px rgba(169,169,169,0.25)` — the pre-v4 ambient shadow. v4
+ * keeps it only on 홈's cards and the WHO-5 Likert cards; everything else is
+ * `SHADOW_V4`.
+ */
 export const SHADOW = '0px 0px 4px rgba(169, 169, 169, 0.25)';
 
 /**

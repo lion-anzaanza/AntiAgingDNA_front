@@ -33,8 +33,10 @@ Write every dimension, font size, radius and margin as `scale(<figma value>)`.
 
 ### 2. Shadows use `boxShadow`, never `shadow-*` or `elevation`
 
-Figma puts the same soft ambient shadow on every surface:
-`0px 0px 4px rgba(169,169,169,0.25)` — exported as `SHADOW` in `src/lib/design.ts`.
+Figma puts one soft ambient shadow on its surfaces. Since the v4 redesign that
+is `0px 0px 3.846px rgba(169,169,169,0.25)` — exported as `SHADOW_V4` in
+`src/lib/design.ts`. The older 4px `SHADOW` remains only where v4 still draws it:
+홈's cards and the WHO-5 Likert cards (`likert-card`).
 
 RN 0.86 supports the CSS-style `boxShadow` string, which reproduces it exactly.
 NativeWind's `shadow-sm` maps to Android `elevation`, which draws a hard, dark,
@@ -87,9 +89,8 @@ from `src/lib/gradient.ts` rather than guessing `start`/`end`. The old ramps
 go as the components that use them are redesigned; the tracker is
 `docs/redesign-v4-inventory.md`.
 - `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Filled a selected
-  SelectButton4 before v4; the 일지 calendar, daily-summary card and weekly
-  chart dropped it in their v4 pass, so it survives only on MY screens not yet
-  redesigned — and as the stroke of 개선책's 예상 성장 곡선, which v4 still draws
+  SelectButton4 before v4. Its only user now is the stroke of 개선책's 예상 성장
+  곡선 (`features/plan/components/growth-curve-card.tsx`), which v4 still draws
   in exactly these two stops.
 
 `ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
@@ -97,9 +98,10 @@ go as the components that use them are redesigned; the tracker is
 ### 6. Fonts
 
 **The v4 redesign's text face is IBM Plex Sans KR** — Regular / SemiBold / Bold,
-as `font-plex` / `font-plex-semibold` / `font-plex-bold`. Pretendard stays for
-screens not yet redesigned, and for the few text nodes v4 itself still sets in
-Pretendard (the `←` back chip, `>` chevrons, `✓` — Plex has no U+2713). Read the
+as `font-plex` / `font-plex-semibold` / `font-plex-bold`. Pretendard remains only
+for the glyphs v4 itself still sets in it (`←`, `→`, `✓`, `>`, `X` — Plex has
+no U+2713). The 회원가입 인트로 has no v4 frame but was moved to Plex with the
+rest, so nothing else uses it. Read the
 font off each text node; a `→` inside a Plex label is Plex. Plex comes from
 `google/fonts` on jsDelivr (`…/ofl/ibmplexsanskr/IBMPlexSansKR-<Weight>.ttf`, SIL
 OFL); a good download starts `00010000` and its name table reads
@@ -438,6 +440,15 @@ the routes.
 
 `npx tsc --noEmit`, `npx expo lint` and `npm test` all pass. Keep them that way.
 
+- **Bug (found in the v4 final review, 2026-09-30, not fixed): 일지's back
+  chips loop.** Cold start → 홈 → 오늘 기록하기 → back → 일지 tab: 일지/메인's
+  back chip opens 오늘의 기록, whose back chip goes to 홈. The cause is
+  `features/home/components/journal-cta.tsx` doing
+  `router.push('/journal/today')`, which seeds the 일지 tab stack with 오늘의
+  기록 above nothing, and `ButtonBack` calling `router.back()`. Possible fixes:
+  navigate with the 일지 index underneath, or have tab roots `replace` to their
+  own fallback. Related to `docs/redesign-v4-inventory.md` 결정 대기 1.
+
 ### From the review of the folder restructure (2026-09-30) — not yet done
 
 A `/code-review` of #11–#13 found no regression from the move itself. These are
@@ -666,7 +677,10 @@ Waiting on a decision — do not resolve these unilaterally:
   headings, card titles, and the labels inside every shared `SelectCard` /
   `PillGroup` / `FeelSelect`. Changing it on one screen would split 오늘의 기록
   from 상세보기, which share those components; changing it globally overrides
-  Figma. The designer has to say which.
+  Figma. The designer has to say which. As of the v4 redesign (2026-09-30) no
+  file uses `#00352C` any more — v4 binds body text to `text/body` `#6B6680` —
+  so this looks answered; the owner can close it via
+  `docs/redesign-v4-inventory.md` 결정 대기 2.
 - **The orb sheen was reported as "삭제" by the same tester**, but they were
   looking at the build where it swept a hard vertical seam across the artwork
   (rule 16). It is a soft horizontal band now. Whether to keep it at all is a

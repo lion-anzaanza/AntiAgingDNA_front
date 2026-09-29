@@ -69,8 +69,9 @@ const ROW_FACE_LEFT = 126.85;
 const ROW_SCORE_RIGHT = 175.73;
 
 /**
- * `주간_컨디션_그래프` (`585:1436`) is the same 184×95 as 주간_기록 and Figma parks
- * it directly beneath this frame rather than inside it — the same arrangement as
+ * `주간_컨디션_그래프` (`585:1436`, no v4 frame) is drawn the same 197.436×91.346
+ * as v4's 주간_기록, and the old Figma parked it directly beneath this frame
+ * rather than inside it — the same arrangement as
  * 홈's second orb card, so the two share one slot as a horizontal swipe. Figma
  * draws no page dots or hint on either card, unlike 홈's, so none are invented
  * here; see AGENTS.md.

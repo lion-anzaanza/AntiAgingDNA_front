@@ -3,6 +3,12 @@
 `99_개선안_v4`(`1363:1533`)를 코드로 옮기기 위한 목록. 2026-09-30에 Figma를
 읽기만 해서 만들었다 (Figma 파일은 고치지 않았다).
 
+## 끝난 상태
+
+v4 화면 17개를 모두 옮기고 리뷰까지 마쳤다(2026-09-30, 브랜치 `feat/redesign-v4`).
+프레임이 없는 회원가입 인트로에는 v4 토큰만 입혔다(아래 "화면"). 남은 일은 사람이
+정할 것뿐이고, 아래 "결정 대기" 표가 그 목록이다.
+
 ## 이 문서가 필요한 이유
 
 v4에는 **컴포넌트 인스턴스가 하나도 없다.** 모든 버튼·입력창·카드가 낱개
@@ -25,20 +31,21 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 | 간격·반경 토큰 | `LifeDNA 간격·반경` — **390 단위**라 220에서 그대로 못 씀 | 쓰지 않음, 노드 값을 읽는다 | — |
 | 그림자 | `0 0 3.846px rgba(169,169,169,.25)` | `SHADOW_V4` | ✅ |
 | 그라디언트 | CSS 각도 + stop으로 나옴 | `cssGradientPoints` in `lib/gradient.ts` | ✅ |
-| 배경 | `surface/bg` `#F6F3FA` | 화면마다 | 화면 작업 때 |
+| 배경 | `surface/bg` `#F6F3FA` | 화면마다 `COLOR.surface.bg` | ✅ 모든 화면 (회원가입 인트로 포함 — v4 프레임은 없고 토큰만 입혔다) |
 
 ## 공용 컴포넌트 — 레이어 이름으로 찾은 것
 
-`n` = v4 전체 등장 횟수. "쓰는 곳"은 지금 코드에서 import하는 파일 수.
+`n` = v4 전체 등장 횟수. "쓰는 곳"은 지금 `src/features`에서 import하는 파일 수
+(`components/ui` 안의 다른 컴포넌트는 세지 않는다. 2026-09-30에 grep으로 다시 셈).
 
 | v4 레이어 이름 | n | 등장 프레임 | 코드 컴포넌트 | 쓰는 곳 | 상태 |
 |---|---|---|---|---|---|
-| `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 7 | ✅ 글자 Bold 11.28로 수정. 일지/오늘의기록(여섯 번째, 인벤토리 작성 때 빠짐)은 197.44×**29.33**, 글자 SemiBold 9.59 / 13.54 — 컴포넌트(27.08, Bold 11.28)와 다르다. 화면은 그대로 두고 아래 여백으로 페이지 길이만 맞췄다. 개선책/맞춤영양제 "3종 정기구독으로 담기 →"(일곱째)는 27.08 · Bold 11.28로 컴포넌트와 같지만 글자 중심이 상자 중심보다 1.36 위 — 화면은 `Button`을 그대로 쓴다 |
+| `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 8 | ✅ 글자 Bold 11.28로 수정. 일지/오늘의기록(여섯 번째, 인벤토리 작성 때 빠짐)은 197.44×**29.33**, 글자 SemiBold 9.59 / 13.54 — 컴포넌트(27.08, Bold 11.28)와 다르다. 화면은 그대로 두고 아래 여백으로 페이지 길이만 맞췄다. 개선책/맞춤영양제 "3종 정기구독으로 담기 →"(일곱째)는 27.08 · Bold 11.28로 컴포넌트와 같지만 글자 중심이 상자 중심보다 1.36 위 — 화면은 `Button`을 그대로 쓴다 |
 | `TextInput` | 6 | 로그인, 회원가입/1 | `TextInputField` | 2 | ✅ 리뷰 1 — 회원가입/1은 값 글자를 Regular 8.46 / 줄 12.41로 그린다(컴포넌트는 6.77). 라벨→필드 15.2(컴포넌트 16.0) |
 | `ButtonBack` | 5 (+이름 없는 것 10) | 로그인·홈 빼고 15화면 전부 | `ButtonBack` | 12 | ✅ 리뷰 |
 | (그라디언트 글자) | 0 | 없음 — 아래 "`GradientText`" 참고 | ~~`GradientText`~~ | 0 | ✅ 마지막 호출부 둘(MY)을 바꾸고 `gradient-text.tsx`를 지웠다. `@react-native-masked-view/masked-view`는 `living-artwork`가 여전히 써서 남겼다 |
-| `SelectButton1~5`, `_White` | 150+ | 회원가입/1·2, 일지/오늘의기록·상세보기 | `SelectButton` | 2 | ✅ 리뷰 |
-| `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 2 | ✅ 리뷰. `SelectItem6_Card`(식사 횟수)는 높이 50.77 / 50.69로 컴포넌트(50.61)보다 0.1~0.16 크다 — 무시 |
+| `SelectButton1~5`, `_White` | 150+ | 회원가입/1·2, 일지/오늘의기록·상세보기 | `SelectButton` | 3 | ✅ 리뷰 |
+| `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 4 | ✅ 리뷰. `SelectItem6_Card`(식사 횟수)는 높이 50.77 / 50.69로 컴포넌트(50.61)보다 0.1~0.16 크다 — 무시 |
 | `SelectItem4_1` | 3 | 회원가입/2 | `PillGroup` | 1 | ✅ 리뷰 |
 | `SelectItem6_Card` | 5 | 회원가입/2 | `LikertCard` | 1 | ✅ 리뷰 |
 | `Select0To10` | 3 (+`_Card`·`_History` 각 1) | 회원가입/2, 일지/오늘의기록·상세보기 | `Slider0To10` | 2 | ✅ 리뷰 |
@@ -46,8 +53,8 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 | `InputTime_Card` | 2 | 일지/오늘의기록·상세보기 | `InputTimeCard` | 2 | ✅ 리뷰. 상세보기 사본은 카드 안 제목·라벨·필드가 오늘의기록보다 3.4 / 2.8 / 1.7 위(제목 y 0.47 — 카드 위에 붙음). 한 번만 나오는 어긋남으로 보고 컴포넌트는 그대로 |
 | `BottomBar2`, `BottomBar3`, `Component 2`, `BottomBar1`(홈) | 11 | 탭 화면 전부 | `BottomBar` | 1 | ✅ 리뷰 |
 | (회원가입 헤더 — 칩·제목·진행바·STEP) | 3 | 회원가입/1·2·3 | `StepHeader` | 3 | ✅ 리뷰 |
-| `LifeDNA_WeeklyInfo_*` | 18 | 홈 | `WeeklyInfoCard` | 1 | 🔶 홈 화면 작업에서 (홈만 쓴다) |
-| `Diary_Status` | 5 | 일지/메인 | `DiaryStatus` | 1 | 🔶 일지/메인 작업에서 — 상자 17×7 → 17.393×6.731. 비트맵 3장은 v4 채움과 픽셀 해시가 같아 그대로 |
+| `LifeDNA_WeeklyInfo_*` | 18 | 홈 | `WeeklyInfoCard` | 1 | ✅ 리뷰 (홈 화면과 함께 — 홈만 쓴다) |
+| `Diary_Status` | 5 | 일지/메인 | `DiaryStatus` | 1 | ✅ 리뷰 (일지/메인과 함께) — 상자 17×7 → 17.393×6.731. 비트맵 3장은 v4 채움과 픽셀 해시가 같아 그대로 |
 | `PhoneHeader` | 17 | 전부 | 옮기지 않음 (safe area) | — | — |
 
 ## 이름 없이 반복되는 것 — 스크린샷으로 찾은 것
@@ -126,7 +133,7 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | ~~`my/subscription-screen`~~ | "더 깊은 나" | ✅ 중첩 `Text`로 `brand/violet-text` Bold 11.28 ("를"은 `text/strong`, 나머지 `text/heading`) |
 | ~~`my/components/stat-strip`~~ | "31일"·"13축"·"암호화" | ✅ 단색 `brand/violet-text` SemiBold 9.59 |
 | ~~`ui/daily-summary-card`, `ui/weekly-condition-chart`~~ | 등급·점수, 그래프 요약 | ✅ 단색 `brand/violet-text`. v4에 카드가 없어 일지 작업에서 v4 토큰만 입혔다(화면별 결정 참고) |
-| ~~`auth/sign-up-intro-screen`~~ | 워드마크 | ✅ 단색 `brand/violet-text` `Text`로 바꿈. 글꼴(Pretendard ExtraBold 14)은 그대로 — v4 프레임이 없다 |
+| ~~`auth/sign-up-intro-screen`~~ | 워드마크 | ✅ 단색 `brand/violet-text` `Text`로 바꿈. 글꼴은 나중에 Plex Bold 14로(아래 "화면" — v4 프레임은 없다) |
 
 ## 화면
 
@@ -153,7 +160,12 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | my | 데이터개인정보 | `1363:3364` | `my/privacy-screen.tsx` + `my/components/reassurance-banner`·`stat-strip`·`setting-row` | ✅ 리뷰 |
 
 회원가입 인트로(`sign-up-intro-screen.tsx`)는 v4에 프레임이 없다 — 폐기된 초안에서
-온 화면이라 공용 컴포넌트가 바뀌는 만큼만 따라간다.
+온 화면이라 공용 컴포넌트가 바뀌는 만큼만 따라간다. 다만 v4 화면 둘(로그인, 회원가입/1)
+사이에 있어서 일간_컨디션_요약과 같은 처리를 했다: 배치·크기·위치·그림(옛 `dna-icon.png`)은
+그대로 두고 v4 토큰만 입혔다 — 배경 `surface/bg`, 제목 "시작해보기" `text/heading`,
+부제 `text/body`, "이미 계정이 있나요?" `text/muted`, 글꼴은 Plex(Pretendard ExtraBold
+제목은 Plex에 ExtraBold가 없어 Bold). "로그인" 링크 색 `#8B2AFE`는 로그인 화면의 같은
+자리("회원가입")가 쓰는 값이라 그대로 둔다.
 
 ### 화면별 결정
 
