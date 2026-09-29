@@ -19,6 +19,14 @@
 | `font-['Pretendard:…']` (기호만) | 기존 `font-pretendard-*` |
 | `linear-gradient(Ndeg, c1 p1%, …)` | `LinearGradient` + `cssGradientPoints(N, w, h)`, `locations=[p1/100, …]` |
 
+**파스텔 그라디언트의 각도는 상자 모양에서 나온다.** v4의 파스텔 채움은 모두
+`pastelAngle(w, h) = 90° + atan(0.56338·w/h)`를 따른다(`lib/gradient.ts`, v4 채움 6개와
+0.0001° 안에서 일치). 폭이 데이터로 정해지는 막대(점수 막대 등)는 각도를 고정하지 말고
+실제 폭으로 이 함수를 불러 `cssGradientPoints`에 넘긴다.
+
+**`get_design_context`가 준 에셋 URL은 curl로 404가 날 수 있다.** 그 노드에
+`download_assets`를 쓰면 받아진다.
+
 동적 값은 `style`로 넘긴다. className에 템플릿 리터럴(`` `px-[${…}px]` ``)을 넣으면
 NativeWind가 못 읽는다.
 

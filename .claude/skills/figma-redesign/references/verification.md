@@ -45,7 +45,11 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
    python .claude/skills/figma-redesign/scripts/compare_bands.py figma.png device.png --bg f6f3fa
    ```
 
-   두 이미지에서 잉크가 있는 가로 띠를 pt 단위로 찾아 짝지어 차이를 출력한다.
+   두 이미지에서 잉크가 있는 가로 띠를 pt 단위로 찾아 차이를 출력한다. 짝은 순서가
+   아니라 **위치**로 짓는다 — 대부분의 띠가 동의하는 차이를 먼저 찾고, 그 차이에서 가장
+   가까운 띠끼리 묶는다. 짝이 없는 Figma 띠는 `(no match)`, 기기에만 있는 띠는
+   `device-only bands`로 따로 나온다(데이터가 없어 안 그려진 칩, 화면 아래에 붙인 줄).
+   예상 차이를 알면 `--offset 24.8`로 고정한다.
    기본으로 x 0~175pt만 본다(오른쪽 위 Expo 개발 메뉴 버튼을 피하려고).
    - 아이콘과 글자가 한 띠로 뭉쳐 원인이 섞이면 `--x-range 20 60`처럼 열을 좁혀
      따로 돌린다.
