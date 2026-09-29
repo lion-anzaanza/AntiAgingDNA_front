@@ -35,7 +35,8 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 |---|---|---|---|---|---|
 | `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 7 | ✅ 리뷰 1 |
 | `TextInput` | 6 | 로그인, 회원가입/1 | `TextInputField` | 2 | ✅ 리뷰 1 |
-| `ButtonBack` | 5 (+이름 없는 것 다수) | 회원가입/3, 일지 4화면 | `ButtonBack` | 12 | |
+| `ButtonBack` | 5 (+이름 없는 것 10) | 로그인·홈 빼고 15화면 전부 | `ButtonBack` | 12 | 🔶 |
+| (그라디언트 글자) | 0 | 없음 — 아래 "`GradientText`" 참고 | `GradientText` | 14 | 🔶 조사만 |
 | `SelectButton1~5`, `_White` | 150+ | 회원가입/1·2, 일지/오늘의기록·상세보기 | `SelectButton` | 2 | |
 | `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 2 | |
 | `SelectItem4_1` | 3 | 회원가입/2 | `PillGroup` | 1 | |
@@ -71,7 +72,30 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 | `TextInput` 높이 | 37.4 (로그인) vs 36.2 (회원가입/1) | 필드 27.1 공통, 라벨 간격만 차이 — 화면 작업 때 재확인 | |
 | 필 `history` 상태 | v4 상세보기는 선택된 답을 **활성(분홍)과 같은 색**으로 그린다. `#7786A8` 회청색이 없다 | `history`는 활성 색 + 눌리지 않음 | 디자인이 상태 하나를 없앴다 |
 | 필 크기 | 회원가입 24.8 높이·반경 5.6, 일지 18.1 높이·반경 4.8, 회원가입/1은 흰 배경+그림자 | 맥락별 차이로 본다 (불일치 아님) | 화면마다 일관 |
-| `ButtonBack` 크기 | 14×13 반경 5.6 (회원가입/3) vs 13.8~16.8×12.5 반경 2.9 (일지) | `ButtonBack` 컴포넌트 작업 때 전 프레임을 모아 정한다 | 폭이 제각각 |
+| `ButtonBack` 크기 | `←` 글자로 전 프레임에서 15개를 모았다(이름 있는 것 5). 13.46×12.5 반경 2.885 ×9 (회원가입/1, 개선책 4, 마이 4) · 14×13 반경 5.64 ×2 (회원가입/2·3, 그림자 4.0 — 줄이기 전 값) · 일지 4화면은 높이·반경은 같고 폭만 13.84/13.97/15.79/16.79 | **13.46×12.5, 반경 2.885**, 흰색, `SHADOW_V4` | 폭 9/15, 높이·반경 13/15. 일지의 폭은 화면마다 달라 의도로 보기 어렵다 |
+| `ButtonBack` 화살표 | 15개 모두 Pretendard SemiBold 7.333 / 줄 10.476, `text/body`, 가운데 정렬 (칩 중심보다 약 0.35pt 위 — 재현 안 함) | 그대로 | 전부 같음 |
+| `ButtonBack` 위치 | x 11.28이 14/15 (회원가입/2만 11.84)이고 y는 화면마다 다르다 | 컴포넌트는 크기만 갖고 위치는 화면 작업에서 | 위치는 헤더(제목 줄)에 따라 다르다 |
+| 그라디언트 글자 | v4 텍스트 731개 중 그라디언트 채움 0, 마스크 0. 예전에 `GradientText`였던 자리는 전부 단색 `brand/violet-text` `#7A55D8` | `GradientText`는 바꾸지도 지우지도 않는다. 각 화면 작업에서 호출부를 `COLOR.brand.violetText` 단색 `Text`로 바꾸고, 마지막 호출부가 사라지면 파일을 지운다 | 아래 표 |
+
+### `GradientText` 호출부 — 화면 작업에서 바꿀 것
+
+v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 쓰는 자리와 v4에서 그
+자리 글자의 모양이다 (굵기·크기는 화면 작업 때 `get_design_context`로 다시 확인).
+
+| 코드 | 글자 | v4 |
+|---|---|---|
+| `home/home-screen` | 인사말의 닉네임 | `brand/violet-text` Bold 13.54 (앞뒤 "안녕하세요,"·"님!"은 `text/strong` Bold) |
+| `journal/components/week-card` | "월간 보기 →", "오늘" | `brand/violet-text` SemiBold 7.33 |
+| `journal/today-screen` | "항목별로 오늘의 기록을 채워주세요!" | `brand/violet-text` SemiBold 9.59 |
+| `journal/calendar-screen` | "N월 기록 N일 · 평균 …" | `brand/violet-text` SemiBold 9.59 |
+| `plan/main-screen` | "70%" | `brand/violet-text` Bold 11.28 |
+| `plan/supplements-screen` | "‘올빼미 - 고민감 - 누적형’" | `brand/violet-text` SemiBold 7.33 |
+| `plan/components/supplement-card` | 추천 이유 ("스트레스 누적형 · 수면 질 ↓" 등) | `brand/violet-text` SemiBold 7.33 |
+| `plan/forecast-screen` | 강조된 제안 ("조금 더 열심히") | `brand/violet-text` SemiBold 7.33 |
+| `my/subscription-screen` | "더 깊은 나" | `brand/violet-text` Bold 11.28 (v4는 "를"부터 `text/strong`) |
+| `my/components/stat-strip` | "31일"·"13축"·"암호화" | `brand/violet-text` SemiBold 9.59 |
+| `ui/daily-summary-card`, `ui/weekly-condition-chart` | 등급·점수, 그래프 요약 | v4 프레임에 이 카드가 없다 — 그 컴포넌트 작업 때 판단 |
+| `auth/sign-up-intro-screen` | 워드마크 | v4에 프레임 없음. 로그인 워드마크(`brand/violet-text` Bold)를 따르는 게 자연스럽다 |
 
 ## 화면
 
@@ -117,7 +141,7 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 
 | # | 무엇 | 지금 코드 | 선택지 |
 |---|---|---|---|
-| 1 | 탭 루트(개선책/메인, 마이페이지/메인)에 v4가 뒤로가기를 그린다 | 기존대로 그린다 (가드 있음) | 유지 / 탭 루트에서 제거 |
+| 1 | 탭 루트(일지/메인, 개선책/메인, 마이페이지/메인)에 v4가 뒤로가기를 그린다 | 기존대로 그린다 (가드 있음) | 유지 / 탭 루트에서 제거 |
 | 2 | 본문색 `#00352C` 결정 대기 항목(AGENTS.md) — v4는 `text/body` `#6B6680`으로 답한 것으로 보인다 | 개편한 화면은 v4 색 | AGENTS 항목을 닫을지 |
 | 3 | 비활성 `Button` — v4에 비활성 모양이 없다 | 호출부가 `opacity: 0.4`. 파스텔 위라 거의 구분되지 않는다 | 지금대로 / 디자인 요청 |
 
