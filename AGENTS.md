@@ -77,7 +77,7 @@ text — easy to misread as a mystery crash. `StepHeader` takes a `backHref` for
 - `GRADIENT_SELECT` — the `ActiveButton` style, `#4356F7 → #843FF6`, first stop at
   **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Filled selected
   SelectButton 1/2/3/5 and `ButtonNextUI` before v4; in v4 neither uses it (a
-  selected pill is flat `brand/selected`). 회원가입/2's hand-built pills still do.
+  selected pill is flat `brand/selected`). Screens not yet reworked to v4 still do.
 
 **v4 (2026-09-30) replaced the button ramp.** `Button` now draws
 `GRADIENT_PASTEL` (pink → lavender → periwinkle) at CSS 166.3°. Figma hands v4
@@ -522,16 +522,11 @@ and each is listed so the next person does not "fix" the code back.
   icon on 112, the wordmark on 111.5, the greeting on 112, 회원가입 on 112.5 and
   아이디·비밀번호 찾기 on 110.5, while the button is dead-centre on 110. The code
   centres everything on 110; reproducing the scatter is not worth it.
-- **`SelectItem3_2` on 회원가입/1 is a 172-wide instance** whose pills are flush
-  to its right edge (inset 14 left, 0 right, gap 7) rather than the 12/12 the
-  rest of the family uses. `PillGroup` renders 12/12, so its first pill lands
-  2pt left of Figma's.
 - **회원가입/1 no longer matches Figma, on purpose.** The mock draws 성별, 직업
   and a 년/월/일 birth date; the backend will not accept any of them and stores
   only `birthYear` (backlog item 13), so the screen collects six fields and the
-  mock needs updating. `ui/date-input-row.tsx` went with them.
-- **회원가입/2's button and Likert cards break its own column** — the frame is
-  17..203 but `ButtonNextUI` sits at 22 and the `SelectItem6_Card`s at 25..207.
+  mock needs updating. `ui/date-input-row.tsx` went with them. v4 still draws
+  them (and no 아이디); the screen takes v4's look, not its field list.
 
 ### The backend is wired for auth
 

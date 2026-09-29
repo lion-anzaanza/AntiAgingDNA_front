@@ -4,7 +4,7 @@ import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
-import { GradientText } from '@/components/ui/gradient-text';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 export default function SignUpIntroScreen() {
@@ -23,12 +23,11 @@ export default function SignUpIntroScreen() {
             justifyContent: 'center',
             marginTop: scale(2),
           }}>
-          <GradientText
-            colors={['#4B52F6', '#BC40F6']}
-            style={{ fontSize: scale(14), lineHeight: scale(15) }}
+          <Text
+            style={{ fontSize: scale(14), lineHeight: scale(15), color: COLOR.brand.violetText }}
             className="font-pretendard-extrabold">
             LifeDNA
-          </GradientText>
+          </Text>
           <Text
             style={{ fontSize: scale(14), lineHeight: scale(15), color: '#000000' }}
             className="font-pretendard-extrabold">

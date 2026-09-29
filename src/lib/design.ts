@@ -9,7 +9,7 @@ export const SHADOW = '0px 0px 4px rgba(169, 169, 169, 0.25)';
 
 /**
  * The pre-v4 `ActiveButton` ramp (old ButtonNextUI and selected SelectButton).
- * v4 draws neither with it; 회원가입/2's hand-built pills still do.
+ * v4 draws neither with it; the un-reworked 일지 week card and 영양제 card still do.
  * The first stop starts at 18.9% rather than the edge.
  */
 export const GRADIENT_SELECT: readonly [string, string] = ['#4356F7', '#843FF6'];

@@ -210,8 +210,8 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 수작업 도형이거나 `PillGroup`이 표현할 수 없는 배치라서 직접 조립했습니다.
 새 화면의 본보기로 삼지 마세요.
 
-- `features/auth/survey-screen.tsx` — 수면 유형·수면의 질 알약을 `Pressable`로 직접 구성
-- `features/auth/personal-info-screen.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
+- `features/auth/survey-screen.tsx` — 수면 유형 알약(아이콘)은 `Pressable`로, 수면의 질·운동량은
+  글자 폭에 맞춘 19pt `SelectButton`으로 직접 배치 (v4의 `NoSelect`·수작업 도형)
 - `features/journal/today-screen.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
   낱개 도형이고, 알약 폭이 균등 그리드가 아니라 글자 길이에 맞춰져 있습니다
 - `features/home/components/` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
