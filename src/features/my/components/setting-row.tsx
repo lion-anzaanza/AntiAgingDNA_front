@@ -1,15 +1,20 @@
-import { Image, Pressable, Switch, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
 
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
-/** Row pitch inside a card, measured off the dividers (192 → 214 → 237). */
-const ROW_HEIGHT = 22;
-
-const TEXT = '#2C2C2A';
-const SUBTLE = '#A6A6A6';
-const TRACK_ON = '#A100FF';
+/** v4's switch track when off — a bare hex, not a token. */
 const TRACK_OFF = '#DADADA';
-const PILL_BG = '#F8EBFF';
+
+/** Trailing marks share one box at the right of the row: x 168.9..188.4 of 197.4. */
+const TRAIL_LEFT = 169.05;
+const TRAIL_WIDTH = 19.314;
+const TRAIL_HEIGHT = 9.615;
+const TRAIL_TOP = 5.77;
+const KNOB = 7.692;
+/** Knob inset from the track's ends: 1.49 off, 10.12 from the left on. */
+const KNOB_OFF = 1.49;
+const KNOB_ON = TRAIL_WIDTH - KNOB - 1.5;
 
 export type ToggleKey =
   | 'analysis'
@@ -25,114 +30,153 @@ export type Row = {
   icon: ImageSourcePropType;
   iconWidth: number;
   iconHeight: number;
+  /** Figma places each icon absolutely in its row, not centred. */
+  iconTop: number;
   /** A switch, a `>` chevron, or a small violet pill. */
   toggle?: ToggleKey;
   chevron?: boolean;
   pill?: string;
   caption?: string;
+  captionLeft?: number;
 };
 
+/**
+ * One row of a v4 데이터개인정보 card — the same grid as 마이페이지/메인's
+ * `MenuRow`: icon at x 9.1, label Plex 6.77 `text/strong`, 0.288 `border/soft`
+ * dividers. The switch is drawn, not the platform `Switch`: v4's is a 19.3×9.6
+ * `brand/violet` track (grey when off) with a flat white knob, and Android's
+ * cannot be made to look like that.
+ */
 export function SettingRow({
   row,
+  height,
   first,
   value,
   onToggle,
 }: {
   row: Row;
+  height: number;
   first: boolean;
   value: boolean;
   onToggle?: (next: boolean) => void;
 }) {
   return (
-    <Pressable
-      disabled={!row.chevron}
+    <View
       style={{
-        height: scale(ROW_HEIGHT),
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: scale(7),
-        borderTopWidth: first ? 0 : scale(0.3),
-        borderTopColor: '#DBDBDB',
+        height: scale(height),
+        justifyContent: 'center',
+        borderTopWidth: first ? 0 : scale(0.288),
+        borderTopColor: COLOR.border.soft,
       }}>
-      <View style={{ width: scale(21), alignItems: 'center' }}>
-        <Image
-          source={row.icon}
-          style={{ width: scale(row.iconWidth), height: scale(row.iconHeight) }}
-          resizeMode="contain"
-        />
-      </View>
+      <Image
+        source={row.icon}
+        style={{
+          position: 'absolute',
+          left: scale(9.1),
+          top: scale(row.iconTop),
+          width: scale(row.iconWidth),
+          height: scale(row.iconHeight),
+        }}
+        resizeMode="contain"
+      />
       <Text
         style={{
-          marginLeft: scale(5),
-          fontSize: scale(7),
-          lineHeight: scale(9),
-          letterSpacing: scale(-0.21),
-          color: TEXT,
+          position: 'absolute',
+          left: scale(29.5),
+          fontSize: scale(6.769),
+          lineHeight: scale(9.026),
+          color: COLOR.text.strong,
         }}
-        className="font-pretendard">
+        className="font-plex">
         {row.label}
       </Text>
       {row.caption ? (
         <Text
           numberOfLines={1}
           style={{
-            marginLeft: scale(6),
-            flexShrink: 1,
-            fontSize: scale(6),
-            lineHeight: scale(9),
-            letterSpacing: scale(-0.18),
-            color: SUBTLE,
+            position: 'absolute',
+            left: scale(row.captionLeft ?? 0),
+            // Up to the `>` glyph (x ≈ 184) — the 위험 caption needs 85.5pt.
+            right: scale(14),
+            // Both captions sit 1–1.5pt below their row's middle in Figma.
+            transform: [{ translateY: scale(1.25) }],
+            fontSize: scale(6.769),
+            lineHeight: scale(9.026),
+            color: COLOR.text.body,
           }}
-          className="font-pretendard">
+          className="font-plex">
           {row.caption}
         </Text>
       ) : null}
 
-      <View style={{ marginLeft: 'auto' }}>
-        {row.toggle ? (
-          <Switch
-            value={value}
-            onValueChange={onToggle}
-            trackColor={{ true: TRACK_ON, false: TRACK_OFF }}
-            thumbColor="#FFFFFF"
-            style={{ transform: [{ scale: scale(18) / 52 }] }}
-          />
-        ) : row.pill ? (
+      {row.toggle ? (
+        <Pressable
+          accessibilityRole="switch"
+          accessibilityLabel={row.label}
+          accessibilityState={{ checked: value }}
+          hitSlop={scale(6)}
+          onPress={() => onToggle?.(!value)}
+          style={{
+            position: 'absolute',
+            left: scale(TRAIL_LEFT),
+            top: scale(TRAIL_TOP),
+            width: scale(TRAIL_WIDTH),
+            height: scale(TRAIL_HEIGHT),
+            borderRadius: scale(TRAIL_HEIGHT / 2),
+            // Same element tree either way — only the values change (AGENTS.md #3).
+            backgroundColor: value ? COLOR.brand.violet : TRACK_OFF,
+          }}>
           <View
             style={{
-              width: scale(18),
-              height: scale(10),
-              borderRadius: scale(5),
-              backgroundColor: PILL_BG,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text
-              style={{
-                fontSize: scale(5),
-                lineHeight: scale(10),
-                letterSpacing: scale(-0.05),
-                color: TRACK_ON,
-              }}
-              className="font-pretendard-semibold">
-              {row.pill}
-            </Text>
-          </View>
-        ) : (
+              position: 'absolute',
+              left: scale(value ? KNOB_ON : KNOB_OFF),
+              top: scale((TRAIL_HEIGHT - KNOB) / 2),
+              width: scale(KNOB),
+              height: scale(KNOB),
+              borderRadius: scale(KNOB / 2),
+              backgroundColor: COLOR.surface.card,
+            }}
+          />
+        </Pressable>
+      ) : row.pill ? (
+        <View
+          style={{
+            position: 'absolute',
+            left: scale(TRAIL_LEFT - 0.1),
+            top: scale(TRAIL_TOP),
+            width: scale(TRAIL_WIDTH),
+            height: scale(TRAIL_HEIGHT),
+            borderRadius: scale(TRAIL_HEIGHT / 2),
+            backgroundColor: COLOR.surface.tint,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Text
             style={{
-              width: scale(18),
-              textAlign: 'right',
-              fontSize: scale(10),
-              lineHeight: scale(18),
-              letterSpacing: scale(-0.1),
-              color: '#B4B2A8',
+              fontSize: scale(7.333),
+              lineHeight: scale(10.154),
+              color: COLOR.brand.violetText,
             }}
-            className="font-pretendard-light">
-            &gt;
+            className="font-plex-semibold">
+            {row.pill}
           </Text>
-        )}
-      </View>
-    </Pressable>
+        </View>
+      ) : (
+        <Text
+          style={{
+            position: 'absolute',
+            right: scale(7.96),
+            // Figma's `>` centres 1.44pt below the row's middle.
+            transform: [{ translateY: scale(1.44) }],
+            fontSize: scale(11.282),
+            lineHeight: scale(20.308),
+            letterSpacing: scale(-0.1128),
+            color: COLOR.text.body,
+          }}
+          className="font-pretendard-light">
+          {'>'}
+        </Text>
+      )}
+    </View>
   );
 }

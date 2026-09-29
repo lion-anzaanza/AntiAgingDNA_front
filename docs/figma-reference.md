@@ -52,9 +52,9 @@ Paths are under `src/features/`; the route files in `src/app` only re-export the
 | `559:1294` | 개선책/주간리포트 (v4: `1363:3061`) | `plan/report-screen.tsx` |
 | `523:490` | 개선책/한달뒤내모습 (v4: `1363:3134`) | `plan/forecast-screen.tsx` |
 | `583:969` | 마이페이지 (Frame 28) | `my/main-screen.tsx` |
-| `583:862` | 웨어러블 연동 (Frame 26) | `my/wearable-screen.tsx` |
-| `583:913` | 데이터 개인정보 (Frame 27) | `my/privacy-screen.tsx` |
-| `585:1399` | 구독관리 (Frame 25) | `my/subscription-screen.tsx` |
+| `583:862` | 웨어러블 연동 (Frame 26, v4: `1363:3340`) | `my/wearable-screen.tsx` |
+| `583:913` | 데이터 개인정보 (Frame 27, v4: `1363:3364`) | `my/privacy-screen.tsx` |
+| `585:1399` | 구독관리 (Frame 25, v4: `1363:3269`) | `my/subscription-screen.tsx` |
 
 ## 2026-08-17 재대조에서 바뀐 것
 
@@ -125,7 +125,8 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 | 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 (v4: 11.28 / 197.436) |
 | 개선책/한달뒤내모습 | **17** | 184 | (v4: 11.28 / 197.436) |
 | 마이페이지 | **17** | 184 | menu card radius 6, not 10 |
-| 웨어러블 연동 | **17** | 184 | watch is full-bleed 220×220 |
+| 웨어러블 연동 | **17** | 184 | watch is full-bleed 220×220 (v4: 11.28 / 197.436) |
+| 데이터 개인정보 · 구독관리 | 17 | 184 / 186 | (v4: 11.28 / 197.436) |
 
 Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
 184pt column overflowed the row and collapsed the 2×2 grid into one column.

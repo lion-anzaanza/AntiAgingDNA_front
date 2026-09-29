@@ -8,8 +8,8 @@
 export const SHADOW = '0px 0px 4px rgba(169, 169, 169, 0.25)';
 
 /**
- * The older, wider brand ramp — still on MY screens not yet moved to v4. v4's
- * 예상 성장 곡선 stroke (개선책/한달뒤) is drawn in exactly these two stops.
+ * The older, wider brand ramp. No screen fills with it any more; v4's 예상 성장
+ * 곡선 stroke (개선책/한달뒤) is drawn in exactly these two stops.
  */
 export const GRADIENT_BRAND: readonly [string, string] = ['#4655F6', '#9423FF'];
 

@@ -36,7 +36,7 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 | `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 7 | ✅ 글자 Bold 11.28로 수정. 일지/오늘의기록(여섯 번째, 인벤토리 작성 때 빠짐)은 197.44×**29.33**, 글자 SemiBold 9.59 / 13.54 — 컴포넌트(27.08, Bold 11.28)와 다르다. 화면은 그대로 두고 아래 여백으로 페이지 길이만 맞췄다. 개선책/맞춤영양제 "3종 정기구독으로 담기 →"(일곱째)는 27.08 · Bold 11.28로 컴포넌트와 같지만 글자 중심이 상자 중심보다 1.36 위 — 화면은 `Button`을 그대로 쓴다 |
 | `TextInput` | 6 | 로그인, 회원가입/1 | `TextInputField` | 2 | ✅ 리뷰 1 — 회원가입/1은 값 글자를 Regular 8.46 / 줄 12.41로 그린다(컴포넌트는 6.77). 라벨→필드 15.2(컴포넌트 16.0) |
 | `ButtonBack` | 5 (+이름 없는 것 10) | 로그인·홈 빼고 15화면 전부 | `ButtonBack` | 12 | ✅ 리뷰 |
-| (그라디언트 글자) | 0 | 없음 — 아래 "`GradientText`" 참고 | `GradientText` | 2 | 🔶 개선책까지 바꿈. 남은 호출부는 `my/subscription-screen`·`my/components/stat-strip` 둘 — MY 작업에서 바꾸고 파일을 지운다 |
+| (그라디언트 글자) | 0 | 없음 — 아래 "`GradientText`" 참고 | ~~`GradientText`~~ | 0 | ✅ 마지막 호출부 둘(MY)을 바꾸고 `gradient-text.tsx`를 지웠다. `@react-native-masked-view/masked-view`는 `living-artwork`가 여전히 써서 남겼다 |
 | `SelectButton1~5`, `_White` | 150+ | 회원가입/1·2, 일지/오늘의기록·상세보기 | `SelectButton` | 2 | ✅ 리뷰 |
 | `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 2 | ✅ 리뷰. `SelectItem6_Card`(식사 횟수)는 높이 50.77 / 50.69로 컴포넌트(50.61)보다 0.1~0.16 크다 — 무시 |
 | `SelectItem4_1` | 3 | 회원가입/2 | `PillGroup` | 1 | ✅ 리뷰 |
@@ -123,8 +123,8 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | ~~`plan/supplements-screen`~~ | "‘올빼미 - 고민감 - 누적형’" | ✅ 중첩 `Text`로 `brand/violet-text` SemiBold 7.33 |
 | ~~`plan/components/supplement-card`~~ | 추천 이유 ("스트레스 누적형 · 수면 질 ↓" 등) | ✅ 단색 `brand/violet-text` SemiBold 7.33 |
 | ~~`plan/forecast-screen`~~ | 강조된 제안 ("조금 더 열심히") | ✅ 단색 `brand/violet-text` SemiBold 7.33 |
-| `my/subscription-screen` | "더 깊은 나" | `brand/violet-text` Bold 11.28 (v4는 "를"부터 `text/strong`) |
-| `my/components/stat-strip` | "31일"·"13축"·"암호화" | `brand/violet-text` SemiBold 9.59 |
+| ~~`my/subscription-screen`~~ | "더 깊은 나" | ✅ 중첩 `Text`로 `brand/violet-text` Bold 11.28 ("를"은 `text/strong`, 나머지 `text/heading`) |
+| ~~`my/components/stat-strip`~~ | "31일"·"13축"·"암호화" | ✅ 단색 `brand/violet-text` SemiBold 9.59 |
 | ~~`ui/daily-summary-card`, `ui/weekly-condition-chart`~~ | 등급·점수, 그래프 요약 | ✅ 단색 `brand/violet-text`. v4에 카드가 없어 일지 작업에서 v4 토큰만 입혔다(화면별 결정 참고) |
 | ~~`auth/sign-up-intro-screen`~~ | 워드마크 | ✅ 단색 `brand/violet-text` `Text`로 바꿈. 글꼴(Pretendard ExtraBold 14)은 그대로 — v4 프레임이 없다 |
 
@@ -148,9 +148,9 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | plan | 주간리포트 | `1363:3061` | `plan/report-screen.tsx` + `ui/plan-card`·`ui/area-delta-card` | ✅ 리뷰 |
 | plan | 한달뒤내모습 | `1363:3134` | `plan/forecast-screen.tsx` + `plan/components/growth-curve-card` + `ui/area-delta-card` | ✅ 리뷰 |
 | my | 마이페이지/메인 | `1363:3217` | `my/main-screen.tsx` + `my/components/profile-card`·`menu-row` | ✅ 리뷰 1 (뒤로가기 칩은 `ButtonBack` 작업 때) |
-| my | 구독관리 | `1363:3269` | `my/subscription-screen.tsx` | |
-| my | 웨어러블연동 | `1363:3340` | `my/wearable-screen.tsx` | |
-| my | 데이터개인정보 | `1363:3364` | `my/privacy-screen.tsx` | |
+| my | 구독관리 | `1363:3269` | `my/subscription-screen.tsx` + `my/components/premium-badge`·`subscription-plan-card`·`feature-table` | ✅ 리뷰 |
+| my | 웨어러블연동 | `1363:3340` | `my/wearable-screen.tsx` | ✅ 리뷰 |
+| my | 데이터개인정보 | `1363:3364` | `my/privacy-screen.tsx` + `my/components/reassurance-banner`·`stat-strip`·`setting-row` | ✅ 리뷰 |
 
 회원가입 인트로(`sign-up-intro-screen.tsx`)는 v4에 프레임이 없다 — 폐기된 초안에서
 온 화면이라 공용 컴포넌트가 바뀌는 만큼만 따라간다.
@@ -229,6 +229,22 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | 다음 주 제안 카드 | 95.33×44.23 둘, 간격 6.77. 둘째 `surface/tint` + 0.288 `brand/violet` 테두리, 라벨 `brand/violet-text`. 점수 Bold 18.05 `text/plum`이 위아래 글자와 거의 닿는다 | 그대로 | Figma도 붙어 있다(나란히 대조) |
 | 한달뒤 안내 문구 | 한 줄 196.5 폭 — 열(197.44)을 거의 채운다, 오른쪽 끝 208.8 | 오른쪽 정렬, 상자를 왼쪽으로 4까지 늘림. Android의 Plex가 Figma보다 약 2% 넓어 열 안에서는 1.0에서도 마지막 낱말이 줄바꿈됐다. 1.1에서는 두 줄 | 기기에서 발견 |
 | 한달뒤 탭 바 | v4도 MY를 켠다 | 라우트대로 개선책 | 예전부터 있던 실수 |
+| MY 하위 세 화면 열·헤더 | 모든 카드 x 11.28, 폭 197.436. 칩 y 12, 제목 Bold 13.54 x 34.4~34.6, 줄 상자 위 9.38~9.47 | 11.28 / 197.436, 헤더는 프레임마다 v4 값. 전부 프레임 y − 38 절대 위치 | 기기 합의값 구독관리 24.7, 웨어러블 25.3, 데이터개인정보 25.0 — 띠 차이 ±0.6 안(탭 바·화면 아래 붙인 요소 제외) |
+| MY 옛 토큰 | `subscription-tokens.ts`(`#00352C`·`#A100FF`)와 `SHADOW`·`GRADIENT_BRAND` | 전부 `COLOR`·`SHADOW_V4`·`GRADIENT_PASTEL`로. 토큰 파일은 지웠다 | v4 변수 이름대로 |
+| 구독관리 플랜 카드 | 라디오가 없어졌다. 선택 카드 `surface/tint` + 0.385 `brand/violet` 테두리, 나머지 흰색 + 0.288 `border/soft`. 둘째 카드 제목이 `월간`으로 고쳐졌다 | 그대로. 선택은 예전처럼 로컬 상태로 옮겨 다닌다. "38% 할인" 칩은 파스텔(`pastelAngle` = 163.76°) Regular 6.77 `text/on-pastel`, 카드 위로 4.7 걸침 | 두 카드 안 위치가 0.15 안에서 같다 |
+| 구독관리 프리미엄 배지 | 75.09×11.54 `#FFF8D5` + 0.192 `#FFC800`(둘 다 토큰 아님). 글자 SemiBold 7.33 `#774F00`의 줄 상자가 배지 중심보다 2.5 아래라 잉크가 아래 테두리에 붙는다. 왕관은 기존 `ic-crown.png`와 같은 그림(차 0.3) | 세로는 가운데로(한 번만 나오는 어긋남), 가로는 v4 잉크 시작(x 15.3)에 왼쪽 정렬 + 배지 끝까지 `adjustsFontSizeToFit` | 글꼴 1.1에서 왕관을 덮었다 — 기기에서 발견. 1.0에서 잉크 높이 9.78 (Figma 9.75), 줄지 않음 |
+| 구독관리 기능 표 | 행 23.08 간격(일곱째만 22.11), 구분선 `border/soft` 0.288. ✓/X는 Pretendard 열 128.55 / 179.36, Plex 낱말은 126.6 / 178.3(머리 "프리미엄"만 174.78). 머리 글자 셋 모두 띠 중심보다 1.5 아래 | 글자 종류마다 자기 열, 머리 글자 1.5 내림 | 각 무리 안에서 0.2 안 |
+| 구독관리 CTA | 197.44×27.08 파스텔 166.3°(= `Button` 상자) + 글자 **SemiBold 9.59** / 13.54, 중심 1.17 위 | 화면에서 직접 그림(`Button`은 Bold 11.28). 동작 없음 | 결정 대기 14 — `ButtonNextUI` 계열 여덟째 |
+| 구독관리 작은 글씨 | 두 줄 문단을 "전까지" 뒤에서 손으로 끊었고 둘째 줄이 열(197.44)을 꽉 채운다 | 화면 양끝 4까지 넓힌 상자, 세 줄 모두 **보통 흐름**(절대 위치 아님) — 글꼴 1.1에서 세 줄로 접혀도 링크를 밀어낸다 | 열 안에서는 1.0에서도 "다."가 링크 위로 넘어갔다. `adjustsFontSizeToFit`(한 줄씩도, 두 줄 하나로도)은 **1.0에서도 9% 줄였다** — skill 함정 참고 |
+| 웨어러블 시계 | `image 1122` 1254px | 기존 `watch.png`(440px) 유지 | 440으로 줄이면 모든 채널 차 0 — 같은 그림 |
+| 웨어러블 안내 문구 | Bold 11.28 `text/body`, 중심 x 106.2(가운데에서 3.8 왼쪽) | 가운데 정렬 | 한 번만 나오는 어긋남 |
+| 웨어러블 연동하기 | 197.44×25 파스텔 167.33°, Bold 11.28, 줄 상자 중심 1.36 위 — 마이페이지/메인의 커피 버튼과 같은 값 | 커피 버튼처럼 화면에서 그림. 예전처럼 유연한 여백으로 화면 아래에 붙이고 아래 여백 35.82 | 기기에서 탭 바 위 35.9 |
+| 데이터개인정보 아이콘 | v4도 같은 스프라이트에서 잘랐고, 잘라 보면 기존 `ic-analysis`·`ic-stats`·`ic-watch-data`·`ic-bell`·`ic-biometric`·`ic-password`·`ic-devices`·`ic-sync`·`ic-shield-lock`과 같은 그림(해상도만 다름). 상자 크기·위치만 v4 | 기존 파일 유지, 상자 크기·행 안 top은 v4 | 눈으로 대조(스프라이트 크롭 vs 파일) |
+| 데이터개인정보 스위치 | v4는 19.31×9.62 트랙(켬 `brand/violet`, 끔 `#DADADA` — 토큰 아님) + 7.69 흰 손잡이, 그림자 없음. 켬·끔 두 상태 다 그려져 있다 | 플랫폼 `Switch` 대신 그린 스위치(`Pressable`, 같은 트리에 값만 바꿈). 기본값·로컬 상태 동작은 그대로 | 켬/끔 모두 기기에서 눌러 확인, 상자 ±0.3 |
+| 데이터개인정보 행 | 마이페이지/메인 메뉴와 같은 격자: 행 21.15/21.16/22.11/21.16, 아이콘 x 9.1, 라벨 Regular 6.77 `text/strong` x 27.7~30.1, `>` Pretendard Light 11.28 행 중심 1.44 아래, "2대" 칩 `surface/tint` + SemiBold 7.33 `brand/violet-text` | 라벨 x 29.5(중앙값), 나머지 그대로 | |
+| 데이터개인정보 위험 행 | 아이콘 3.1·라벨 2.8·`>` 5.2가 다른 행보다 왼쪽. 아래 테두리에 구분선 한 줄 | 다른 행에 맞춘다, 구분선은 안 그림 | 한 번만 나오는 어긋남 |
+| 데이터개인정보 통계 띠 | 예전엔 열 사이 세로선 2개. v4는 두 선을 카드 안쪽 끝(x 9.03 / 188.41, 위에서 27.9 길이)으로 옮겼다 | 그린 대로 | 한 프레임뿐이라 비교 대상 없음 — 디자이너 확인 대상 |
+| 데이터개인정보 안내 카드 | `surface/tint` 45.12 r4.81, 제목 SemiBold 9.59, 닉네임 `#6D3CFA`(토큰 아님), 부제 136.6 폭 두 줄 | 닉네임은 hex 그대로. 제목은 왼쪽·오른쪽 경계 + `adjustsFontSizeToFit`(긴 닉네임 "v4tester"가 카드 밖으로 나갔다). 부제 상자 142 — 136.6에서는 Android가 "제3자"를 끊었다 | 기기에서 발견 |
 
 ## 결정 대기 — 사람이 정할 것
 
@@ -250,7 +266,9 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | 11 | 주간_컨디션_그래프는 최근 7일 중 **기록한 날만** 18.89 → 178.3에 고르게 편다. 7일을 다 기록하면 점이 주간 기록의 요일 원 아래에 오지만, 그보다 적으면 어느 요일과도 맞지 않는다(게다가 주간 기록은 월–일, 그래프는 오늘까지 7일) | 고르게 편다(예전 동작 그대로) | 이대로 / 점을 그 날의 요일 열에 둔다(빈 날은 비움) |
 | 12 | 일지/메인에 지난 기록이 하나도 없으면 "지난 기록" 제목 아래 카드가 높이 0으로 사라져 제목만 남는다(v4 이전부터). v4에 빈 상태가 없다 | 제목만 그린다 | 빈 상태 디자인 요청 / 기록이 없으면 제목도 숨긴다 |
 | 13 | 일지 하단 "자동 기록 / 오늘 날씨" 카드(두 화면). 서버는 날씨를 기록할 수 있다(백로그 12, 🟡 프론트) — 단 저장 요청에 `lat`/`lon`(+`weatherLocationLabel`)을 보낼 때만. 앱은 위치를 받지 않아 기록된 날씨가 하나도 없다 | 카드는 v4 모양으로 그리고 값은 `—` (예전엔 목업 "서울 · 맑음 · 28°C"를 그렸다). "자동 기록됨" 칩은 남겼다 | 위치 권한 + `expo-location`으로 저장 때 위경도를 보내고 `DiaryResponse`의 `weather*`를 그린다(프론트 작업, 새 네이티브 모듈 — Expo Go 포함 여부 확인 필요) / 그 전까지 카드를 숨긴다 / 칩을 뺀다 |
-| 14 | 주 버튼(`ButtonNextUI`) 글자 — v4 여섯 개가 SemiBold 9.59와 Bold 11.28로 3 대 3 갈린다(오늘의기록 저장은 높이도 29.33) | Bold 11.28, 높이 27.08 | Bold 유지 / SemiBold로 / 화면별로 다르게 |
+| 14 | 주 버튼(`ButtonNextUI`) 글자 — v4 여섯 개가 SemiBold 9.59와 Bold 11.28로 3 대 3 갈린다(오늘의기록 저장은 높이도 29.33). 이름 없는 사본까지 세면 구독관리 CTA(SemiBold 9.59)·맞춤영양제(Bold)·웨어러블·커피(Bold, 높이 25)가 더해진다 | Bold 11.28, 높이 27.08 | Bold 유지 / SemiBold로 / 화면별로 다르게 |
+| 15 | 구독관리 문구 — v4가 둘째 플랜 제목을 `월간`으로 고쳤지만 가격 뒤는 여전히 `/ 년`(작은 글씨는 "이후 월 3,900원"), 두 플랜 부제는 마이페이지 프로필 유형 `올빼미 - 고민감 - 누적형`, 광고 행은 무료 X · 프리미엄 ✓(유료에 광고가 있다는 뜻) | v4 그대로 재현 | 디자이너에게 문구 확인 / `/ 월`·부제·광고 행을 고친다 |
+| 16 | 데이터개인정보의 둘째 섹션 제목이 다시 `개인정보 활용`(행은 앱 잠금·비밀번호·기기 — `보안`으로 보인다), 네 행이 같은 방패 아이콘, 앱 잠금에 다운로드 화살표, 개인정보처리방침에 `2대` 칩 — 예전 프레임의 자리표시가 v4에 그대로 | v4 그대로 재현 | 디자이너 확인 |
 
 ## Figma를 그대로 따르면 안 되는 곳
 
