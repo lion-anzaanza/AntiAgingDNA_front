@@ -12,8 +12,6 @@ export const MEAL_COUNT = ['0끼', '1끼', '2끼', '3끼', '4끼', '5끼 +'];
 export const JUNK_FOOD = ['0회', '1~2회', '3회 이상'];
 export const CAFFEINE_CUPS = ['0잔', '1~2잔', '3~4잔', '5잔 이상'];
 export const CAFFEINE_TIME = ['안 마심', '오전', '오후 (~5시)', '저녁 (6시 이후)'];
-/** Figma sizes these four to their text rather than to an even grid. */
-export const CAFFEINE_TIME_WIDTH = [27, 27, 39, 46];
 export const WATER = ['2잔 이하', '3~5잔', '6~7잔', '8잔 이상'];
 export const DID_EXERCISE = ['네', '아니요'];
 export const EXERCISE_MINUTES = ['15분 이하', '30분', '1시간', '1시간 이상'];
@@ -38,7 +36,5 @@ export const CAFFEINE_TIME_CAPTION = '취침 6시간 전 섭취는 수면을 방
 export const MOOD_RECOVERY_CAPTION = '산책·취미·대화 등 기분을 회복하는 활동';
 export const MET_PEOPLE_CAPTION = '대면·통화·영상 모두 포함';
 
-/** Space above a section heading, below it, and between consecutive cards. */
-export const SECTION_GAP = 13;
-export const HEADING_GAP = 6;
-export const CARD_GAP = 5;
+/** Between consecutive cards in a section — 4.81 everywhere in both v4 일지 frames. */
+export const CARD_GAP = 4.808;

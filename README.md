@@ -104,7 +104,8 @@ npm test
   (백로그 31). 개선책은 아직 엔드포인트 자체가 없습니다.
 - **못 채운 자리는 `—`로 둡니다.** 홈의 수면 카드(`sleepMinutes`가 항상 null,
   백로그 29), 5개 영역 중 감정·환경(백로그 33), 캘린더 코멘트와 그래프 요약
-  문장(백로그 27)이 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
+  문장(백로그 27), 일지 하단의 오늘 날씨(백로그 12 — 저장에 위경도를 안 보내 기록되는
+  날씨가 없습니다)가 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
   그대로 박혀 있습니다** — 지표별 등급 규칙이 없습니다(백로그 10).
   **무엇이 남았는지는 `docs/backend-backlog.md`의 "프론트 연동 현황" 표가
   목록입니다.**
@@ -212,8 +213,9 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 
 - `features/auth/survey-screen.tsx` — 수면 유형 알약(아이콘)은 `Pressable`로, 수면의 질·운동량은
   글자 폭에 맞춘 19pt `SelectButton`으로 직접 배치 (v4의 `NoSelect`·수작업 도형)
-- `features/journal/today-screen.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
-  낱개 도형이고, 알약 폭이 균등 그리드가 아니라 글자 길이에 맞춰져 있습니다
+- `features/journal/today-screen.tsx`·`detail-screen.tsx` — 카페인 섭취(질문 두 개가 한 카드)·운동 습관
+  카드. Figma 원본이 컴포넌트가 아닌 낱개 도형이라 `journal/components/form-text`의 조각으로
+  조립합니다 (v4에서 알약은 `SelectCard`와 같은 균등 그리드가 됐습니다)
 - `features/home/components/` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
   아니고, 오브 카드는 절대 위치로 조립해야 하는 배치입니다
 

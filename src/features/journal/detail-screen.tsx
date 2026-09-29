@@ -10,15 +10,22 @@ import { SelectButton } from '@/components/ui/select-button';
 import { SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { fromIsoDate } from '@/lib/dates';
-import { SHADOW } from '@/lib/design';
+import { COLOR } from '@/lib/design';
 import { toDiaryDraft, type DiaryFields } from '@/lib/diary-request';
-import { CardCaption, CardTitle, FieldCaption, SectionHeading } from '@/features/journal/components/form-text';
+import {
+  CardCaption,
+  CardTitle,
+  FieldCaption,
+  LooseCard,
+  PillRow,
+  SectionHeading,
+  WeatherCard,
+} from '@/features/journal/components/form-text';
 import {
   CAFFEINE_CAPTION,
   CAFFEINE_CUPS,
   CAFFEINE_TIME,
   CAFFEINE_TIME_CAPTION,
-  CAFFEINE_TIME_WIDTH,
   CARD_GAP,
   DID_EXERCISE,
   EXERCISE_KIND,
@@ -41,28 +48,32 @@ import { scale } from '@/lib/scale';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
- * Figma: 일지/상세보기 — `480:1275`. A past day, read back rather than edited:
- * every control is in its `history` state, so the answer that was given shows
- * slate and nothing responds to a tap.
+ * Figma v4: 일지/상세보기 — `1363:2642` (was `480:1275`). A past day, read back
+ * rather than edited: every control is in its `history` state — in v4 that
+ * looks exactly like a selected answer, it just does not respond to a tap.
+ * Positions are v4's, frame y − 38; the column is 11.28 / 197.436.
  *
  * The day comes from `GET /api/diaries/{date}` and `toDiaryDraft` turns it back
  * into the same Korean labels the pills carry — the exact inverse of what
  * 오늘의 기록 sends. A day with no entry answers 404 (backlog 23); the query
  * reports that as an error and every control simply stays `inactive`, because
- * the 미응답 state Figma designed (`SelectFeel5_NeedAnswer`) is not built.
+ * no 미응답 state is designed for a read-only day.
  *
- * 취침·기상 시각 and 날씨 have no data behind them at all — backlog 29 and 12.
+ * 취침·기상 시각 has no data behind it at all (backlog 29), and 날씨 is only
+ * recorded when a save sends `lat`/`lon`, which 오늘의 기록 does not (backlog 12).
  */
 const EMPTY: ReturnType<typeof toDiaryDraft> = toDiaryDraft({});
 
 /** `sleepMinutes` is always null (backlog 29), so the card has nothing to show. */
 const NO_TIME = '—';
 
-/** Not in `DiaryResponse` at all — 날씨 자동 기록 has no field yet (backlog 12). */
-const WEATHER_MOCK = '📍 서울 · ☀️ 맑음 · 28°C · 습도 55%';
+/** No day has weather yet — see the header comment and 결정 대기 13. */
+const NO_WEATHER = '—';
 
 /** Every control on this screen is read-only, so nothing needs a handler. */
 const READ_ONLY = () => {};
+
+const CONTENT_INSET = 11.28;
 
 export default function JournalDetailScreen() {
   const { date } = useLocalSearchParams<{ date: string }>();
@@ -72,38 +83,40 @@ export default function JournalDetailScreen() {
   const title = `${day.getMonth() + 1}월 ${day.getDate()}일 기록`;
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: scale(18),
-          paddingTop: scale(3),
-          paddingBottom: scale(24),
+          paddingHorizontal: scale(CONTENT_INSET),
+          // The frame ends 13.54 below the weather card, at the tab bar.
+          paddingBottom: scale(1334.9 - 1321.36),
         }}>
-        <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
-          <ButtonBack fallbackHref="/journal" />
+        {/*
+          * Header: v4's own y (frame y − 38). The view ends at the chip's
+          * bottom (17.77); 이날의 컨디션's gap is measured from there. v4 draws
+          * no date caption on the right here, unlike 오늘의 기록.
+          */}
+        <View style={{ height: scale(43.27 - 38 + 12.5), marginHorizontal: scale(-CONTENT_INSET) }}>
+          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(43.27 - 38) }}>
+            <ButtonBack fallbackHref="/journal" />
+          </View>
           <Text
             style={{
-              fontSize: scale(12),
-              lineHeight: scale(15),
-              marginLeft: scale(9),
-              color: '#000000',
+              position: 'absolute',
+              left: scale(28.16),
+              top: scale(40.2 - 38),
+              fontSize: scale(13.538),
+              lineHeight: scale(18.051),
+              letterSpacing: scale(-0.2708),
+              color: COLOR.text.strong,
             }}
-            className="font-pretendard-extrabold">
+            className="font-plex-bold">
             {title}
-          </Text>
-          <Text
-            style={{
-              marginLeft: 'auto',
-              fontSize: scale(7),
-              lineHeight: scale(9),
-              color: '#696969',
-            }}
-            className="font-pretendard">
-            {date}
           </Text>
         </View>
 
-        <SectionHeading firstGap={FIRST_HEADING_GAP}>이날의 컨디션</SectionHeading>
+        <SectionHeading above={67.45 - 55.77} below={5.21}>
+          이날의 컨디션
+        </SectionHeading>
         <FeelSelect
           label="이날 하루 컨디션은?"
           value={entry.condition}
@@ -111,7 +124,9 @@ export default function JournalDetailScreen() {
           history
         />
 
-        <SectionHeading>수면습관</SectionHeading>
+        <SectionHeading above={9.27} below={5.17}>
+          수면습관
+        </SectionHeading>
         <InputTimeCard
           label="취침 기상 시각"
           startLabel="취침"
@@ -129,7 +144,7 @@ export default function JournalDetailScreen() {
             history
           />
         </Gap>
-        <Gap extra={1}>
+        <Gap>
           <FeelSelect
             label="수면 만족도"
             value={entry.sleepFeel}
@@ -138,7 +153,9 @@ export default function JournalDetailScreen() {
           />
         </Gap>
 
-        <SectionHeading>식습관</SectionHeading>
+        <SectionHeading above={8.22} below={5.25}>
+          식습관
+        </SectionHeading>
         <SelectCard
           label="이날의 식사 횟수"
           options={MEAL_COUNT}
@@ -161,27 +178,25 @@ export default function JournalDetailScreen() {
           <LooseCard>
             <CardTitle>카페인 섭취</CardTitle>
             <CardCaption>{CAFFEINE_CAPTION}</CardCaption>
-            <PillRow gap={8} marginTop={2.5}>
+            <PillRow marginTop={4.89}>
               {CAFFEINE_CUPS.map((option) => (
                 <SelectButton
                   key={option}
                   label={option}
                   state={option === entry.caffeineCups ? 'history' : 'inactive'}
-                  style={{ width: scale(34) }}
+                  style={{ flex: 1 }}
                 />
               ))}
             </PillRow>
-            <View style={{ marginTop: scale(6) }}>
-              <CardTitle>마지막 섭취 시각</CardTitle>
-            </View>
+            <CardTitle marginTop={5.47}>마지막 섭취 시각</CardTitle>
             <CardCaption>{CAFFEINE_TIME_CAPTION}</CardCaption>
-            <PillRow gap={7} marginTop={2}>
-              {CAFFEINE_TIME.map((option, index) => (
+            <PillRow marginTop={4.89}>
+              {CAFFEINE_TIME.map((option) => (
                 <SelectButton
                   key={option}
                   label={option}
                   state={option === entry.caffeineTime ? 'history' : 'inactive'}
-                  style={{ width: scale(CAFFEINE_TIME_WIDTH[index]) }}
+                  style={{ flex: 1 }}
                 />
               ))}
             </PillRow>
@@ -199,10 +214,12 @@ export default function JournalDetailScreen() {
           />
         </Gap>
 
-        <SectionHeading>운동 습관</SectionHeading>
-        <LooseCard paddingRight={11}>
+        <SectionHeading above={10.66} below={5.28}>
+          운동 습관
+        </SectionHeading>
+        <LooseCard>
           <CardTitle>이날의 운동</CardTitle>
-          <PillRow gap={9} marginTop={4.5}>
+          <PillRow marginTop={4.55}>
             {DID_EXERCISE.map((option) => (
               <SelectButton
                 key={option}
@@ -212,25 +229,25 @@ export default function JournalDetailScreen() {
               />
             ))}
           </PillRow>
-          <FieldCaption>운동 시간</FieldCaption>
-          <PillRow gap={8} marginTop={3.5}>
+          <FieldCaption marginTop={7.81}>운동 시간</FieldCaption>
+          <PillRow marginTop={3.56}>
             {EXERCISE_MINUTES.map((option) => (
               <SelectButton
                 key={option}
                 label={option}
                 state={option === entry.exerciseMinutes ? 'history' : 'inactive'}
-                style={{ width: scale(34) }}
+                style={{ flex: 1 }}
               />
             ))}
           </PillRow>
-          <FieldCaption>운동 종류</FieldCaption>
-          <PillRow gap={8} marginTop={3.5}>
+          <FieldCaption marginTop={7.7}>운동 종류</FieldCaption>
+          <PillRow marginTop={3.56}>
             {EXERCISE_KIND.map((option) => (
               <SelectButton
                 key={option}
                 label={option}
                 state={option === entry.exerciseKind ? 'history' : 'inactive'}
-                style={{ width: scale(34) }}
+                style={{ flex: 1 }}
               />
             ))}
           </PillRow>
@@ -255,7 +272,9 @@ export default function JournalDetailScreen() {
           />
         </Gap>
 
-        <SectionHeading>기타</SectionHeading>
+        <SectionHeading above={11.37} below={3.6}>
+          기타
+        </SectionHeading>
         <Slider0To10
           history
           label="이날의 스트레스 지수"
@@ -292,99 +311,15 @@ export default function JournalDetailScreen() {
           />
         </Gap>
 
-        <SectionHeading>자동 기록</SectionHeading>
-        <View
-          style={{
-            height: scale(42),
-            borderRadius: scale(10),
-            backgroundColor: '#ECECEC',
-            borderWidth: scale(0.3),
-            borderColor: '#D2D2D2',
-            paddingTop: scale(4.5),
-            paddingLeft: scale(12),
-            paddingRight: scale(10),
-          }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <CardTitle>오늘 날씨</CardTitle>
-            <View
-              style={{
-                marginLeft: 'auto',
-                width: scale(35),
-                height: scale(10),
-                borderRadius: scale(10),
-                backgroundColor: '#FFFFFF',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{ fontSize: scale(5), lineHeight: scale(10), color: '#5F5E5B' }}
-                className="font-pretendard-medium">
-                자동 기록됨
-              </Text>
-            </View>
-          </View>
-          <Text
-            style={{
-              fontSize: scale(8),
-              lineHeight: scale(14),
-              marginTop: scale(2),
-              color: '#88877F',
-            }}
-            className="font-pretendard-bold">
-            {WEATHER_MOCK}
-          </Text>
-        </View>
+        <SectionHeading above={9.7} below={5.28}>
+          자동 기록
+        </SectionHeading>
+        <WeatherCard value={NO_WEATHER} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function Gap({ children, extra = 0 }: { children: ReactNode; extra?: number }) {
-  return <View style={{ marginTop: scale(CARD_GAP + extra) }}>{children}</View>;
+function Gap({ children }: { children: ReactNode }) {
+  return <View style={{ marginTop: scale(CARD_GAP) }}>{children}</View>;
 }
-
-function LooseCard({
-  children,
-  paddingRight = 10,
-}: {
-  children: ReactNode;
-  paddingRight?: number;
-}) {
-  return (
-    <View
-      style={{
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
-        paddingTop: scale(4.5),
-        paddingBottom: scale(9),
-        paddingLeft: scale(12),
-        paddingRight: scale(paddingRight),
-      }}>
-      {children}
-    </View>
-  );
-}
-
-function PillRow({
-  children,
-  gap,
-  marginTop,
-}: {
-  children: ReactNode;
-  gap: number;
-  marginTop: number;
-}) {
-  return (
-    <View style={{ flexDirection: 'row', gap: scale(gap), marginTop: scale(marginTop) }}>
-      {children}
-    </View>
-  );
-}
-
-/**
- * 상세보기's first heading follows the screen header directly, and Figma leaves
- * 9pt there rather than a full section gap. 오늘의 기록 has the 항목별로 banner
- * in between and spaces it differently, so the two are not shared.
- */
-const FIRST_HEADING_GAP = 9;

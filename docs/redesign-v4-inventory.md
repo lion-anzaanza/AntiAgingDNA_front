@@ -33,17 +33,17 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 
 | v4 레이어 이름 | n | 등장 프레임 | 코드 컴포넌트 | 쓰는 곳 | 상태 |
 |---|---|---|---|---|---|
-| `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 7 | ✅ 글자 Bold 11.28로 수정 |
+| `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 7 | ✅ 글자 Bold 11.28로 수정. 일지/오늘의기록(여섯 번째, 인벤토리 작성 때 빠짐)은 197.44×**29.33**, 글자 SemiBold 9.59 / 13.54 — 컴포넌트(27.08, Bold 11.28)와 다르다. 화면은 그대로 두고 아래 여백으로 페이지 길이만 맞췄다 |
 | `TextInput` | 6 | 로그인, 회원가입/1 | `TextInputField` | 2 | ✅ 리뷰 1 — 회원가입/1은 값 글자를 Regular 8.46 / 줄 12.41로 그린다(컴포넌트는 6.77). 라벨→필드 15.2(컴포넌트 16.0) |
 | `ButtonBack` | 5 (+이름 없는 것 10) | 로그인·홈 빼고 15화면 전부 | `ButtonBack` | 12 | ✅ 리뷰 |
 | (그라디언트 글자) | 0 | 없음 — 아래 "`GradientText`" 참고 | `GradientText` | 14 | 🔶 조사만 |
 | `SelectButton1~5`, `_White` | 150+ | 회원가입/1·2, 일지/오늘의기록·상세보기 | `SelectButton` | 2 | ✅ 리뷰 |
-| `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 2 | ✅ 리뷰 |
+| `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 2 | ✅ 리뷰. `SelectItem6_Card`(식사 횟수)는 높이 50.77 / 50.69로 컴포넌트(50.61)보다 0.1~0.16 크다 — 무시 |
 | `SelectItem4_1` | 3 | 회원가입/2 | `PillGroup` | 1 | ✅ 리뷰 |
 | `SelectItem6_Card` | 5 | 회원가입/2 | `LikertCard` | 1 | ✅ 리뷰 |
 | `Select0To10` | 3 (+`_Card`·`_History` 각 1) | 회원가입/2, 일지/오늘의기록·상세보기 | `Slider0To10` | 2 | ✅ 리뷰 |
 | `SelectFeel5` + `VeryBad`~`VeryGood` | 2 (+얼굴 20) | 일지/오늘의기록·상세보기 | `FeelSelect` | 3 | ✅ 리뷰 |
-| `InputTime_Card` | 2 | 일지/오늘의기록·상세보기 | `InputTimeCard` | 2 | ✅ 리뷰 |
+| `InputTime_Card` | 2 | 일지/오늘의기록·상세보기 | `InputTimeCard` | 2 | ✅ 리뷰. 상세보기 사본은 카드 안 제목·라벨·필드가 오늘의기록보다 3.4 / 2.8 / 1.7 위(제목 y 0.47 — 카드 위에 붙음). 한 번만 나오는 어긋남으로 보고 컴포넌트는 그대로 |
 | `BottomBar2`, `BottomBar3`, `Component 2`, `BottomBar1`(홈) | 11 | 탭 화면 전부 | `BottomBar` | 1 | ✅ 리뷰 |
 | (회원가입 헤더 — 칩·제목·진행바·STEP) | 3 | 회원가입/1·2·3 | `StepHeader` | 3 | ✅ 리뷰 |
 | `LifeDNA_WeeklyInfo_*` | 18 | 홈 | `WeeklyInfoCard` | 1 | 🔶 홈 화면 작업에서 (홈만 쓴다) |
@@ -70,7 +70,7 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 | 대상 | v4에서 본 것 | 결정 | 근거 |
 |---|---|---|---|
 | `ButtonNextUI` 반경 | 9.62 (로그인·회원가입/1·일지/메인) vs 7.90 (회원가입/2·3) | 9.62 | 3 대 2 |
-| `ButtonNextUI` 글자 | SemiBold 9.59 / 줄 13.54 (로그인·회원가입/1) vs Bold 11.28 / 줄 15.79 (회원가입/2·3·일지/메인) | Bold 11.28 / 줄 15.79 | 3 대 2. 처음엔 로그인 한 화면만 보고 SemiBold로 정했다 — 공용 컴포넌트를 한 화면으로 정한 실수 |
+| `ButtonNextUI` 글자 | SemiBold 9.59 / 줄 13.54 (로그인·회원가입/1·일지/오늘의기록) vs Bold 11.28 / 줄 15.79 (회원가입/2·3·일지/메인) | Bold 11.28 / 줄 15.79 — **3 대 3 동률**, 결정 대기 14 | 처음엔 로그인 한 화면만 보고 SemiBold로 정했다가 5개 기준 3 대 2로 Bold로 바꿨다. 이름 없는 여섯 번째(오늘의기록 저장, 29.33 높이)가 나중에 나와 동률이 됐다 |
 | `TextInput` 높이 | 37.4 (로그인) vs 36.2 (회원가입/1) | 필드 27.1 공통, 라벨 간격만 차이 — 화면 작업 때 재확인 | |
 | 필 `history` 상태 | v4 상세보기는 선택된 답을 **활성(분홍)과 같은 색**으로 그린다. `#7786A8` 회청색이 없다 | `history`는 활성 색 + 눌리지 않음 | 디자인이 상태 하나를 없앴다 |
 | 필 모양 (선택 컴포넌트 작업) | 전 프레임에서 쉰 상태 `surface/chip` `#F3EFFA` + `text/body`, 선택 `brand/selected` `#FAE0F3` + `text/on-pastel`, Plex SemiBold 7.33. 그라디언트 없음. 레벨(1~5)·`_White`는 폭만 다르다 | `SelectButton`의 `level`·`tone`을 없애고 `size: 'journal' \| 'signup' \| 'likert'` 하나로. 폭은 부모가 정한다 | 150여 개 전부 같은 색 |
@@ -117,7 +117,7 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 |---|---|---|
 | ~~`home/home-screen`~~ | 인사말의 닉네임 | ✅ 중첩 `Text`로 `brand/violet-text` Bold 13.54 |
 | ~~`journal/components/week-card`~~ | "월간 보기 →", "오늘" | ✅ 단색 `brand/violet-text` SemiBold 7.33 |
-| `journal/today-screen` | "항목별로 오늘의 기록을 채워주세요!" | `brand/violet-text` SemiBold 9.59 |
+| ~~`journal/today-screen`~~ | "항목별로 오늘의 기록을 채워주세요!" | ✅ 단색 `brand/violet-text` SemiBold 9.59 |
 | ~~`journal/calendar-screen`~~ | "N월 기록 N일 · 평균 …" | ✅ 단색 `brand/violet-text` SemiBold 9.59 |
 | `plan/main-screen` | "70%" | `brand/violet-text` Bold 11.28 |
 | `plan/supplements-screen` | "‘올빼미 - 고민감 - 누적형’" | `brand/violet-text` SemiBold 7.33 |
@@ -140,9 +140,9 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | auth | 회원가입/3 | `1363:1921` | `auth/terms-screen.tsx` + `ui/checkbox` | ✅ 리뷰 |
 | home | 홈/메인 | `1363:1953` | `home/home-screen.tsx` + `home/components/` + `ui/dna-kind`·`ui/weekly-info-card` | ✅ 리뷰 |
 | journal | 일지/메인 | `1363:2135` | `journal/main-screen.tsx` + `journal/components/week-card` + `ui/diary-status`·`ui/weekly-condition-chart` | ✅ 리뷰 |
-| journal | 오늘의기록(생성) | `1363:2209` | `journal/today-screen.tsx` | |
+| journal | 오늘의기록(생성) | `1363:2209` | `journal/today-screen.tsx` + `journal/components/form-text` | ✅ 리뷰 |
 | journal | 캘린더 | `1363:2507` | `journal/calendar-screen.tsx` + `ui/date-cell`·`ui/daily-summary-card` | ✅ 리뷰 |
-| journal | 상세보기 | `1363:2642` | `journal/detail-screen.tsx` | |
+| journal | 상세보기 | `1363:2642` | `journal/detail-screen.tsx` + `journal/components/form-text` | ✅ 리뷰 |
 | plan | 메인 | `1363:2935` | `plan/main-screen.tsx` | |
 | plan | 맞춤영양제 | `1363:3003` | `plan/supplements-screen.tsx` | |
 | plan | 주간리포트 | `1363:3061` | `plan/report-screen.tsx` | |
@@ -201,6 +201,16 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | 캘린더 요약 띠 | `surface/tint-2` 197.436×24.821 r4.808, 카드 아래 6.77, SemiBold 9.59 `brand/violet-text`, 줄 상자 중심이 띠 중심보다 1.2 위 | 그대로. 글꼴 1.1에서 띠를 거의 채워 `adjustsFontSizeToFit`(0.85) | |
 | 캘린더 `<` 버튼 | — | 월 제목(전폭 절대 위치) **뒤에** 그린다 | 앞에 그리면 제목이 탭을 먹었다 — 기기에서 발견 |
 | 일간_컨디션_요약 | **v4에 없다**(`585:1377`은 옛 디자인) | 옛 배치를 유지하고 v4 공통만 입힘: 열 폭, `surface/card` r9.615 `SHADOW_V4`, Plex, 토큰 색, 등급 칩 `surface/tint-2`, 점수 `brand/violet-text` Bold, 타일 `surface/tint`, 입력 기록 보기는 공용 `Button`. 카드 높이는 고정 150 → 내용 높이. 타일 아이콘은 옛 컬러 비트맵(`ic-*.png`) 그대로. 카드 안쪽이라 `Button`이 179.4 폭으로 그려지는데 그라디언트 점은 197.436 기준으로 계산돼 있어 각도가 v4 버튼과 조금 다르다 — 알고 둔 겉모습 차이 | 결정 대기 10. 홈 v4의 선 아이콘은 `features/home` 안에 있어 가져올 수 없다(탭 경계) |
+| 오늘의기록·상세보기 열 | 모든 카드 x 11.28, 폭 197.436 (예전 18 / 184 — 184에서 잘리던 필 글자가 이걸로 풀렸다) | 11.28 / 197.436 | 홈·일지/메인과 같음 |
+| 오늘의기록·상세보기 헤더 | 칩 y 5.27. 제목 Bold 13.54 x 31.16(오늘의기록) / 28.16(상세보기) — v4 칩이 16.79 / 15.79 폭이라 칩 오른쪽 3.1 / 1.1. 오늘의기록만 오른쪽에 날짜 캡션(Regular 8.46, 열 끝) | 제목은 v4 x 그대로(칩은 13.46이라 간격이 6.4 / 3.4로 벌어진다). 상세보기의 오른쪽 ISO 날짜는 v4에 없어 뺐다 | 일지 헤더 결정("프레임마다 그 값 그대로")과 같은 근거 |
+| 오늘의기록·상세보기 섹션 간격 | 섹션 제목(Plex Bold 11.28 / 15.8 `text/heading`) 위 8.7~11.5, 아래 3.5~5.3. 두 프레임이 섹션마다 거의 같은 값(기타 아래 3.5 / 3.6 등) | 섹션마다 v4 값을 호출부에서 넘긴다(`SectionHeading above/below`) | 두 프레임이 일치해 의도로 본다 |
+| 카드 간격 | 두 프레임 모든 카드 사이 4.81 (예전 5, 수면 만족도 앞만 6) | `CARD_GAP` 4.808 | 전부 같음 |
+| 카페인 섭취·운동 습관 카드 | 여전히 낱개 도형이지만 필이 `SelectCard`와 같은 균등 그리드(41.46×4, 87.44×2, 간격 4.51, 좌우 9.03). 카페인: 제목·캡션·필 두 벌, 둘째 제목은 필 아래 5.47. 운동: 네/아니요 → "운동 시간"·"운동 종류" SemiBold 7.33 `text/body`(필 아래 7.81 / 7.7, 필까지 3.56) | 그대로(`form-text`의 `LooseCard`·`PillRow`). 예전 글자 폭 필(`CAFFEINE_TIME_WIDTH`)은 지웠다 | 기기에서 카드 안 띠 합의값 ±0.6 |
+| 운동 시간·종류 행 | v4는 늘 그린다 | 오늘의기록은 "네"일 때만(예전 동작 — 답이 모순되지 않게). 상세보기는 늘 그린다 | 기존 결정 유지 |
+| 운동 종류 넷째·걸은 시간 문구 | v4 "기타", "1시간"·"2시간" | "근력+유산소", "30분~1시간"·"1~2시간" 유지 | API에 `OTHER` 없음, 백로그 9 (`journal-options.ts`) |
+| 오늘의기록 배너 | `surface/tint-2` 35.47 r9.615 그림자, 제목 SemiBold 9.59 `brand/violet-text`, 부제 Regular 6.77 — 두 줄 상자가 0.9 겹친다. 부제 문구 "LifeDAN" | 둘 다 절대 위치. "LifeDNA" | 이름 결정(AGENTS 2026-08-17) |
+| 자동 기록 / 오늘 날씨 | `surface/chip` 38.69 r9.615, `border/soft` 0.288, 그림자 없음. "📍 서울 · ☀️ 맑음 · 28°C · 습도 55%" Regular 6.77, 흰 "자동 기록됨" 칩 39.86×9.63 | 모양은 v4. 값 줄은 `—`(예전 코드는 목업 문자열을 그렸다). 칩 글자는 칩 가운데(v4는 0.7 위) | 결정 대기 13 |
+| 미응답(`NeedAnswer`) | v4에 없다(결정 대기 4) | 빨간 카드·문구를 v4 카드에 얹은 컴포넌트 그대로. 문구가 카드 아래 줄을 차지해 그 아래가 약 10pt 밀린다(예전과 같음) | 기기에서 강제로 켜서 확인 |
 
 ## 결정 대기 — 사람이 정할 것
 
@@ -221,6 +231,8 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | 10 | 일지의 떠 있는 카드 두 장(`일간_컨디션_요약` — 캘린더 날짜 탭, `주간_컨디션_그래프` — 주간 기록 옆으로 넘김)이 v4에 없다 | v4 토큰·글꼴·카드 모양만 입혀 유지(화면별 결정 참고). 요약 카드 타일은 옛 컬러 아이콘, 그래프 요약 문장은 비어 있음(백로그 27) | 이대로 / v4 모양 디자인 요청 / 카드를 뺀다. 요약 타일 아이콘을 홈 v4 선 아이콘으로 맞추려면 그 경로를 `components/ui`로 옮겨야 한다(홈 파일을 건드림) |
 | 11 | 주간_컨디션_그래프는 최근 7일 중 **기록한 날만** 18.89 → 178.3에 고르게 편다. 7일을 다 기록하면 점이 주간 기록의 요일 원 아래에 오지만, 그보다 적으면 어느 요일과도 맞지 않는다(게다가 주간 기록은 월–일, 그래프는 오늘까지 7일) | 고르게 편다(예전 동작 그대로) | 이대로 / 점을 그 날의 요일 열에 둔다(빈 날은 비움) |
 | 12 | 일지/메인에 지난 기록이 하나도 없으면 "지난 기록" 제목 아래 카드가 높이 0으로 사라져 제목만 남는다(v4 이전부터). v4에 빈 상태가 없다 | 제목만 그린다 | 빈 상태 디자인 요청 / 기록이 없으면 제목도 숨긴다 |
+| 13 | 일지 하단 "자동 기록 / 오늘 날씨" 카드(두 화면). 서버는 날씨를 기록할 수 있다(백로그 12, 🟡 프론트) — 단 저장 요청에 `lat`/`lon`(+`weatherLocationLabel`)을 보낼 때만. 앱은 위치를 받지 않아 기록된 날씨가 하나도 없다 | 카드는 v4 모양으로 그리고 값은 `—` (예전엔 목업 "서울 · 맑음 · 28°C"를 그렸다). "자동 기록됨" 칩은 남겼다 | 위치 권한 + `expo-location`으로 저장 때 위경도를 보내고 `DiaryResponse`의 `weather*`를 그린다(프론트 작업, 새 네이티브 모듈 — Expo Go 포함 여부 확인 필요) / 그 전까지 카드를 숨긴다 / 칩을 뺀다 |
+| 14 | 주 버튼(`ButtonNextUI`) 글자 — v4 여섯 개가 SemiBold 9.59와 Bold 11.28로 3 대 3 갈린다(오늘의기록 저장은 높이도 29.33) | Bold 11.28, 높이 27.08 | Bold 유지 / SemiBold로 / 화면별로 다르게 |
 
 ## Figma를 그대로 따르면 안 되는 곳
 
@@ -235,6 +247,8 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
   쓰는 곳이 없다.
 - **회원가입/2의 각 질문은 흰 카드(`카드/…`, r9.03, 그림자 `0 1.128 4.513 rgba(0,0,0,.05)`)
   안에 있다** — 카드는 화면 몫이라 `PillGroup`에 넣지 않았다. 화면의 `QuestionCard`가 그린다.
+- **상세보기의 날씨 카드도 "오늘 날씨"** — 지난 날을 보는 화면인데 v4가 오늘의 기록 문구를
+  그대로 가져왔다(같은 화면의 다른 제목은 "이날 …"). 문구는 v4대로 두고 디자이너 확인 대상.
 - **한달뒤내모습의 탭 바가 MY를 켠다** — 예전부터 있던 실수. 코드는 라우트로 정한다.
 - **홈의 `IconHere`** (`#FF0000` 14.3×14.3) — 두 `LifeDNA_WeeklyInfo_Card` 안의 **숨겨진**(`visible=false`)
   자리표시다. 그리지 않는다. 아이콘 칸(20.95 흰 칩)의 가운데 14.34 크기만 가져왔다.
