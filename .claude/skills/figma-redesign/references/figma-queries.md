@@ -55,6 +55,9 @@ return hits.map(t => {
 });
 ```
 
+탭 바는 프레임마다 이름이 다르다(`BottomBar1/2/3`, `Component 2`). 이럴 땐 안에
+반드시 있는 글자 — 탭 바라면 `MY` 텍스트 — 로 찾고 부모를 올라간다.
+
 v4 전체를 `findAll`로 돌면서 `isMask` 같은 속성을 읽을 때는 `'isMask' in n`으로
 먼저 거른다 — SECTION 노드에서 읽으면 스크립트가 죽는다.
 
