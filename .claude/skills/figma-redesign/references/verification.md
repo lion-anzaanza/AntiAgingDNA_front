@@ -25,8 +25,9 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
 - **로그인 화면·회원가입은 로그인된 상태에서 딥링크로 열리지 않는다**
   (`Stack.Protected`). MY → 로그아웃으로 나간다. 원래 폴더의 세션도 같이 풀린다 —
   다시 들어갈 계정이 없으면 회원가입으로 새로 만든다(사용자가 허락함).
-- 앱이 한동안 놀고 있었으면 첫 딥링크가 런처에 떨어질 때가 있다. 같은 딥링크를
-  다시 보내고 `until adb shell dumpsys window | grep -q "mCurrentFocus.*ExperienceActivity"`로
+- 앱이 한동안 놀고 있었으면 첫 딥링크가 런처에 떨어질 때가 있다. **그 뒤에 보낸
+  탭은 런처의 앱을 누른다**(한 번은 Gmail이 열렸다) — 탭 전에 반드시 포커스를 확인한다.
+  같은 딥링크를 다시 보내고 `until adb shell dumpsys window | grep -q "mCurrentFocus.*ExperienceActivity"`로
   기다린다.
 - 탭 이동은 딥링크(`--/my`)가 무시될 때가 있다. 하단 탭을 좌표로 누른다.
   스크린샷이 축소돼 보이면 좌표에 표시된 배율(1080 폭이면 ×1.2)을 곱한다.
@@ -65,6 +66,10 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
 ```bash
 python .claude/skills/figma-redesign/scripts/measure_box.py figma.png device.png 9 42 26 58 --offset 24.8
 ```
+
+`surface/chip`(`#F3EFFA`) 알약처럼 배경과 거의 같은 색은 임계값 30으로도 안 잡힌다 —
+그럴 땐 `--threshold 8`로 낮추고 창을 알약 하나에 딱 맞게 좁힌다(그림자가 없는
+요소라 번지지 않는다). 개편 전 화면은 기둥 폭이 달라 x가 맞지 않으니 크기만 본다.
 
 `X0 Y0 X1 Y1`은 Figma 프레임 pt 좌표, `--offset`은 그 화면의 `compare_bands` 합의값.
 두 이미지의 경계 상자와 차이(왼쪽·위·폭·높이)를 출력한다. 창 안에 다른 요소가

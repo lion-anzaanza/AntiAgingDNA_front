@@ -14,7 +14,9 @@ return v4.children.flatMap(sub => sub.children.map(f => `${sub.name} | ${f.name}
 
 ## 같은 이름의 노드를 전 프레임에서 비교
 
-공용 컴포넌트를 고치기 전에 돌린다. `NAME`을 바꿔 쓴다(정규식).
+공용 컴포넌트를 고치기 전에 돌린다. `NAME`을 바꿔 쓴다(정규식). 카드류는 이름 뒤에
+`/<제목>`이 붙어 있으니(`InputTime_Card/취침 기상 시각`) `^InputTime_Card(/|$)`처럼
+접두어로 맞춘다.
 
 ```js
 const NAME = /^(SelectButton\d?(_White)?)$/;
