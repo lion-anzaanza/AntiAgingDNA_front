@@ -139,7 +139,7 @@ v4에는 그라디언트 글자가 없다. 아래는 지금 `GradientText`를 �
 | auth | 회원가입/2 | `1363:1629` | `auth/survey-screen.tsx` | ✅ 리뷰 |
 | auth | 회원가입/3 | `1363:1921` | `auth/terms-screen.tsx` + `ui/checkbox` | ✅ 리뷰 |
 | home | 홈/메인 | `1363:1953` | `home/home-screen.tsx` + `home/components/` + `ui/dna-kind`·`ui/weekly-info-card` | ✅ 리뷰 |
-| journal | 일지/메인 | `1363:2135` | `journal/main-screen.tsx` + `journal/components/week-card` + `ui/diary-status`·`ui/weekly-condition-chart` | 🔶 |
+| journal | 일지/메인 | `1363:2135` | `journal/main-screen.tsx` + `journal/components/week-card` + `ui/diary-status`·`ui/weekly-condition-chart` | ✅ 리뷰 |
 | journal | 오늘의기록(생성) | `1363:2209` | `journal/today-screen.tsx` | |
 | journal | 캘린더 | `1363:2507` | `journal/calendar-screen.tsx` + `ui/date-cell`·`ui/daily-summary-card` | ✅ 리뷰 |
 | journal | 상세보기 | `1363:2642` | `journal/detail-screen.tsx` | |
