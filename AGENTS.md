@@ -75,15 +75,31 @@ text — easy to misread as a mystery crash. `StepHeader` takes a `backHref` for
 ### 5. Two gradients, and they are not interchangeable
 
 - `GRADIENT_SELECT` — the `ActiveButton` style, `#4356F7 → #843FF6`, first stop at
-  **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Used by `ButtonNextUI` and
-  selected SelectButton 1/2/3/5.
+  **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Used by selected
+  SelectButton 1/2/3/5, and by `ButtonNextUI` until the v4 redesign.
+
+**v4 (2026-09-30) replaced the button ramp.** `Button` now draws
+`GRADIENT_PASTEL` (pink → lavender → periwinkle) at CSS 166.3°. Figma hands v4
+gradients over as a CSS angle, and that angle is in *pixels* — on a 197×27 button
+166° runs nearly top to bottom — so convert it with `cssGradientPoints(angle, w, h)`
+from `src/lib/gradient.ts` rather than guessing `start`/`end`. The two ramps above
+stay until the components that use them are redesigned; the tracker is
+`docs/redesign-v4-inventory.md`.
 - `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Now used **only** by a
   selected SelectButton4.
 
-`ButtonNextUI` used to use the brand ramp and was changed in Figma. Re-check the
-master rather than assuming.
+`ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
 
 ### 6. Fonts
+
+**The v4 redesign's text face is IBM Plex Sans KR** — Regular / SemiBold / Bold,
+as `font-plex` / `font-plex-semibold` / `font-plex-bold`. Pretendard stays for
+screens not yet redesigned, and for the few text nodes v4 itself still sets in
+Pretendard (the `←` back chip, `>` chevrons, `✓` — Plex has no U+2713). Read the
+font off each text node; a `→` inside a Plex label is Plex. Plex comes from
+`google/fonts` on jsDelivr (`…/ofl/ibmplexsanskr/IBMPlexSansKR-<Weight>.ttf`, SIL
+OFL); a good download starts `00010000` and its name table reads
+`IBM Plex Sans KR <Weight>`.
 
 Seven Pretendard weights are loaded in `src/app/_layout.tsx` and registered in
 `tailwind.config.js`: Light / Regular / Medium / SemiBold / Bold / ExtraBold /

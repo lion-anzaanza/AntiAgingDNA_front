@@ -331,8 +331,8 @@ tone trio: 조금 부족 `#FBF2E1`/`#E5A64E`, 좋아요 `#E6F4EE`/`#4B9977`,
 
 | Node | Name | Notes |
 |---|---|---|
-| `457:742` | ButtonNextUI | 184×30, radius 10, SELECT gradient, ExtraBold 10 |
-| `549:846` | TextInput | 184×34 — Bold 7 `#88877F` label band (10) + 23pt white field |
+| `457:742` | ButtonNextUI | **pre-v4** — 184×30, radius 10, SELECT gradient, ExtraBold 10. v4 is 197.4×27.1, see `docs/redesign-v4-inventory.md` |
+| `549:846` | TextInput | **pre-v4** — 184×34 — Bold 7 `#88877F` label band (10) + 23pt white field |
 | `480:1293` | Select0To10 | 186×43 — see below |
 | `485:35` | NoSelect | unanswered/error state, red border `#FFF9F9` bg — not implemented |
 | `457:797` | PhoneHeader | status bar mock, replaced by SafeAreaView |

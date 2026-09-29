@@ -32,13 +32,18 @@ export default function RootLayout() {
     'Pretendard-Bold': require('@/assets/fonts/Pretendard-Bold.otf'),
     'Pretendard-ExtraBold': require('@/assets/fonts/Pretendard-ExtraBold.otf'),
     'Pretendard-Black': require('@/assets/fonts/Pretendard-Black.otf'),
+    // The v4 redesign's text face. Pretendard stays where a v4 text node is
+    // still set in it (the ← chip, > chevrons, ✓) and on screens not yet redesigned.
+    'IBMPlexSansKR-Regular': require('@/assets/fonts/IBMPlexSansKR-Regular.ttf'),
+    'IBMPlexSansKR-SemiBold': require('@/assets/fonts/IBMPlexSansKR-SemiBold.ttf'),
+    'IBMPlexSansKR-Bold': require('@/assets/fonts/IBMPlexSansKR-Bold.ttf'),
   });
 
   // Carry on with the system font if a face fails to load: holding the tree back
   // on `fontsLoaded` alone would strand the user on the splash screen forever,
   // since the only thing that hides it lives further down this tree.
   if (fontError) {
-    console.warn('Pretendard failed to load, falling back to the system font', fontError);
+    console.warn('A font failed to load, falling back to the system font', fontError);
   }
   if (!fontsLoaded && !fontError) return null;
 

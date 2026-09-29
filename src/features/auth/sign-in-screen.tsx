@@ -5,11 +5,26 @@ import { Alert, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
-import { GradientText } from '@/components/ui/gradient-text';
 import { TextInputField } from '@/components/ui/text-input';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
+
+/*
+ * Figma v4 로그인/메인 (`1363:1535`). Everything above the fold is placed
+ * absolutely at Figma's own y, less the 38pt PhoneHeader mock the safe area
+ * stands in for: the wordmark, the greeting and the first field's label all
+ * overlap each other's line boxes, which flex margins can only express as a
+ * run of negative numbers.
+ */
+const COLUMN = { left: scale(11.28), width: scale(197.436) };
+
+const BODY = {
+  fontSize: scale(8.462),
+  lineHeight: scale(12.41),
+  textAlign: 'center',
+} as const;
 
 export default function SignInScreen() {
   const { signIn } = useAuth();
@@ -39,35 +54,44 @@ export default function SignInScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <View style={{ flex: 1, paddingHorizontal: scale(18), paddingTop: scale(5) }}>
+    // Bottom edge excluded: Figma measures the last line from the frame's own
+    // bottom, which is the physical screen edge, not the home-indicator inset.
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
+      <View style={{ height: scale(248) }}>
         <Image
           source={require('@/assets/images/auth/dna-nice.png')}
-          style={{ width: scale(54), height: scale(60), alignSelf: 'center' }}
+          style={{
+            position: 'absolute',
+            top: scale(2.62),
+            alignSelf: 'center',
+            width: scale(52.118),
+            height: scale(57.692),
+          }}
           contentFit="contain"
         />
 
-        <View style={{ alignItems: 'center', marginTop: scale(1.5) }}>
-          <GradientText
-            colors={['#4B52F6', '#BC40F6']}
-            style={{ fontSize: scale(14), lineHeight: scale(15) }}
-            className="font-pretendard-extrabold">
-            LifeDNA
-          </GradientText>
-        </View>
         <Text
           style={{
-            fontSize: scale(7),
-            lineHeight: scale(15),
-            marginTop: scale(1),
+            position: 'absolute',
+            top: scale(59.7),
+            left: 0,
+            right: 0,
+            fontSize: scale(18.051),
+            lineHeight: scale(22.564),
+            letterSpacing: scale(-0.361),
             textAlign: 'center',
-            color: '#5F5E5B',
+            color: COLOR.brand.violetText,
           }}
-          className="font-pretendard">
+          className="font-plex-bold">
+          LifeDNA
+        </Text>
+        <Text
+          style={{ ...BODY, position: 'absolute', top: scale(79.49), left: 0, right: 0, color: COLOR.text.body }}
+          className="font-plex">
           다시 오셨네요, 반가워요!
         </Text>
 
-        <View style={{ marginTop: scale(1.5), gap: scale(5) }}>
+        <View style={{ position: 'absolute', top: scale(87.95), ...COLUMN }}>
           <TextInputField
             label="아이디"
             placeholder="아이디를 입력하세요"
@@ -75,6 +99,8 @@ export default function SignInScreen() {
             onChangeText={setUsername}
             autoCapitalize="none"
           />
+        </View>
+        <View style={{ position: 'absolute', top: scale(136.6), ...COLUMN }}>
           <TextInputField
             label="비밀번호"
             placeholder="비밀번호를 입력하세요"
@@ -84,7 +110,7 @@ export default function SignInScreen() {
           />
         </View>
 
-        <View style={{ marginTop: scale(22) }}>
+        <View style={{ position: 'absolute', top: scale(200.9), ...COLUMN }}>
           <Button
             label="로그인 →"
             disabled={!canSubmit}
@@ -93,35 +119,21 @@ export default function SignInScreen() {
           />
         </View>
 
-        <Pressable onPress={() => router.push('/(auth)/sign-up')} style={{ marginTop: scale(4.5) }}>
-          <Text
-            style={{
-              fontSize: scale(7),
-              lineHeight: scale(15),
-              textAlign: 'center',
-              color: '#88877F',
-            }}
-            className="font-pretendard">
+        <Pressable
+          onPress={() => router.push('/(auth)/sign-up')}
+          style={{ position: 'absolute', top: scale(235.65), left: 0, right: 0 }}>
+          <Text style={{ ...BODY, color: COLOR.text.muted }} className="font-plex">
             아직 계정이 없나요?{'  '}
-            <Text style={{ color: '#8B2AFE' }} className="font-pretendard-bold">
-              회원가입
-            </Text>
+            <Text style={{ color: '#8B2AFE' }}>회원가입</Text>
           </Text>
         </Pressable>
-
-        <Text
-          style={{
-            fontSize: scale(7),
-            lineHeight: scale(15),
-            marginTop: 'auto',
-            marginBottom: scale(50.5),
-            textAlign: 'center',
-            color: '#88877F',
-          }}
-          className="font-pretendard">
-          아이디 · 비밀번호 찾기
-        </Text>
       </View>
+
+      <Text
+        style={{ ...BODY, marginTop: 'auto', marginBottom: scale(51.67), color: COLOR.text.body }}
+        className="font-plex">
+        아이디 · 비밀번호 찾기
+      </Text>
     </SafeAreaView>
   );
 }
