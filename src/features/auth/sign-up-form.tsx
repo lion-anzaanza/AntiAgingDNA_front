@@ -10,7 +10,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
  * the behaviour we want for a half-finished signup.
  *
  * **Values are stored exactly as the screens collect them** — Korean option
- * labels, `년/월/일` as separate strings. `lib/sign-up-request.ts` turns them
+ * labels, `년/월/일` as separate strings. `sign-up-request.ts` turns them
  * into the wire format; keeping the two apart means the screens never have to
  * know an enum constant.
  */

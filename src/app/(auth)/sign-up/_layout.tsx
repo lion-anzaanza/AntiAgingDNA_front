@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 
-import { SignUpFormProvider } from '@/lib/sign-up-form';
+import { SignUpFormProvider } from '@/features/auth/sign-up-form';
 
 /**
  * Exists only to scope the signup draft. A nested `Stack` (rather than a

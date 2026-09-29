@@ -1,4 +1,4 @@
-import type { SignUpRequest } from './auth';
+import type { SignUpRequest } from '@/lib/auth';
 import type { SignUpForm } from './sign-up-form';
 
 /**
