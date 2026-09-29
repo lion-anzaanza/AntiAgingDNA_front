@@ -167,8 +167,6 @@ export default function JournalDetailScreen() {
                   key={option}
                   label={option}
                   state={option === entry.caffeineCups ? 'history' : 'inactive'}
-                  level={5}
-                  tone="gray"
                   style={{ width: scale(34) }}
                 />
               ))}
@@ -183,8 +181,6 @@ export default function JournalDetailScreen() {
                   key={option}
                   label={option}
                   state={option === entry.caffeineTime ? 'history' : 'inactive'}
-                  level={5}
-                  tone="gray"
                   style={{ width: scale(CAFFEINE_TIME_WIDTH[index]) }}
                 />
               ))}
@@ -212,8 +208,6 @@ export default function JournalDetailScreen() {
                 key={option}
                 label={option}
                 state={option === entry.didExercise ? 'history' : 'inactive'}
-                level={5}
-                tone="gray"
                 style={{ flex: 1 }}
               />
             ))}
@@ -225,8 +219,6 @@ export default function JournalDetailScreen() {
                 key={option}
                 label={option}
                 state={option === entry.exerciseMinutes ? 'history' : 'inactive'}
-                level={5}
-                tone="gray"
                 style={{ width: scale(34) }}
               />
             ))}
@@ -238,8 +230,6 @@ export default function JournalDetailScreen() {
                 key={option}
                 label={option}
                 state={option === entry.exerciseKind ? 'history' : 'inactive'}
-                level={5}
-                tone="gray"
                 style={{ width: scale(34) }}
               />
             ))}

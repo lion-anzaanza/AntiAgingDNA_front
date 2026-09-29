@@ -1,58 +1,42 @@
 import { Text, View } from 'react-native';
 
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
-import {
-  SelectButton,
-  type SelectButtonLevel,
-  type SelectButtonState,
-  type SelectButtonTone,
-} from './select-button';
+
+import { CARD_TITLE } from './select-card';
+import { SelectButton, type SelectButtonState } from './select-button';
 
 /**
- * The SelectItem family from Figma: a Bold label over a grid of select pills.
- * Figma insets the pills 12pt from the item's edges and sizes them so the row
- * exactly fills the rest, which is what the tables below encode.
+ * The SelectItem family on 회원가입/2 (`SelectItem3_1`, `4_1`, `4_2`, `5_1`): a
+ * SemiBold question over a grid of `signup`-size pills.
  *
- * **The content column is not the same width on every screen.** 회원가입/2 places
- * its SelectItems at x=17 w=186, but 회원가입/1 places 성별 at x=18 w=172 — so
- * the pill width follows from the container, not from a global constant. Pass
- * `contentWidth` when a screen departs from 186; the pills come out at Figma's
- * width either way (186 → 75pt at 2 columns, 184 → 48pt at 3).
+ * v4 draws every one of them 179.385 wide with the pills flush to both edges
+ * and a 4.513 gap across and down, so the pill width follows from the column
+ * count alone. The white card each group sits in (`카드/…`, 9.03 inset) belongs
+ * to the screen, not to this component.
  */
-const DEFAULT_CONTENT_WIDTH = 186;
-const INNER_INSET = 12;
-const COLUMN_GAP: Record<number, number> = { 1: 0, 2: 12, 3: 8, 4: 5 };
-const ROW_GAP = 6;
+const CONTENT_WIDTH = 179.385;
+const GAP = 4.513;
+/** Question → pills. */
+const LABEL_GAP = 6.769;
 
-function pillWidth(columns: number, contentWidth: number) {
-  const gap = COLUMN_GAP[columns] ?? 6;
-  return (contentWidth - INNER_INSET * 2 - gap * (columns - 1)) / columns;
+function pillWidth(columns: number) {
+  return (CONTENT_WIDTH - GAP * (columns - 1)) / columns;
 }
 
-/**
- * Figma labels these groups two ways: SelectItem3_1/4/5_1 head a section with a
- * 10pt Bold heading, while SelectItem3_2/5_2 sit in a form and reuse the small
- * grey field label that 닉네임 and 생년월일 use.
- */
-type LabelTone = 'section' | 'field';
-
-const LABEL_STYLE: Record<LabelTone, { fontSize: number; lineHeight: number; color: string }> = {
-  section: { fontSize: 10, lineHeight: 14, color: '#00352C' },
-  field: { fontSize: 7, lineHeight: 10, color: '#88877F' },
-};
-const LABEL_GAP: Record<LabelTone, number> = { section: 4, field: 0 };
+function rowsOf(options: string[], columns: number) {
+  const rows: string[][] = [];
+  for (let i = 0; i < options.length; i += columns) rows.push(options.slice(i, i + columns));
+  return rows;
+}
 
 type PillGroupProps = {
   label?: string;
-  labelTone?: LabelTone;
+  /** A second line under the question (평소 운동량의 "중강도 기준으로 답해주세요"). */
   caption?: string;
   options: string[];
   columns?: 1 | 2 | 3 | 4;
-  /** Width of the column this group sits in, when it is not Figma's usual 186. */
-  contentWidth?: number;
-  level?: SelectButtonLevel;
-  tone?: SelectButtonTone;
-  /** Read-only replay of an earlier day's answer — see `SelectButtonState`. */
+  /** Read-only replay of an earlier answer — see `SelectButtonState`. */
   history?: boolean;
 } & (
   | { multiple?: false; value: string | null; onChange: (value: string) => void }
@@ -62,17 +46,12 @@ type PillGroupProps = {
 export function PillGroup(props: PillGroupProps) {
   const {
     label,
-    labelTone = 'section',
     caption,
     options,
     columns = 2,
-    contentWidth = DEFAULT_CONTENT_WIDTH,
-    level = 2,
-    tone = 'white',
     history = false,
   } = props;
-  const width = scale(pillWidth(columns, contentWidth));
-  const labelStyle = LABEL_STYLE[labelTone];
+  const width = scale(pillWidth(columns));
 
   function isSelected(option: string) {
     return props.multiple ? props.value.includes(option) : option === props.value;
@@ -96,46 +75,43 @@ export function PillGroup(props: PillGroupProps) {
   }
 
   return (
-    <View>
+    <View style={{ width: scale(CONTENT_WIDTH) }}>
       {label ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: scale(6) }}>
-          <Text
-            style={{
-              fontSize: scale(labelStyle.fontSize),
-              lineHeight: scale(labelStyle.lineHeight),
-              color: labelStyle.color,
-            }}
-            className="font-pretendard-bold">
-            {label}
-          </Text>
-          {caption ? (
-            <Text
-              style={{ fontSize: scale(5), lineHeight: scale(8), color: '#88877F' }}
-              className="font-pretendard-medium">
-              {caption}
-            </Text>
-          ) : null}
-        </View>
+        <Text style={CARD_TITLE} className="font-plex-semibold">
+          {label}
+        </Text>
       ) : null}
-      <View
-        style={{
-          flexDirection: 'row',
-          flexWrap: 'wrap',
-          columnGap: scale(COLUMN_GAP[columns] ?? 6),
-          rowGap: scale(ROW_GAP),
-          paddingHorizontal: scale(INNER_INSET),
-          marginTop: label ? scale(LABEL_GAP[labelTone]) : 0,
-        }}>
-        {options.map((option) => (
-          <SelectButton
-            key={option}
-            label={option}
-            state={stateOf(option)}
-            onPress={() => handlePress(option)}
-            level={level}
-            tone={tone}
-            style={{ width }}
-          />
+      {caption ? (
+        // v4 lets the caption's line box ride 2.2pt up into the question's.
+        <Text
+          style={{
+            fontSize: scale(8.462),
+            lineHeight: scale(12.41),
+            marginTop: scale(-2.22),
+            color: COLOR.text.body,
+          }}
+          className="font-plex">
+          {caption}
+        </Text>
+      ) : null}
+      {/*
+        Explicit rows rather than flexWrap: the pills fill the row exactly, and
+        a rounding hair over the width would wrap the last one onto its own row.
+        */}
+      <View style={{ gap: scale(GAP), marginTop: label ? scale(caption ? 3.69 : LABEL_GAP) : 0 }}>
+        {rowsOf(options, columns).map((row) => (
+          <View key={row[0]} style={{ flexDirection: 'row', gap: scale(GAP) }}>
+            {row.map((option) => (
+              <SelectButton
+                key={option}
+                label={option}
+                state={stateOf(option)}
+                onPress={() => handlePress(option)}
+                size="signup"
+                style={{ width }}
+              />
+            ))}
+          </View>
         ))}
       </View>
     </View>

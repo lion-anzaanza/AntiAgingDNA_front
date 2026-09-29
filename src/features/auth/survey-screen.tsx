@@ -245,8 +245,6 @@ export default function SurveyScreen() {
             value={form.sugarSensitivity}
             onChange={(sugarSensitivity) => update({ sugarSensitivity })}
             columns={4}
-            level={3}
-            tone="white"
           />
           <PillGroup
             label="카페인에 얼마나 민감한가요?"
@@ -254,8 +252,6 @@ export default function SurveyScreen() {
             value={form.caffeineSensitivity}
             onChange={(caffeineSensitivity) => update({ caffeineSensitivity })}
             columns={4}
-            level={3}
-            tone="white"
           />
           <PillGroup
             label="스트레스에 얼마나 민감한가요?"
@@ -263,8 +259,6 @@ export default function SurveyScreen() {
             value={form.stressSensitivity}
             onChange={(stressSensitivity) => update({ stressSensitivity })}
             columns={4}
-            level={3}
-            tone="white"
           />
 
           <View>
@@ -275,8 +269,6 @@ export default function SurveyScreen() {
               value={form.exercise}
               onChange={(exercise) => update({ exercise })}
               columns={2}
-              level={1}
-              tone="white"
             />
             <Text
               style={{
@@ -301,8 +293,6 @@ export default function SurveyScreen() {
             }}
             multiple
             columns={3}
-            level={2}
-            tone="white"
           />
           <PillGroup
             label="술은 얼마나 자주 마시나요?"
@@ -310,8 +300,6 @@ export default function SurveyScreen() {
             value={form.drink}
             onChange={(drink) => update({ drink })}
             columns={3}
-            level={2}
-            tone="white"
           />
           <PillGroup
             label="담배를 피우시나요?"
@@ -319,8 +307,6 @@ export default function SurveyScreen() {
             value={form.smoking}
             onChange={(smoking) => update({ smoking })}
             columns={4}
-            level={3}
-            tone="white"
           />
           <PillGroup
             label="평소 생활 리듬은 어떤가요?"
@@ -328,8 +314,6 @@ export default function SurveyScreen() {
             value={form.lifeRhythm}
             onChange={(lifeRhythm) => update({ lifeRhythm })}
             columns={2}
-            level={1}
-            tone="white"
           />
           <PillGroup
             label="평소 사람들과 얼마나 자주 교류하나요?"
@@ -337,8 +321,6 @@ export default function SurveyScreen() {
             value={form.socialFrequency}
             onChange={(socialFrequency) => update({ socialFrequency })}
             columns={2}
-            level={1}
-            tone="white"
           />
 
           <View>

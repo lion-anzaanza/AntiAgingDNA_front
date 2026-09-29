@@ -130,7 +130,9 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
 184pt column overflowed the row and collapsed the 2×2 grid into one column.
 
-`SelectItem*_Card`, `SelectFeel5` and `InputTime_Card` are **182 wide in every
+*(Pre-v4 — in v4 these cards are 197.44, the column's full width, and fill their
+parent; see redesign-v4-inventory.md.)* `SelectItem*_Card`, `SelectFeel5` and
+`InputTime_Card` were **182 wide in every
 instance**, so they carry their own width rather than filling the screen's
 column — on the 일지 screens that column is 184 and they would come out 2pt wide.
 The hand-built loose cards on 상세보기 really are 184 and do fill it.
@@ -143,6 +145,10 @@ The 약관 동의 screen **does** have a back button and a title (`약관 동의
 later, which is the usual reason to re-pull rather than trust the code.
 
 ## SelectButton — the pill family
+
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
 
 Five sizes × two tones (`gray` / `white`). Implemented as
 `src/components/ui/select-button.tsx` (`level`, `tone`).
@@ -164,6 +170,10 @@ All five grey levels now carry a third variant `*_History` — `#7786A8` bg,
 levels 1–5. The white tone has only active/inactive.
 
 ## SelectItem — labelled pill groups
+
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
 
 Rendered by `src/components/ui/pill-group.tsx`. The number in `SelectItem<N>` is
 the **option count, not the column count** — `SelectItem4_1` holds four options
@@ -197,6 +207,10 @@ label the text inputs use).
 
 ## SelectItem*_Card — the carded pill groups (일지)
 
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
+
 Rendered by `src/components/ui/select-card.tsx`. All are 182 wide on a white
 card, radius 10, with the same Bold 8 `#00352C` title on a 15pt line box. The
 pill count picks the whole row geometry.
@@ -216,6 +230,10 @@ SelectItem4_Caption_Card, which Figma drew as Medium — see AGENTS.md).
 bottom, and `SelectItem6_Card` uses a 10pt title line box instead of 15.
 
 ## SelectFeel5 — the five-face 컨디션 scale
+
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
 
 `603:1836` (182×66), plus `677:1175` `SelectFeel5_NeedAnswer` (182×76).
 Implemented as `src/components/ui/feel-select.tsx`.
@@ -244,6 +262,10 @@ face sits on a gradient.
 
 ## InputTime_Card
 
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
+
 `457:884` — 182×60. Title row (Bold 8) with a `#E9F0FF` duration badge at the
 right (33×10, radius 10, Medium 5 `#4800FF`). Below it two Medium 5 `#88877F`
 field labels, then two 68×19 fields (white, radius 5, 0.7pt `#F1EFE7` border,
@@ -251,6 +273,10 @@ Bold 7 `#2C2C2A`, letter-spacing 0.21) separated by a 25pt Light 10 `#B4B2A8`
 arrow. Light is the only place that weight is used so far.
 
 ## Select0To10_Card
+
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
 
 `597:1582` — 182×55. The bare `Select0To10` in a card: title drops to Bold 8 on a
 15pt line box, the handle shrinks from 13×12 to 10×10, and the end labels use a

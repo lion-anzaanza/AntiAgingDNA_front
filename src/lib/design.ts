@@ -8,13 +8,14 @@
 export const SHADOW = '0px 0px 4px rgba(169, 169, 169, 0.25)';
 
 /**
- * The `ActiveButton` style: ButtonNextUI and the selected SelectButton1/2/3/5.
+ * The pre-v4 `ActiveButton` ramp (old ButtonNextUI and selected SelectButton).
+ * v4 draws neither with it; 회원가입/2's hand-built pills still do.
  * The first stop starts at 18.9% rather than the edge.
  */
 export const GRADIENT_SELECT: readonly [string, string] = ['#4356F7', '#843FF6'];
 export const GRADIENT_SELECT_STOPS: readonly [number, number] = [0.18919, 1];
 
-/** Selected SelectButton4 alone still uses the older, wider brand ramp. */
+/** The older, wider brand ramp — calendar cells, daily summary card, weekly chart. */
 export const GRADIENT_BRAND: readonly [string, string] = ['#4655F6', '#9423FF'];
 
 /** The filled part of a step progress bar. */

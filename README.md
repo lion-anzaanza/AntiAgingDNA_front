@@ -174,7 +174,7 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 |---|---|---|
 | `button` | ButtonNextUI | 하단 주요 액션 버튼 |
 | `button-back` | ButtonBack | 14×13 뒤로가기 칩 (빈 스택 가드 포함) |
-| `select-button` | SelectButton1~5 | 선택 알약 (5단계 × 회색/흰색 × 3상태) |
+| `select-button` | SelectButton1~5 | 선택 알약 (`size`: 일지·회원가입·리커트 × 3상태) |
 | `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열, 카드 없음) |
 | `select-card` | SelectItem{3,4,6}[_Caption]_Card | 카드 + 라벨 + 설명 + 알약 한 줄 |
 | `likert-card` | SelectItem6_Card | 0~5 숫자 척도 카드 |
@@ -195,10 +195,10 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 
 **`pill-group`과 `select-card`는 형제입니다.** Figma가 같은 알약 묶음을 카드 없는
 `SelectItem*`(회원가입)과 카드 있는 `SelectItem*_Card`(일지) 두 벌로 그려두었고,
-콘텐츠 폭(186 vs 182)과 안쪽 여백이 달라서 별도 컴포넌트로 두었습니다.
+크기가 달라서(v4: 그룹은 179.385 폭·필 24.8, 카드는 열 폭 197.44·필 18.1) 별도 컴포넌트로 두었습니다.
 
 **필은 3상태입니다** — `inactive` / `active` / `history`. `history`는 지난 기록을
-읽기 전용으로 되비출 때 쓰는 회청색(`#7786A8`) 상태로, 눌리지 않습니다.
+읽기 전용으로 되비출 때 쓰는 상태로, v4부터 `active`와 같은 색이고 눌리지만 않습니다.
 `PillGroup`·`SelectCard`·`LikertCard`·`FeelSelect`는 `history` boolean으로 넘깁니다.
 
 크기·간격은 모두 Figma 값을 `scale()`로 감싸서 씁니다 (`scale(17)` = Figma 17pt).

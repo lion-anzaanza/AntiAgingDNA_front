@@ -1,46 +1,42 @@
-import { Text, View } from 'react-native';
+import { Text, View, type TextStyle, type ViewStyle } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
-import { SelectButton, type SelectButtonLevel, type SelectButtonState } from './select-button';
-
-/** Every SelectItem*_Card / SelectFeel5 instance in Figma is 182pt wide. */
-const CARD_WIDTH = 182;
+import { SelectButton, type SelectButtonState } from './select-button';
 
 /**
- * Figma's `SelectItem{3,4,6}[_Caption]_Card` family: a 182pt white card holding
- * a Bold label, an optional grey caption line, and one row of pills. The 일지
- * screens are built almost entirely out of these.
- *
- * This is the carded sibling of `PillGroup`, which is the same idea without the
- * card and wraps onto several rows. They keep separate geometry because Figma
- * gives them different content widths (182 vs 186) and insets.
- *
- * Pill count picks the whole row geometry — Figma only draws 3, 4 and 6.
+ * The question every v4 selection card and group leads with: IBM Plex SemiBold
+ * 9.59 on a 13.54 line, `text/heading`. Shared by the whole family.
  */
-type Columns = 3 | 4 | 6;
-
-const PILL: Record<Columns, { level: SelectButtonLevel; gap: number; inset: number }> = {
-  3: { level: 2, gap: 8, inset: 11 },
-  4: { level: 3, gap: 5, inset: 9.5 },
-  6: { level: 5, gap: 4, inset: 9 },
+export const CARD_TITLE: TextStyle = {
+  fontSize: scale(9.59),
+  lineHeight: scale(13.538),
+  letterSpacing: scale(-0.0959),
+  color: COLOR.text.heading,
 };
 
-/** Distance from the caption's baseline box down to the pill row. */
-const GAP_ABOVE_PILLS: Record<Columns, number> = { 3: 1.5, 4: 1.5, 6: 2.5 };
-const PAD_BOTTOM: Record<Columns, number> = { 3: 7, 4: 8, 6: 9 };
+/** The white v4 card behind `SelectItem*_Card`, `SelectFeel5`, `Select0To10_Card`, `InputTime_Card`. */
+export const CARD_SURFACE: ViewStyle = {
+  borderRadius: scale(9.615),
+  backgroundColor: COLOR.surface.card,
+  boxShadow: SHADOW_V4,
+};
+
+/** Where the title's text starts inside a card. */
+export const CARD_TITLE_INSET = 8.71;
+/** Where the pills (and most card content) start, left and right. */
+export const CARD_INSET = 9.03;
 
 /**
- * `SelectItem4_Card` is the only captionless member, and Figma draws it a point
- * tighter top and bottom than the captioned ones, so it gets its own numbers.
+ * Figma's `SelectItem{3,4,6}[_Caption]_Card` family: a white card holding a
+ * question, an optional caption line, and one row of `journal` pills. The 일지
+ * screens are built almost entirely out of these.
+ *
+ * v4 made the three row geometries one: whether 3, 4 or 6 pills, they share
+ * the row equally with a 4.51 gap and a 9.03 inset. The card is as wide as the
+ * screen's column (197.44 in every v4 instance), so it fills its parent.
  */
-const NO_CAPTION = { paddingTop: 5.5, gapAbovePills: 2.5, paddingBottom: 7 };
-
-function columnsFor(count: number): Columns {
-  return count === 3 || count === 6 ? count : 4;
-}
-
 type SelectCardProps = {
   label: string;
   caption?: string;
@@ -54,8 +50,6 @@ type SelectCardProps = {
 
 export function SelectCard(props: SelectCardProps) {
   const { label, caption, options, history = false } = props;
-  const columns = columnsFor(options.length);
-  const { level, gap, inset } = PILL[columns];
 
   function stateOf(option: string): SelectButtonState {
     const selected = props.multiple ? props.value.includes(option) : option === props.value;
@@ -76,46 +70,30 @@ export function SelectCard(props: SelectCardProps) {
   }
 
   return (
-    <View
-      style={{
-        // Figma draws every card in this family 182 wide; the 일지 screens' own
-        // column is 184, so filling the parent made each card 2pt too wide.
-        width: scale(CARD_WIDTH),
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
-        paddingTop: scale(caption ? 4.5 : NO_CAPTION.paddingTop),
-        paddingBottom: scale(caption ? PAD_BOTTOM[columns] : NO_CAPTION.paddingBottom),
-      }}>
-      <Text
-        style={{
-          fontSize: scale(8),
-          lineHeight: scale(15),
-          marginLeft: scale(12),
-          color: '#00352C',
-        }}
-        className="font-pretendard-bold">
+    <View style={[CARD_SURFACE, { paddingTop: scale(5.54), paddingBottom: scale(9.03) }]}>
+      <Text style={[CARD_TITLE, { marginLeft: scale(CARD_TITLE_INSET) }]} className="font-plex-semibold">
         {label}
       </Text>
       {caption ? (
         <Text
           style={{
-            fontSize: scale(5),
-            lineHeight: scale(8),
-            marginTop: scale(-1),
-            marginLeft: scale(12),
-            color: '#88877F',
+            fontSize: scale(6.769),
+            lineHeight: scale(9.026),
+            // The caption's line box tucks ~1pt under the title's.
+            marginTop: scale(-0.96),
+            marginLeft: scale(8.6),
+            color: COLOR.text.body,
           }}
-          className="font-pretendard">
+          className="font-plex">
           {caption}
         </Text>
       ) : null}
       <View
         style={{
           flexDirection: 'row',
-          gap: scale(gap),
-          paddingHorizontal: scale(inset),
-          marginTop: scale(caption ? GAP_ABOVE_PILLS[columns] : NO_CAPTION.gapAbovePills),
+          gap: scale(4.513),
+          paddingHorizontal: scale(CARD_INSET),
+          marginTop: scale(caption ? 4.89 : 4.45),
         }}>
         {options.map((option) => (
           <SelectButton
@@ -123,8 +101,6 @@ export function SelectCard(props: SelectCardProps) {
             label={option}
             state={stateOf(option)}
             onPress={() => handlePress(option)}
-            level={level}
-            tone="gray"
             style={{ flex: 1 }}
           />
         ))}

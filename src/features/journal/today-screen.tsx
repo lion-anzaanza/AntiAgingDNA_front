@@ -319,8 +319,6 @@ export default function JournalTodayScreen() {
                 label={option}
                 state={option === caffeineCups ? 'active' : 'inactive'}
                 onPress={() => setCaffeineCups(option)}
-                level={5}
-                tone="gray"
                 style={{ width: scale(34) }}
               />
             ))}
@@ -336,8 +334,6 @@ export default function JournalTodayScreen() {
                 label={option}
                 state={option === caffeineTime ? 'active' : 'inactive'}
                 onPress={() => setCaffeineTime(option)}
-                level={5}
-                tone="gray"
                 style={{ width: scale(CAFFEINE_TIME_WIDTH[index]) }}
               />
             ))}
@@ -379,8 +375,6 @@ export default function JournalTodayScreen() {
                     setExerciseKind(null);
                   }
                 }}
-                level={5}
-                tone="gray"
                 style={{ flex: 1 }}
               />
             ))}
@@ -403,8 +397,6 @@ export default function JournalTodayScreen() {
                     label={option}
                     state={option === exerciseMinutes ? 'active' : 'inactive'}
                     onPress={() => setExerciseMinutes(option)}
-                    level={5}
-                    tone="gray"
                     style={{ width: scale(34) }}
                   />
                 ))}
@@ -417,8 +409,6 @@ export default function JournalTodayScreen() {
                     label={option}
                     state={option === exerciseKind ? 'active' : 'inactive'}
                     onPress={() => setExerciseKind(option)}
-                    level={5}
-                    tone="gray"
                     style={{ width: scale(34) }}
                   />
                 ))}

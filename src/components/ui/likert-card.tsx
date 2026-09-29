@@ -1,8 +1,10 @@
 import { Text, View } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
+
 import { SelectButton } from './select-button';
+import { CARD_INSET, CARD_TITLE } from './select-card';
 
 const SCALE_VALUES = [0, 1, 2, 3, 4, 5];
 
@@ -10,44 +12,44 @@ type LikertCardProps = {
   statement: string;
   value: number | null;
   onChange: (value: number) => void;
-  /** Read-only replay of an earlier day's answer — see `SelectButtonState`. */
+  /** Read-only replay of an earlier answer — see `SelectButtonState`. */
   history?: boolean;
 };
 
 /**
- * Figma: SelectItem6_Card — a 47pt white card holding an 8pt Bold statement
- * above six SelectButton5 pills.
+ * Figma: `SelectItem6_Card` on 회원가입/2 — a 47pt white card with the
+ * statement hugging its top edge and six `likert` pills below.
+ *
+ * All five v4 instances keep the pre-v4 radius 10 and 4px shadow rather than
+ * the 9.615 / 3.846 the rest of the family was rescaled to; reproduced as drawn.
  */
 export function LikertCard({ statement, value, onChange, history = false }: LikertCardProps) {
   return (
     <View
       style={{
         borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
+        backgroundColor: COLOR.surface.card,
         boxShadow: SHADOW,
-        paddingTop: scale(7),
+        paddingTop: scale(2.56),
         paddingBottom: scale(9),
-        paddingHorizontal: scale(9),
       }}>
-      <Text
-        style={{
-          fontSize: scale(8),
-          lineHeight: scale(10),
-          marginLeft: scale(3),
-          color: '#00352C',
-        }}
-        className="font-pretendard-bold">
+      <Text style={[CARD_TITLE, { marginLeft: scale(8.65) }]} className="font-plex-semibold">
         {statement}
       </Text>
-      <View style={{ flexDirection: 'row', gap: scale(4), marginTop: scale(7) }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          gap: scale(4),
+          paddingHorizontal: scale(CARD_INSET),
+          marginTop: scale(7.9),
+        }}>
         {SCALE_VALUES.map((n) => (
           <SelectButton
             key={n}
             label={String(n)}
             state={n === value ? (history ? 'history' : 'active') : 'inactive'}
             onPress={() => onChange(n)}
-            level={5}
-            tone="gray"
+            size="likert"
             style={{ flex: 1 }}
           />
         ))}

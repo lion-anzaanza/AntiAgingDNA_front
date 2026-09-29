@@ -75,8 +75,9 @@ text — easy to misread as a mystery crash. `StepHeader` takes a `backHref` for
 ### 5. Two gradients, and they are not interchangeable
 
 - `GRADIENT_SELECT` — the `ActiveButton` style, `#4356F7 → #843FF6`, first stop at
-  **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Used by selected
-  SelectButton 1/2/3/5, and by `ButtonNextUI` until the v4 redesign.
+  **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Filled selected
+  SelectButton 1/2/3/5 and `ButtonNextUI` before v4; in v4 neither uses it (a
+  selected pill is flat `brand/selected`). 회원가입/2's hand-built pills still do.
 
 **v4 (2026-09-30) replaced the button ramp.** `Button` now draws
 `GRADIENT_PASTEL` (pink → lavender → periwinkle) at CSS 166.3°. Figma hands v4
@@ -85,8 +86,9 @@ gradients over as a CSS angle, and that angle is in *pixels* — on a 197×27 bu
 from `src/lib/gradient.ts` rather than guessing `start`/`end`. The two ramps above
 stay until the components that use them are redesigned; the tracker is
 `docs/redesign-v4-inventory.md`.
-- `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Now used **only** by a
-  selected SelectButton4.
+- `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Filled a selected
+  SelectButton4 before v4; now only the calendar cell, daily-summary card and
+  weekly chart use it.
 
 `ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
 
@@ -272,9 +274,9 @@ Assuming one column caused real breakage, not just a soft edge: 회원가입/2's
 수면 유형 pills are sized to fill their row, so a 186pt row in a 184pt column
 overflowed and `flexWrap` dropped the 2×2 grid to one pill per row.
 
-The same applies inside components — `SelectItem*_Card`, `SelectFeel5` and
-`InputTime_Card` are 182 wide in every instance and must carry that width rather
-than fill their parent.
+The same applies inside components — before v4, `SelectItem*_Card`,
+`SelectFeel5` and `InputTime_Card` were 182 wide in a 184 column and carried that
+width. In v4 they are 197.44, which *is* the column, so they fill their parent.
 
 ### 13. Compare against Figma by offset consensus, not by eye
 
@@ -757,8 +759,9 @@ bezier) rather than tracing them, so it is ready for real data. Checked against
 the export: the generated curve tracks Figma's to within 1.1pt at its worst
 across every column, and the mock scores round-trip to Figma's exact dots.
 
-- `SelectButton*_History` (`#7786A8` / `#F7F8FA`) now exists on all five levels
-  and is implemented as `state="history"`.
+- `SelectButton*_History` (`#7786A8` / `#F7F8FA`) existed on all five levels
+  before v4. v4 dropped the slate: `state="history"` draws the selected colours
+  and is simply not pressable.
 
 ### 홈 — built, and what is still missing
 
