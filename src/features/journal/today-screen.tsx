@@ -16,6 +16,7 @@ import { useAuth } from '@/lib/auth';
 import { isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
 import { toDiaryDraft, toDiaryRequest, type DiaryFields } from '@/lib/diary-request';
+import { CardCaption, CardTitle, FieldCaption, SectionHeading } from '@/features/journal/components/form-text';
 import {
   CAFFEINE_CAPTION,
   CAFFEINE_CUPS,
@@ -26,7 +27,6 @@ import {
   DID_EXERCISE,
   EXERCISE_KIND,
   EXERCISE_MINUTES,
-  HEADING_GAP,
   JUNK_FOOD,
   JUNK_FOOD_CAPTION,
   MEAL_COUNT,
@@ -36,7 +36,6 @@ import {
   MOOD_RECOVERY_CAPTION,
   SAT,
   SCREEN_TIME,
-  SECTION_GAP,
   SLEEP_ONSET,
   WALKED,
   WATER,
@@ -250,7 +249,7 @@ export default function JournalTodayScreen() {
           </Text>
         </View>
 
-        <SectionHeading first>오늘의 컨디션</SectionHeading>
+        <SectionHeading firstGap={FIRST_HEADING_GAP}>오늘의 컨디션</SectionHeading>
         <FeelSelect
           needAnswer={conditionMissing}
           label="오늘 하루 컨디션은 어땠나요?"
@@ -542,52 +541,3 @@ function koreanDate(date: Date) {
  * so it sits further down than 상세보기's — see that file's own constant.
  */
 const FIRST_HEADING_GAP = 12.5;
-
-function SectionHeading({ children, first }: { children: string; first?: boolean }) {
-  return (
-    <Text
-      style={{
-        fontSize: scale(10),
-        lineHeight: scale(14),
-        marginTop: scale(first ? FIRST_HEADING_GAP : SECTION_GAP),
-        marginBottom: scale(HEADING_GAP),
-        color: '#00352C',
-      }}
-      className="font-pretendard-bold">
-      {children}
-    </Text>
-  );
-}
-
-/** The Bold 8 heading the hand-built cards share with `SelectCard`. */
-function CardTitle({ children }: { children: string }) {
-  return (
-    <Text
-      style={{ fontSize: scale(8), lineHeight: scale(15), color: '#00352C' }}
-      className="font-pretendard-bold">
-      {children}
-    </Text>
-  );
-}
-
-/** Grey Medium 5 note under a card title. */
-function CardCaption({ children }: { children: string }) {
-  return (
-    <Text
-      style={{ fontSize: scale(5), lineHeight: scale(8), marginTop: scale(-1), color: '#88877F' }}
-      className="font-pretendard-medium">
-      {children}
-    </Text>
-  );
-}
-
-/** 운동 습관 labels its two pill rows in a darker Bold 5 instead. */
-function FieldCaption({ children }: { children: string }) {
-  return (
-    <Text
-      style={{ fontSize: scale(5), lineHeight: scale(8), marginTop: scale(5.5), color: '#5F5E5B' }}
-      className="font-pretendard-bold">
-      {children}
-    </Text>
-  );
-}

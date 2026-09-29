@@ -12,6 +12,7 @@ import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { fromIsoDate } from '@/lib/dates';
 import { SHADOW } from '@/lib/design';
 import { toDiaryDraft, type DiaryFields } from '@/lib/diary-request';
+import { CardCaption, CardTitle, FieldCaption, SectionHeading } from '@/features/journal/components/form-text';
 import {
   CAFFEINE_CAPTION,
   CAFFEINE_CUPS,
@@ -22,7 +23,6 @@ import {
   DID_EXERCISE,
   EXERCISE_KIND,
   EXERCISE_MINUTES,
-  HEADING_GAP,
   JUNK_FOOD,
   JUNK_FOOD_CAPTION,
   MEAL_COUNT,
@@ -32,7 +32,6 @@ import {
   MOOD_RECOVERY_CAPTION,
   SAT,
   SCREEN_TIME,
-  SECTION_GAP,
   SLEEP_ONSET,
   WALKED,
   WATER,
@@ -104,7 +103,7 @@ export default function JournalDetailScreen() {
           </Text>
         </View>
 
-        <SectionHeading first>이날의 컨디션</SectionHeading>
+        <SectionHeading firstGap={FIRST_HEADING_GAP}>이날의 컨디션</SectionHeading>
         <FeelSelect
           label="이날 하루 컨디션은?"
           value={entry.condition}
@@ -399,49 +398,3 @@ function PillRow({
  * in between and spaces it differently, so the two are not shared.
  */
 const FIRST_HEADING_GAP = 9;
-
-function SectionHeading({ children, first }: { children: string; first?: boolean }) {
-  return (
-    <Text
-      style={{
-        fontSize: scale(10),
-        lineHeight: scale(14),
-        marginTop: scale(first ? FIRST_HEADING_GAP : SECTION_GAP),
-        marginBottom: scale(HEADING_GAP),
-        color: '#00352C',
-      }}
-      className="font-pretendard-bold">
-      {children}
-    </Text>
-  );
-}
-
-function CardTitle({ children }: { children: string }) {
-  return (
-    <Text
-      style={{ fontSize: scale(8), lineHeight: scale(15), color: '#00352C' }}
-      className="font-pretendard-bold">
-      {children}
-    </Text>
-  );
-}
-
-function CardCaption({ children }: { children: string }) {
-  return (
-    <Text
-      style={{ fontSize: scale(5), lineHeight: scale(8), marginTop: scale(-1), color: '#88877F' }}
-      className="font-pretendard-medium">
-      {children}
-    </Text>
-  );
-}
-
-function FieldCaption({ children }: { children: string }) {
-  return (
-    <Text
-      style={{ fontSize: scale(5), lineHeight: scale(8), marginTop: scale(5.5), color: '#5F5E5B' }}
-      className="font-pretendard-bold">
-      {children}
-    </Text>
-  );
-}

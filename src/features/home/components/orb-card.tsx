@@ -1,0 +1,383 @@
+import { LinearGradient } from 'expo-linear-gradient';
+import { Text, View, type ImageSourcePropType } from 'react-native';
+
+import {
+  LivingArtwork,
+  SpinningRing,
+  TwinkleDot,
+  type ArtworkFrame,
+} from '@/components/ui/living-artwork';
+import { SHADOW } from '@/lib/design';
+import { MOTION } from '@/lib/motion';
+import { scale } from '@/lib/scale';
+
+export const CARD_WIDTH = 180;
+
+/**
+ * The orb's highlights are two stacked sets, and the stacking is the whole
+ * point. Three violet dots belong to the card and sit **under** the artwork,
+ * which all but hides them; three near-white ones belong to `NiceGene` itself
+ * and sit **over** it, 1.5pt lower. Those are the ones you actually see.
+ *
+ * Draw only the violet set, or put either set above the artwork, and the
+ * highlights read purple instead of white.
+ *
+ * Positions are card-relative; each carries its own white glow.
+ */
+type Sparkle = { left: number; top: number; size: number; color: string; glow: string };
+
+const GLOW_SMALL = '0px 0px 5px rgba(255, 255, 255, 0.5)';
+const GLOW_LARGE = '0px 0px 4px 1px rgba(255, 255, 255, 0.25)';
+
+const ORB_SPARKLES_UNDER: Sparkle[] = [
+  { left: 74, top: 86, size: 2, color: 'rgba(191, 145, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 107, top: 62, size: 2, color: 'rgba(191, 145, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 95, top: 89, size: 3, color: 'rgba(237, 221, 255, 0.75)', glow: GLOW_LARGE },
+];
+
+const ORB_SPARKLES_OVER: Sparkle[] = [
+  { left: 74, top: 87.5, size: 2, color: 'rgba(253, 237, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 107, top: 63.5, size: 2, color: 'rgba(253, 237, 255, 0.5)', glow: GLOW_SMALL },
+  { left: 95, top: 90.5, size: 3, color: 'rgba(255, 221, 245, 0.75)', glow: GLOW_LARGE },
+];
+
+/**
+ * The orb has seven states in Figma and `GET /api/scores/*` now answers with
+ * `orbState`, so the artwork follows the score instead of always being the
+ * healthy one. The bands are the server's (0/20/40/55/70/80/90) and sit inside
+ * 22's 70/40 boundaries, so `orbState` and `grade` can never disagree.
+ *
+ * Each `*Gene` symbol carries its **own** three highlight dots, in its own
+ * colour, drawn over the artwork — that is rule 9, and it is why the pair moves
+ * together here rather than the dots being a single shared constant. The
+ * positions are identical across all seven; only the colours change.
+ *
+ * `orbState` tracks `displayTotal`, which is the number this card shows, so it
+ * is the right field *here*. It is the wrong field for anything per-day — see
+ * `score.ts` and backlog 32.
+ */
+type OrbState =
+  | 'DANGER_LOW'
+  | 'DANGER_HIGH'
+  | 'WARN_LOW'
+  | 'WARN_HIGH'
+  | 'GOOD_LOW'
+  | 'GOOD_MID'
+  | 'GOOD_HIGH';
+
+function orbSparkles(small: string, large: string): Sparkle[] {
+  return [
+    { left: 74, top: 87.5, size: 2, color: small, glow: GLOW_SMALL },
+    { left: 107, top: 63.5, size: 2, color: small, glow: GLOW_SMALL },
+    { left: 95, top: 90.5, size: 3, color: large, glow: GLOW_LARGE },
+  ];
+}
+
+export const ORB_STATES: Record<OrbState, { artwork: ImageSourcePropType; sparkles: Sparkle[] }> = {
+  DANGER_LOW: {
+    artwork: require('@/assets/images/home/orb-sick.png'),
+    sparkles: orbSparkles('#FBFBFD', '#F8F8FA'),
+  },
+  DANGER_HIGH: {
+    artwork: require('@/assets/images/home/orb-danger.png'),
+    sparkles: orbSparkles('rgba(255,223,223,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  WARN_LOW: {
+    artwork: require('@/assets/images/home/orb-warn.png'),
+    sparkles: orbSparkles('rgba(255,253,145,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  WARN_HIGH: {
+    artwork: require('@/assets/images/home/orb-middle.png'),
+    sparkles: orbSparkles('rgba(255,209,145,0.5)', 'rgba(255,244,221,0.75)'),
+  },
+  GOOD_LOW: {
+    artwork: require('@/assets/images/home/orb-good.png'),
+    sparkles: orbSparkles('rgba(145,226,255,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  GOOD_MID: {
+    artwork: require('@/assets/images/home/orb-better.png'),
+    sparkles: orbSparkles('rgba(255,232,233,0.5)', 'rgba(255,221,221,0.75)'),
+  },
+  GOOD_HIGH: {
+    artwork: require('@/assets/images/home/orb-nice.png'),
+    sparkles: ORB_SPARKLES_OVER,
+  },
+};
+
+/** Until the range answers, keep Figma's own orb rather than flashing a state. */
+export const DEFAULT_ORB_STATE: OrbState = 'GOOD_HIGH';
+
+export const ORB_PAGES: {
+  key: string;
+  caption: string;
+  score: string;
+  artwork: ImageSourcePropType;
+  /** The artwork's box inside the 180pt card, in Figma points. */
+  frame: ArtworkFrame;
+  sparklesUnder: Sparkle[];
+  sparklesOver: Sparkle[];
+  /** The helix sways; the orb, being a sphere, has nothing to sway about. */
+  tilt: boolean;
+  /** A light band travelling inside the silhouette — reads best on the orb. */
+  sheen: boolean;
+  hint: string;
+}[] = [
+  {
+    key: 'gene',
+    caption: '오늘의 LifeDNA 컨디션',
+    score: '100',
+    artwork: require('@/assets/images/home/orb-nice.png'),
+    // NiceGene is placed 70.5×69.92 at (55,48), but its bitmap overhangs that
+    // box — the glow — so the image itself is drawn larger and offset.
+    frame: { left: 45.12, top: 42.0, width: 90.28, height: 89.92 },
+    sparklesUnder: ORB_SPARKLES_UNDER,
+    sparklesOver: ORB_SPARKLES_OVER,
+    tilt: false,
+    sheen: true,
+    hint: '옆으로 밀어 유기체 모델을 확인해보세요 →',
+  },
+  {
+    key: 'helix',
+    caption: '나의 유전자 나선',
+    score: '99',
+    artwork: require('@/assets/images/auth/dna-nice.png'),
+    frame: { left: 45, top: 33, width: 89.76, height: 99.37 },
+    // The helix card carries no highlights at all, and NiceDNA has none of its own.
+    sparklesUnder: [],
+    sparklesOver: [],
+    tilt: true,
+    sheen: true,
+    hint: '← 옆으로 밀어 유기체 모델을 확인해보세요',
+  },
+];
+
+type OrbCardProps = Omit<(typeof ORB_PAGES)[number], 'key'> & {
+  /** `null` while the range has no yesterday to compare against. */
+  delta: number | null;
+  dateLabel: string;
+  /** Which page the pager is on — every card draws the same dot row. */
+  page: number;
+  pageCount: number;
+};
+
+export function OrbCard({
+  caption,
+  score,
+  delta,
+  dateLabel: date,
+  artwork,
+  frame,
+  sparklesUnder,
+  sparklesOver,
+  tilt,
+  sheen,
+  hint,
+  page,
+  pageCount,
+}: OrbCardProps) {
+  return (
+    <View
+      style={{
+        width: scale(CARD_WIDTH),
+        height: scale(256),
+        borderRadius: scale(10),
+        backgroundColor: '#FFFFFF',
+        boxShadow: SHADOW,
+      }}>
+      <View
+        style={{
+          position: 'absolute',
+          left: scale(12),
+          top: scale(11),
+          width: scale(64),
+          height: scale(14),
+          borderRadius: scale(10),
+          backgroundColor: '#DCF7EF',
+          flexDirection: 'row',
+          alignItems: 'center',
+          paddingLeft: scale(6),
+        }}>
+        <View
+          style={{
+            width: scale(4),
+            height: scale(4),
+            borderRadius: scale(2),
+            backgroundColor: '#007156',
+            boxShadow: SHADOW,
+          }}
+        />
+        <Text
+          style={{
+            flex: 1,
+            textAlign: 'center',
+            fontSize: scale(5.5),
+            lineHeight: scale(10),
+            color: '#007156',
+          }}
+          className="font-pretendard-medium">
+          안정적으로 성장 중
+        </Text>
+      </View>
+      <Text
+        style={{
+          position: 'absolute',
+          right: scale(12),
+          top: scale(13),
+          fontSize: scale(5.5),
+          lineHeight: scale(10),
+          color: '#88877F',
+        }}
+        className="font-pretendard-medium">
+        {date}
+      </Text>
+
+      <SpinningRing left={43} top={36} size={94} period={MOTION.rings.outerPeriod} />
+      <SpinningRing left={49} top={42} size={82} period={MOTION.rings.innerPeriod} reverse />
+      {sparklesUnder.map((sparkle, index) => (
+        <TwinkleDot key={`under-${sparkle.left}-${sparkle.top}`} {...sparkle} index={index} />
+      ))}
+      <LivingArtwork
+        source={artwork}
+        frame={frame}
+        tilt={tilt}
+        sheen={sheen}
+        accessibilityLabel={caption}
+      />
+      {sparklesOver.map((sparkle, index) => (
+        <TwinkleDot key={`over-${sparkle.left}-${sparkle.top}`} {...sparkle} index={index + 3} />
+      ))}
+
+      <Text
+        style={{
+          position: 'absolute',
+          top: scale(140),
+          width: '100%',
+          textAlign: 'center',
+          fontSize: scale(7),
+          lineHeight: scale(10),
+          color: '#88877F',
+        }}
+        className="font-pretendard-semibold">
+        {caption}
+      </Text>
+      <View
+        style={{
+          position: 'absolute',
+          top: scale(151),
+          width: '100%',
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          justifyContent: 'center',
+        }}>
+        <Text
+          style={{ fontSize: scale(25), lineHeight: scale(28), color: '#2C2C2A' }}
+          className="font-pretendard-extrabold">
+          {score}
+        </Text>
+        <Text
+          style={{
+            fontSize: scale(10),
+            lineHeight: scale(18),
+            marginLeft: scale(2),
+            color: '#88877F',
+          }}
+          className="font-pretendard-semibold">
+          점
+        </Text>
+      </View>
+
+      {delta === null ? null : (
+        <View
+          style={{
+            position: 'absolute',
+            left: scale(64),
+            top: scale(179),
+            width: scale(48),
+            height: scale(14),
+            borderRadius: scale(10),
+            backgroundColor: '#E8EDFE',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: scale(3),
+          }}>
+          <Text
+            style={{ fontSize: scale(5), lineHeight: scale(10), color: '#3C59F6' }}
+            className="font-pretendard-bold">
+            {delta < 0 ? '▼' : '▲'}
+          </Text>
+          <Text
+            style={{ fontSize: scale(6), lineHeight: scale(10), color: '#3C59F6' }}
+            className="font-pretendard-bold">
+            {`어제보다 ${delta >= 0 ? '+' : ''}${delta}`}
+          </Text>
+        </View>
+      )}
+
+      <Text
+        style={{
+          position: 'absolute',
+          top: scale(203),
+          width: '100%',
+          textAlign: 'center',
+          fontSize: scale(7),
+          lineHeight: scale(9),
+          color: '#88877F',
+        }}
+        className="font-pretendard-medium">
+        컨디션이 좋아 오브가{' '}
+        <Text style={{ color: '#3C59F6' }} className="font-pretendard-bold">
+          푸른빛
+        </Text>
+        이에요{'\n'}나빠지면 점점 붉은빛으로 물들어요
+      </Text>
+
+      <View
+        style={{
+          position: 'absolute',
+          top: scale(227),
+          width: '100%',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: scale(2),
+        }}>
+        {Array.from({ length: pageCount }, (_, index) =>
+          index === page ? (
+            <LinearGradient
+              key={index}
+              colors={['#573FF5', '#803EF5']}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={{ width: scale(10), height: scale(4), borderRadius: scale(10) }}
+            />
+          ) : (
+            <View
+              key={index}
+              style={{
+                width: scale(4),
+                height: scale(4),
+                borderRadius: scale(10),
+                backgroundColor: '#E8EDFE',
+              }}
+            />
+          ),
+        )}
+      </View>
+
+      <Text
+        style={{
+          position: 'absolute',
+          top: scale(239),
+          width: '100%',
+          textAlign: 'center',
+          fontSize: scale(5),
+          lineHeight: scale(10),
+          color: '#B4B2A8',
+        }}
+        className="font-pretendard-medium">
+        {hint}
+      </Text>
+    </View>
+  );
+}

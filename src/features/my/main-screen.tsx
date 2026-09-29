@@ -1,18 +1,10 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import {
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
-  type ImageSourcePropType,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ButtonBack } from '@/components/ui/button-back';
-import { GradientText } from '@/components/ui/gradient-text';
+import { MenuRow, type MenuItem } from '@/features/my/components/menu-row';
+import { ProfileCard } from '@/features/my/components/profile-card';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
@@ -36,22 +28,13 @@ const COLUMN = {
   paddingRight: scale(220 - CONTENT_INSET - CARD_WIDTH),
 };
 
-const ROW_PITCH = 22.25;
-
 /**
  * Figma puts the `무료` tier beside 이용약관 rather than 구독 관리, while the
  * icons stay with their labels. The sibling frame (`583:913`) shows the same
  * values against a different label order, which is what gives it away — a tier
  * belongs to the subscription row, so it is placed there.
  */
-const MENU: {
-  label: string;
-  icon: ImageSourcePropType;
-  iconWidth: number;
-  iconHeight: number;
-  value?: string;
-  href?: string;
-}[] = [
+const MENU: MenuItem[] = [
   {
     label: '웨어러블 연동',
     icon: require('@/assets/images/my/ic-wearable.png'),
@@ -210,149 +193,5 @@ export default function MyPageScreen() {
         </Text>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function ProfileCard({ nickname, streakDays }: { nickname: string; streakDays: number }) {
-  return (
-    <View
-      style={{
-        height: scale(40),
-        borderRadius: scale(5),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
-      }}>
-      <View
-        style={{
-          position: 'absolute',
-          left: scale(8),
-          top: scale(8),
-          width: scale(24),
-          height: scale(24),
-          borderRadius: scale(12),
-          backgroundColor: '#EEEDFF',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <Image
-          source={require('@/assets/images/my/avatar.png')}
-          style={{ width: scale(12), height: scale(14) }}
-          resizeMode="contain"
-        />
-      </View>
-
-      <Text
-        style={{
-          position: 'absolute',
-          left: scale(42),
-          top: scale(7.5),
-          fontSize: scale(9),
-          lineHeight: scale(15),
-          color: '#00352C',
-        }}
-        className="font-pretendard-bold">
-        {nickname}
-      </Text>
-      <View style={{ position: 'absolute', left: scale(42), top: scale(22) }}>
-        <GradientText
-          colors={[...GRADIENT_BRAND]}
-          style={{ fontSize: scale(6), lineHeight: scale(9) }}
-          className="font-pretendard-semibold">
-          올빼미 - 고민감 - 누적형
-        </GradientText>
-      </View>
-
-      <View
-        style={{
-          position: 'absolute',
-          left: scale(136),
-          top: scale(6),
-          width: scale(41),
-          height: scale(11),
-          borderRadius: scale(5),
-          backgroundColor: '#F7F1FF',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <GradientText
-          colors={[...GRADIENT_BRAND]}
-          style={{ fontSize: scale(5), lineHeight: scale(9) }}
-          className="font-pretendard">
-          연속 기록 {streakDays}일째
-        </GradientText>
-      </View>
-    </View>
-  );
-}
-
-function MenuRow({
-  label,
-  icon,
-  iconWidth,
-  iconHeight,
-  value,
-  href,
-  first,
-}: (typeof MENU)[number] & { first: boolean }) {
-  return (
-    <Pressable
-      onPress={href ? () => router.push(href as never) : undefined}
-      style={{
-        height: scale(ROW_PITCH),
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderTopWidth: first ? 0 : scale(0.3),
-        borderTopColor: '#F1EFE7',
-      }}>
-      <View
-        style={{
-          width: scale(21),
-          marginLeft: scale(7),
-          alignItems: 'center',
-        }}>
-        <Image
-          source={icon}
-          style={{ width: scale(iconWidth), height: scale(iconHeight) }}
-          resizeMode="contain"
-        />
-      </View>
-      <Text
-        style={{
-          marginLeft: scale(5),
-          fontSize: scale(7),
-          lineHeight: scale(9),
-          letterSpacing: scale(-0.21),
-          color: '#2C2C2A',
-        }}
-        className="font-pretendard">
-        {label}
-      </Text>
-
-      <View style={{ marginLeft: 'auto', marginRight: scale(10), flexDirection: 'row', alignItems: 'center' }}>
-        {value ? (
-          <Text
-            style={{
-              marginRight: scale(3),
-              fontSize: scale(6),
-              lineHeight: scale(18),
-              letterSpacing: scale(-0.1),
-              color: '#B4B2A8',
-            }}
-            className="font-pretendard-light">
-            {value}
-          </Text>
-        ) : null}
-        <Text
-          style={{
-            fontSize: scale(10),
-            lineHeight: scale(18),
-            letterSpacing: scale(-0.1),
-            color: '#B4B2A8',
-          }}
-          className="font-pretendard-light">
-          {'>'}
-        </Text>
-      </View>
-    </Pressable>
   );
 }
