@@ -137,7 +137,8 @@ instance**, so they carry their own width rather than filling the screen's
 column — on the 일지 screens that column is 184 and they would come out 2pt wide.
 The hand-built loose cards on 상세보기 really are 184 and do fill it.
 
-The step progress bar is **180pt wide**, not the content width — segments at
+*(Pre-v4 — in v4 the bar is the 197.44 column; see below.)* The step progress
+bar was **180pt wide**, not the content width — segments at
 0–56 / 60–118 / 121–179, fill to 56 / 119 / 180 for steps 1–3.
 
 The 약관 동의 screen **does** have a back button and a title (`약관 동의`,
@@ -285,6 +286,12 @@ is the read-only twin and is **not built yet**.
 
 ## BottomBar
 
+> **Pre-v4.** v4 draws the bar 220×39.42 with Plex Regular 6.77 `text/body`
+> labels, and lights 개선책 with a violet bulb (`image 1104`) instead of the dark
+> bulb-and-gear. Per-icon sizes are in `bottom-bar.tsx`, decisions in
+> [redesign-v4-inventory.md](redesign-v4-inventory.md); the numbers below
+> describe the older design.
+
 `457:820` — `BottomBar0`–`BottomBar4` (`496:1958`, `1960`, `1961`, `1959`,
 `1962`). The same 220×41 white bar five times; **only the icon changes**, the
 label stays Regular 7 `#B4B2A8` on a 9pt line box in every variant.
@@ -373,6 +380,11 @@ It gained a current-value badge: 35×10, radius 10, `#E9F0FF` background,
 Medium 5 `#4800FF`, sitting on the label row against the right edge.
 
 ### Step progress bar
+
+> **Pre-v4.** In v4 the fill is the pastel ramp (`GRADIENT_PASTEL`) over the
+> 197.44 column, segments at 0–61.77 / 66.18–130.15 / 133.46–197.43, tracks
+> `surface/track`; values and the frame-by-frame split are in
+> [redesign-v4-inventory.md](redesign-v4-inventory.md) and `step-header.tsx`.
 
 One continuous gradient whose width covers the completed steps, with the
 remaining segments drawn as thinner grey (`#D3D1C6`) bars. Against the 180pt bar

@@ -18,9 +18,6 @@ export const GRADIENT_SELECT_STOPS: readonly [number, number] = [0.18919, 1];
 /** The older, wider brand ramp — calendar cells, daily summary card, weekly chart. */
 export const GRADIENT_BRAND: readonly [string, string] = ['#4655F6', '#9423FF'];
 
-/** The filled part of a step progress bar. */
-export const GRADIENT_PROGRESS: readonly [string, string] = ['#4056F6', '#853EF6'];
-
 /** The slightly cooler ramp the 홈 score bars and weekly progress bars use. */
 export const GRADIENT_SCORE: readonly [string, string] = ['#3F56F6', '#8B3FF6'];
 
