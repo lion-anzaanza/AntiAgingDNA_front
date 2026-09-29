@@ -19,3 +19,15 @@ export function cssGradientPoints(angleDeg: number, width: number, height: numbe
     end: { x: 0.5 + (dx * half) / width, y: 0.5 + (dy * half) / height },
   };
 }
+
+/**
+ * v4 fills every pastel surface (`GRADIENT_PASTEL`) with **one** gradient laid
+ * down in the box's own unit square, so its CSS angle depends only on the box's
+ * aspect: `90° + atan(0.56338 · w/h)`. Fitted against six v4 nodes on 홈 — the
+ * journal banner (142.29°), a page dot (144.63°), score bars at two heights
+ * (96.03°, 112.91°) and two progress fills (177.33°, 176.00°) — all agree to
+ * 0.0001. Use it where the width is data-driven and Figma cannot say.
+ */
+export function pastelAngle(width: number, height: number) {
+  return 90 + (Math.atan((0.56338 * width) / height) * 180) / Math.PI;
+}

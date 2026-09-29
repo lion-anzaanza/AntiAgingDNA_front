@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { cssGradientPoints } from './gradient';
+import { cssGradientPoints, pastelAngle } from './gradient';
 
 describe('cssGradientPoints', () => {
   it('runs 90deg edge to edge, left to right', () => {
@@ -33,5 +33,18 @@ describe('cssGradientPoints', () => {
     expect(end.y).toBeGreaterThan(1);
     expect(end.x - start.x).toBeGreaterThan(0);
     expect(end.x - start.x).toBeLessThan(0.1);
+  });
+});
+
+describe('pastelAngle', () => {
+  it.each([
+    [197.436, 86, 142.28993590487434], // 홈 journal banner
+    [10, 4, 144.62503438811186], // 홈 active page dot
+    [3.309, 17.65, 96.02996149941804], // full score bar
+    [3.309, 4.4125, 112.90560729829481], // 2/8 score bar
+    [126.0234, 3.3094, 177.3312458466857], // progress fill, high (`1363:2077`)
+    [84.0156, 3.3094, 176.00048057754012], // progress fill, mid (`1363:2111`)
+  ])('reproduces Figma for %p x %p', (w, h, angle) => {
+    expect(pastelAngle(w, h)).toBeCloseTo(angle, 2);
   });
 });

@@ -153,7 +153,7 @@ sensitivity sliders**, which the API models as four levels.
 
 `AreaScoreResponse` — `physical` `mental` `emotion` `social` `environment` plus
 `grades` (the same five keys, `"GOOD"|"WARN"|"DANGER"|null`). This is the
-5개 영역 밸런스 row on 홈 (신체 · 정신 · 감정 · 사회 · 환경).
+5개 영역 밸런스 row on 홈 (UI tab order, not the response's key order: 신체 · 정신 · 환경 · 감정 · 사회).
 
 **Do not call `GET /api/scores/{date}` or `/today`.** Reading a single date
 **creates** that date's score row on the server, permanently and irreversibly

@@ -267,6 +267,7 @@ separates continuous motion from a one-time layout settle.
 
 Every screen was hand-placed, so the left inset and content width differ per
 frame (17/18/19 left, 180/184/186 wide, 홈 asymmetric at 18 left / 22 right).
+v4 screens moved to one 11.28 / 197.436 column, but still read each frame.
 The table is in [docs/figma-reference.md](docs/figma-reference.md), and
 `get_metadata` on the frame answers it in one call.
 
@@ -760,7 +761,7 @@ across every column, and the mock scores round-trip to Figma's exact dots.
 
 ### 홈 — built, and what is still missing
 
-`features/home/home-screen.tsx` is 홈/메인 (`597:1466`), replacing the Expo template screen.
+`features/home/home-screen.tsx` is 홈/메인 (`597:1466`; the v4 redesign is `1363:1953` — see `docs/redesign-v4-inventory.md`), replacing the Expo template screen.
 The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 *beside* the frame rather than inside it, and it reuses the login screen's
 `dna-nice.png`.

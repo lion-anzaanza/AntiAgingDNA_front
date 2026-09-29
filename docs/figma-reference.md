@@ -40,7 +40,7 @@ Paths are under `src/features/`; the route files in `src/app` only re-export the
 | `457:828` | 회원가입/2 초기 진단 | `auth/survey-screen.tsx` |
 | `457:829` | 회원가입/3 약관 동의 | `auth/terms-screen.tsx` |
 | `457:738` | (hidden draft) 시작해보기 | `auth/sign-up-intro-screen.tsx` |
-| `597:1466` | 홈/메인 | `home/home-screen.tsx` |
+| `597:1466` | 홈/메인 (v4: `1363:1953`, see `docs/redesign-v4-inventory.md`) | `home/home-screen.tsx` |
 | `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `home/components/orb-card.tsx` |
 | `480:1269` | 일지/오늘의기록(생성) | `journal/today-screen.tsx` |
 | `480:1268` | 일지/메인 | `journal/main-screen.tsx` |
