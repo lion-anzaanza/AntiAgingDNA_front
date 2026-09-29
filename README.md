@@ -55,6 +55,11 @@ npm test
 | `(tabs)/plan/forecast` | 개선책 · 한 달 뒤 내 모습 |
 | `(tabs)/my` | MY · 마이페이지 ※※ |
 | `(tabs)/my/wearable` | MY · 웨어러블 연동 |
+| `(tabs)/my/privacy` | MY · 데이터 개인정보 |
+| `(tabs)/my/subscription` | MY · 구독관리 |
+
+라우트 파일은 한 줄 re-export이고, 화면 본체는 `src/features/<탭>/*-screen.tsx`에
+있습니다 (아래 디렉터리 구조 참고).
 
 캘린더에서 날짜를 누르면 **하루 요약 카드**가 먼저 뜨고, 그 카드의 "입력 기록 보기"로
 상세보기에 들어갑니다.
@@ -69,9 +74,8 @@ npm test
 버튼은 눌러도 아무 일도 하지 않습니다 — 장바구니가 없고 API에도 커머스
 엔드포인트가 없습니다.
 
-06_마이페이지는 **네 프레임 중 둘만 실제로 디자인돼 있어** 그 둘만 옮겼습니다.
-데이터 개인정보는 같은 메뉴를 제목만 바꿔 반복하고, 구독관리는 제목 아래 빈
-상자뿐입니다. 두 메뉴 행은 눌러도 아무 일도 하지 않습니다.
+06_마이페이지는 네 프레임(마이페이지·웨어러블 연동·데이터 개인정보·구독관리)이
+모두 구현돼 있습니다.
 
 일지 탭 안에서 메인 → 오늘의 기록 / 캘린더 / 상세보기로 이동합니다. 홈의
 "오늘 기록하기 →"는 오늘의 기록으로 바로 갑니다. **전부 데이터 계층이 없어서
@@ -109,29 +113,46 @@ npm test
   단계는 여전히 **다음 버튼 비활성화**까지만이라 왜 막혔는지 알려주지 못합니다 —
   그 컨트롤들에는 미응답 디자인이 없습니다. 서버가 거절한 경우만 `Alert`로
   서버 메시지를 그대로 보여줍니다.
-- 회원가입 입력값은 3단계에 걸쳐 유지되고(`lib/sign-up-form.tsx`),
-  `lib/sign-up-request.ts`가 서버 enum으로 변환해 실제로 전송합니다.
+- 회원가입 입력값은 3단계에 걸쳐 유지되고(`features/auth/sign-up-form.tsx`),
+  `features/auth/sign-up-request.ts`가 서버 enum으로 변환해 실제로 전송합니다.
 
 ## 디렉터리 구조
 
 ```
 src/
-  app/                 Expo Router 라우트 (파일 = 경로)
+  app/                 Expo Router 라우트 전용 (파일 = 경로)
     index.tsx          "/" → 로그인으로 리다이렉트
-    (auth)/            가입 플로우 — 구현 완료
-    (tabs)/            가입 이후 앱 — 홈/일지 구현, 탭 바는 Figma BottomBar
-    _layout.tsx        폰트 로드 + global.css + 스택 앵커
-  components/ui/       Figma 디자인 시스템 컴포넌트 (collapsible 은 템플릿)
-  components/          템플릿 잔여 컴포넌트
-  lib/
+    (auth)/ (tabs)/    화면 파일은 features를 가리키는 한 줄 re-export
+    **/_layout.tsx     레이아웃만 실제 코드 (폰트·global.css·스택 앵커·탭 바)
+  features/            탭 하나 = 폴더 하나. 담당도 이 단위로 나눕니다
+    auth/              로그인·회원가입 화면 + sign-up-form(입력 상태)·sign-up-request
+    home/              홈 화면 + components/ (OrbCard, StatCard, JournalCta)
+    journal/           일지 4화면 + components/ + journal-options(선택지)
+    plan/              개선책 4화면 + components/
+    my/                MY 4화면 + components/
+  components/ui/       Figma 디자인 시스템 컴포넌트 (아래 표)
+  components/          animated-icon (스플래시)
+  lib/                 둘 이상의 feature가 쓰는 것
+    api.ts auth.tsx use-api-query.ts   서버 호출·세션·조회 훅
+    dates.ts score.ts diary-request.ts 날짜·점수·일지 변환 (홈과 일지가 공유)
     scale.ts           Figma 220pt 좌표 → 실기기 dp 변환
     design.ts          그림자·그라디언트 등 Figma 원시값
     motion.ts          오브·DNA 모션 튜닝값 (Figma 기준 아님 — 기기에서 조정)
-    sign-up-form.tsx   회원가입 3단계 공용 입력 상태 (Context)
-    journal-options.ts 일지 선택지 (오늘의 기록·상세보기 공용)
   global.css           NativeWind 진입점 (_layout.tsx 에서 1회 import)
-  constants/, hooks/   템플릿 유틸
 ```
+
+**import는 한 방향으로만 흐릅니다: `lib`·`components` → `features` → `app`.**
+feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 되면 `lib`이나
+`components/ui`로 올립니다. `eslint.config.js`의 `import/no-restricted-paths`가
+이것을 강제하므로 어기면 `npx expo lint`가 실패합니다. 새 feature 폴더를
+만들면 그 파일의 `FEATURES` 목록에도 추가해주세요.
+
+어디에 둘지 헷갈리면:
+
+- **Figma 컴포넌트 마스터**를 옮긴 것 → `components/ui/` (한 화면에서만 써도)
+- Figma에서 컴포넌트가 아닌 **수작업 카드·블록** → `features/<탭>/components/`
+- 화면 하나에서만 쓰는 작은 도우미 → 그 화면 파일 안에 그대로
+- 파일은 kebab-case, export는 이름 있는 export, barrel(`index.ts`) 파일은 만들지 않습니다
 
 경로 별칭은 `@/*` → `src/*`, **`@/assets/*` → `assets/*`** 두 가지입니다
 (두 번째는 `src` 밖을 가리키므로 주의). `app.json`의 `typedRoutes` 때문에
@@ -189,11 +210,11 @@ src/
 수작업 도형이거나 `PillGroup`이 표현할 수 없는 배치라서 직접 조립했습니다.
 새 화면의 본보기로 삼지 마세요.
 
-- `survey.tsx` — 수면 유형·수면의 질 알약을 `Pressable`로 직접 구성
-- `personal-info.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
-- `journal/today.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
+- `features/auth/survey-screen.tsx` — 수면 유형·수면의 질 알약을 `Pressable`로 직접 구성
+- `features/auth/personal-info-screen.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
+- `features/journal/today-screen.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
   낱개 도형이고, 알약 폭이 균등 그리드가 아니라 글자 길이에 맞춰져 있습니다
-- `(tabs)/home.tsx` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
+- `features/home/components/` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
   아니고, 오브 카드는 절대 위치로 조립해야 하는 배치입니다
 
 ## 함께 읽을 것

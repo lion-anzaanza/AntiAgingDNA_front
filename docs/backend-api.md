@@ -123,7 +123,7 @@ rejects 0 with a 400, and there is no "unanswered" position — so
 `DiagnosisRequest` is the STEP 2 초기 진단. Everything is required except
 `socialContactLevel` and `who5Q1`–`who5Q5`.
 
-| Field | Enum | UI (`survey.tsx`) |
+| Field | Enum | UI (`survey-screen.tsx`) |
 |---|---|---|
 | `sleepType` | `MORNING` `EVENING` `NORMAL` `SENSITIVE` | 아침형 · 저녁형 · 일반형 · 예민형 |
 | `sleepOnsetDelayed` | boolean | 잠드는데 30분 이상 걸려요 |

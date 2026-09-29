@@ -18,12 +18,14 @@ description: lifeDNA 앱(React Native/Expo)에서 Figma 화면(들)을 실제 �
 | Figma 섹션 | 내용 | 코드 위치 |
 |---|---|---|
 | `00_디자인_시스템` (`457:658`) | 컬러 스타일 + 재사용 컴포넌트 원본 | `tailwind.config.js`(색상 토큰), `src/components/ui/`(컴포넌트) |
-| `01_로그인` (`457:659`) | 로그인 | `src/app/(auth)/sign-in.tsx` |
-| `02_회원가입` (`153:281`) | 회원가입 3스텝 | `src/app/(auth)/sign-up/` |
-| `03_홈` (`153:282`) | 홈 | `src/app/(tabs)/home.tsx` |
-| `04_일지` (`153:284`) | 일지 메인·오늘의 기록·캘린더·상세보기 | `src/app/(tabs)/journal/` |
-| `05_사용자_맞춤_개선책` (`153:286`) | 개선책 메인·영양제·리포트·한달뒤 | `src/app/(tabs)/plan/` |
-| `06_마이페이지` (`153:288`) | 마이페이지·웨어러블·개인정보·구독관리 | `src/app/(tabs)/my/` |
+| `01_로그인` (`457:659`) | 로그인 | `src/features/auth/sign-in-screen.tsx` |
+| `02_회원가입` (`153:281`) | 회원가입 3스텝 | `src/features/auth/` |
+| `03_홈` (`153:282`) | 홈 | `src/features/home/` |
+| `04_일지` (`153:284`) | 일지 메인·오늘의 기록·캘린더·상세보기 | `src/features/journal/` |
+| `05_사용자_맞춤_개선책` (`153:286`) | 개선책 메인·영양제·리포트·한달뒤 | `src/features/plan/` |
+| `06_마이페이지` (`153:288`) | 마이페이지·웨어러블·개인정보·구독관리 | `src/features/my/` |
+
+화면 본체는 `src/features/<탭>/*-screen.tsx`, 그 화면 전용 카드·블록은 `src/features/<탭>/components/`에 둔다. `src/app`의 라우트 파일은 `export { default } from '@/features/...';` 한 줄뿐이다. feature끼리 import하면 lint가 실패한다 — 규칙은 README "디렉터리 구조" 참고.
 
 **섹션 번호는 이름의 일부다** — 한때 이 표가 한 칸씩 밀려 있었고(`02_홈`으로 적힌 것이 실제로는 `03_홈`), 마지막 줄은 존재하지도 않는 `05_한_달_뒤_모습`을 가리키고 있었다. 한 달 뒤 내 모습은 독립 섹션이 아니라 `05_사용자_맞춤_개선책` 안의 프레임(`523:490`)이다. 노드 ID가 맞더라도 이름이 어긋나면 다음 사람이 엉뚱한 섹션을 찾는다 — 표를 고칠 땐 `get_metadata`로 이름까지 확인한다.
 
@@ -51,7 +53,7 @@ description: lifeDNA 앱(React Native/Expo)에서 Figma 화면(들)을 실제 �
 1. `get_metadata`로 대상 Figma 섹션의 노드 구조를 훑고, 이미 `figma-componentize`로 정리되어 있는지 확인한다(안 되어 있으면 그 스킬로 먼저 처리).
 2. `get_design_context`로 실제 스타일/레이아웃/텍스트를 가져온다.
 3. 필요한 컴포넌트가 `src/components/ui/`에 있는지 확인 — 없으면 `figma-implement-component` 스킬로 먼저 만든다.
-4. 화면 컴포넌트를 조립하고 라우트 파일에 배치한다. 화면 간 이동은 다음 컴포넌트로 연결한다(다음 스텝 버튼, 뒤로가기 등).
+4. 화면 컴포넌트를 `src/features/<탭>/<이름>-screen.tsx`에 조립하고, `src/app`에 그것을 re-export하는 라우트 파일을 둔다. 화면 간 이동은 다음 컴포넌트로 연결한다(다음 스텝 버튼, 뒤로가기 등).
 5. 아래 "실기기 검증"으로 실제로 띄워서 확인한다.
 6. 새로 만든 라우트를 이 문서의 매핑 표에 반영한다.
 

@@ -1,0 +1,33 @@
+# main으로 가는 PR마다 README가 "통과 상태를 유지"하기로 한 세 명령을 돌립니다.
+# release.yml의 checks는 release에 push된 뒤에야 돌기 때문에, 그 전에는 아무도
+# 검사하지 않았습니다 — 둘이 동시에 작업하면서 그 틈이 커집니다.
+#
+# release.yml과 마찬가지로 이 타입체크는 로컬보다 약합니다: typedRoutes의
+# 라우트 타입(.expo/types)은 Metro 개발 서버만 만들기 때문에, 존재하지 않는
+# href는 여기서 잡히지 않습니다.
+name: pr
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+      # import/no-restricted-paths가 feature 사이의 경계를 여기서 강제합니다.
+      - run: npx expo lint
+      - run: npm test

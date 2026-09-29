@@ -31,28 +31,30 @@ undesigned frames (see the screens table). Component library lives under
 
 ## Screens
 
+Paths are under `src/features/`; the route files in `src/app` only re-export them.
+
 | Node | Screen | Code |
 |---|---|---|
-| `585:1352` | 로그인/메인 | `(auth)/sign-in.tsx` |
-| `500:121` | 회원가입/1 개인정보 | `(auth)/sign-up/personal-info.tsx` |
-| `457:828` | 회원가입/2 초기 진단 | `(auth)/sign-up/survey.tsx` |
-| `457:829` | 회원가입/3 약관 동의 | `(auth)/sign-up/terms.tsx` |
-| `457:738` | (hidden draft) 시작해보기 | `(auth)/sign-up/index.tsx` |
-| `597:1466` | 홈/메인 | `(tabs)/home.tsx` |
-| `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `(tabs)/home.tsx` |
-| `480:1269` | 일지/오늘의기록(생성) | `journal/today.tsx` |
-| `480:1268` | 일지/메인 | — |
-| `480:1274` | 일지/캘린더 | — |
-| `480:1275` | 일지/상세보기 | `journal/[date].tsx` |
-| `585:1436` | 주간_컨디션_그래프 | `ui/weekly-condition-chart.tsx` |
-| `559:1297` | 개선책/메인 | `(tabs)/plan/index.tsx` |
-| `559:1295` | 개선책/맞춤영양제 | `(tabs)/plan/supplements.tsx` |
-| `559:1294` | 개선책/주간리포트 | `(tabs)/plan/report.tsx` |
-| `523:490` | 개선책/한달뒤내모습 | `(tabs)/plan/forecast.tsx` |
-| `583:969` | 마이페이지 (Frame 28) | `(tabs)/my/index.tsx` |
-| `583:862` | 웨어러블 연동 (Frame 26) | `(tabs)/my/wearable.tsx` |
-| `583:913` | 데이터 개인정보 (Frame 27) | — **디자인 완료, 미구현** |
-| `585:1399` | 구독관리 (Frame 25) | — **디자인 완료, 미구현** |
+| `585:1352` | 로그인/메인 | `auth/sign-in-screen.tsx` |
+| `500:121` | 회원가입/1 개인정보 | `auth/personal-info-screen.tsx` |
+| `457:828` | 회원가입/2 초기 진단 | `auth/survey-screen.tsx` |
+| `457:829` | 회원가입/3 약관 동의 | `auth/terms-screen.tsx` |
+| `457:738` | (hidden draft) 시작해보기 | `auth/sign-up-intro-screen.tsx` |
+| `597:1466` | 홈/메인 | `home/home-screen.tsx` |
+| `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `home/components/orb-card.tsx` |
+| `480:1269` | 일지/오늘의기록(생성) | `journal/today-screen.tsx` |
+| `480:1268` | 일지/메인 | `journal/main-screen.tsx` |
+| `480:1274` | 일지/캘린더 | `journal/calendar-screen.tsx` |
+| `480:1275` | 일지/상세보기 | `journal/detail-screen.tsx` |
+| `585:1436` | 주간_컨디션_그래프 | `src/components/ui/weekly-condition-chart.tsx` |
+| `559:1297` | 개선책/메인 | `plan/main-screen.tsx` |
+| `559:1295` | 개선책/맞춤영양제 | `plan/supplements-screen.tsx` |
+| `559:1294` | 개선책/주간리포트 | `plan/report-screen.tsx` |
+| `523:490` | 개선책/한달뒤내모습 | `plan/forecast-screen.tsx` |
+| `583:969` | 마이페이지 (Frame 28) | `my/main-screen.tsx` |
+| `583:862` | 웨어러블 연동 (Frame 26) | `my/wearable-screen.tsx` |
+| `583:913` | 데이터 개인정보 (Frame 27) | `my/privacy-screen.tsx` |
+| `585:1399` | 구독관리 (Frame 25) | `my/subscription-screen.tsx` |
 
 ## 2026-08-17 재대조에서 바뀐 것
 
@@ -321,7 +323,7 @@ visible. The DNA 카드 (`457:791`) has **no** dots — `NiceDNA` (`485:110`) is
 single rotated bitmap with no children.
 
 The 홈 stat cards, orb card and 일지 CTA are loose shapes, not components; their
-values live in `(tabs)/home.tsx`. Badge colours are their own palette, not the
+values live in `src/features/home/components/`. Badge colours are their own palette, not the
 tone trio: 조금 부족 `#FBF2E1`/`#E5A64E`, 좋아요 `#E6F4EE`/`#4B9977`,
 높음 `#F9E9E8`/`#D25D53`.
 
