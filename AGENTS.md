@@ -417,6 +417,48 @@ the routes.
 
 `npx tsc --noEmit`, `npx expo lint` and `npm test` all pass. Keep them that way.
 
+### From the review of the folder restructure (2026-09-30) — not yet done
+
+A `/code-review` of #11–#13 found no regression from the move itself. These are
+what it turned up instead, recorded rather than fixed so the restructure stays
+a pure move. Most urgent first.
+
+- **Bug: 오늘의 기록 can wipe a saved entry.** The restore `GET` in
+  `features/journal/today-screen.tsx` catches *every* error as "no entry yet",
+  not just 404. If the read fails with a 500, 401 or timeout, the form opens
+  empty, 저장 is enabled, and a save — which is a replacing `PUT` (backlog 30)
+  — nulls every earlier answer. Only `ApiError.status === 404` should mean
+  "nothing to restore"; any other failure should keep 저장 blocked. Predates
+  the restructure.
+- **The lint boundary only covers listed features.** `eslint.config.js` builds
+  its zones from a hand-written `FEATURES` array, so a new folder under
+  `src/features` is unchecked until someone adds it. Reading the directory
+  (`fs.readdirSync(..., { withFileTypes: true })`) removes the manual step.
+- **`OrbState` is declared twice** — `features/home/components/orb-card.tsx`
+  redeclares the union `@/lib/score` already exports. Import it instead.
+- **Stale comments and docs**, each contradicting the code next to it:
+  - `features/my/main-screen.tsx` header says 데이터 개인정보·구독관리 are
+    unbuilt and their rows do nothing; `MENU` links to both.
+  - `docs/figma-reference.md` intro still says 06 has two undesigned frames;
+    its own Screens table maps both to built screens.
+  - `features/home/home-screen.tsx` header says there is no data layer; the
+    screen reads `/api/scores` and `/api/diaries`.
+  - `features/journal/today-screen.tsx` justifies the save `Alert` by 일지 메인
+    being static; it reads live scores now.
+  - The "Tests" heading below (and CLAUDE.md's "the tests cover `src/lib`")
+    is no longer true — `sign-up-form.test.ts` moved to `features/auth` — and
+    the count is 59, not 55. CLAUDE.md is project instruction, so change it
+    with the owner's say-so.
+- **README's placement rules read as conflicting**: "a helper used by one screen
+  stays in the screen" vs "hand-built cards go to `features/<tab>/components`".
+  The line actually drawn in #12 was size — cards of ~40 lines or more moved,
+  small helpers stayed. Say so in the README.
+- `release.yml`'s checks run `tsc` and lint but not `npm test`.
+
+Deliberately deferred, not a defect: `home-screen` still picks the orb artwork
+and sparkles from `ORB_STATES` itself rather than handing `OrbCard` the state.
+Move that lookup into `OrbCard` when a second screen needs an orb card.
+
 ### Tests — `src/lib` only, and deliberately so
 
 `jest-expo` + `npm test`. 55 tests across `dates`, `score`, `diary-request` and
