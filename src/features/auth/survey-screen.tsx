@@ -10,7 +10,7 @@ import { PillGroup } from '@/components/ui/pill-group';
 import { StepHeader } from '@/components/ui/step-header';
 import { GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
-import { isDiagnosisComplete, useSignUpForm } from '@/lib/sign-up-form';
+import { isDiagnosisComplete, useSignUpForm } from '@/features/auth/sign-up-form';
 
 const SLEEP_TYPE_OPTIONS = [
   { label: '아침형', icon: require('@/assets/images/auth/sleep-morning.png') },

@@ -37,7 +37,7 @@ import {
   WALKED,
   WATER,
   WATER_CAPTION,
-} from '@/lib/journal-options';
+} from '@/features/journal/journal-options';
 import { scale } from '@/lib/scale';
 import { useApiQuery } from '@/lib/use-api-query';
 

@@ -67,7 +67,7 @@ const CHART_DAYS = 7;
 /** `어제보다 수면 +40분 · 스트레스 −1` is a server-generated sentence (backlog 27). */
 const CHART_SUMMARY = '';
 
-/** `pagingEnabled` snaps by the scroll view's own width — see home.tsx. */
+/** `pagingEnabled` snaps by the scroll view's own width — see home-screen.tsx. */
 const PAGE_WIDTH = Dimensions.get('window').width;
 
 /**

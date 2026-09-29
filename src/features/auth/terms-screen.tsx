@@ -8,8 +8,8 @@ import { StepHeader } from '@/components/ui/step-header';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { scale } from '@/lib/scale';
-import { useSignUpForm } from '@/lib/sign-up-form';
-import { toSignUpRequest } from '@/lib/sign-up-request';
+import { useSignUpForm } from '@/features/auth/sign-up-form';
+import { toSignUpRequest } from '@/features/auth/sign-up-request';
 
 /**
  * Figma marks 마케팅 정보 수신 `[필수]`, which would make signup impossible for

@@ -41,7 +41,7 @@ import {
   WALKED,
   WATER,
   WATER_CAPTION,
-} from '@/lib/journal-options';
+} from '@/features/journal/journal-options';
 import { scale } from '@/lib/scale';
 
 /**
@@ -49,8 +49,8 @@ import { scale } from '@/lib/scale';
  *
  * 카페인 섭취 and 운동 습관 are drawn as loose shapes in Figma rather than as
  * SelectItem components, and their pills are content-sized rather than an even
- * grid, so they are assembled by hand below. Like `survey.tsx` and
- * `personal-info.tsx`, do not copy them as a pattern for a new screen.
+ * grid, so they are assembled by hand below. Like `survey-screen.tsx` and
+ * `personal-info-screen.tsx`, do not copy them as a pattern for a new screen.
  */
 export default function JournalTodayScreen() {
   const router = useRouter();

@@ -8,7 +8,7 @@ import { StepHeader } from '@/components/ui/step-header';
 import { TextInputField } from '@/components/ui/text-input';
 import { checkAvailability, messageFor } from '@/lib/api';
 import { scale } from '@/lib/scale';
-import { isPersonalInfoComplete, useSignUpForm } from '@/lib/sign-up-form';
+import { isPersonalInfoComplete, useSignUpForm } from '@/features/auth/sign-up-form';
 
 /**
  * Figma also draws 성별, 직업 and a 년/월/일 birth date here. The backend will
