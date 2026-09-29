@@ -3,8 +3,9 @@ import { Image, View } from 'react-native';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `Diary_Status` (`725:1813`) — the 17×7 face beside a score in
- * 일지/메인's 지난 기록 list, with a variant per grade.
+ * Figma: `Diary_Status` (`725:1813`; v4 `1363:2199`…) — the face beside a score
+ * in 일지/메인's 지난 기록 list, with a variant per grade. v4 draws the box
+ * 17.393×6.731 (it was 17×7) and keeps the same three bitmaps and crops.
  *
  * These used to be literal kaomoji text (`ദ്ദി ˃ ᴗ ˂ )` and friends), which is
  * exactly the sort of string that renders differently on every device: the
@@ -12,13 +13,13 @@ import { scale } from '@/lib/scale';
  * combining diacritics. Figma now ships them as a component backed by three
  * bitmaps, so they are exported assets here and the rendering is fixed.
  *
- * Each variant is cropped differently inside the 17×7 box; the percentages are
+ * Each variant is cropped differently inside the box; the percentages are
  * Figma's own and are reproduced rather than averaged.
  */
 export type DiaryStatusKind = 'good' | 'warn' | 'danger';
 
-const BOX_WIDTH = 17;
-const BOX_HEIGHT = 7;
+const BOX_WIDTH = 17.393;
+const BOX_HEIGHT = 6.731;
 
 const VARIANTS: Record<
   DiaryStatusKind,

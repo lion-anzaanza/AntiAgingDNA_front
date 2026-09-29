@@ -87,8 +87,9 @@ from `src/lib/gradient.ts` rather than guessing `start`/`end`. The two ramps abo
 stay until the components that use them are redesigned; the tracker is
 `docs/redesign-v4-inventory.md`.
 - `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Filled a selected
-  SelectButton4 before v4; now only the calendar cell, daily-summary card and
-  weekly chart use it.
+  SelectButton4 before v4; the 일지 calendar, daily-summary card and weekly
+  chart dropped it in their v4 pass, so it survives only on screens not yet
+  redesigned (오늘의 기록, 개선책, MY).
 
 `ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
 
@@ -602,7 +603,8 @@ threshold to apply (backlog 10, reopened).
 
 One layout bug this shook out: 일지/캘린더's card was a fixed `height: scale(186)`,
 measured on Figma's July 2026, which fits in five week rows. August 2026 needs
-six and the 낮음/높음 legend was cut off the bottom. It is a `minHeight` now.
+six and the 낮음/높음 legend was cut off the bottom. It is a `minHeight` now —
+in v4 the floor is the 197.436 square the frame draws.
 
 **The list of what is left is in `docs/backend-backlog.md` under "프론트 연동
 현황".** That table exists because the backlog used to track only what the
@@ -730,13 +732,15 @@ Still to port from 04_일지:
 and the reason `react-native-svg` is now a dependency (bundled in Expo Go, so
 the dev loop is unchanged).
 
-Where it goes was read off the canvas: Figma parks each floating card directly
-beneath its parent frame at the same `x`. `일간_컨디션_요약` (`585:1377`) sits
-under 캘린더 and opens when a day is tapped; `주간_컨디션_그래프` sits under
-일지/메인 at x=17, is **the same 184×95 as 주간_기록**, and so shares that slot as
-a horizontal swipe — exactly the arrangement 홈 already uses for its second orb
-card (`457:791`, parked beside the frame). That keeps every other element on the
-480pt frame in its Figma position.
+Where it goes was read off the canvas of the pre-v4 design, where Figma parks
+each floating card directly beneath its parent frame at the same `x`.
+`일간_컨디션_요약` (`585:1377`) sat under 캘린더 and opens when a day is tapped;
+`주간_컨디션_그래프` sat under 일지/메인, was the same size as 주간_기록, and so
+shares that slot as a horizontal swipe — exactly the arrangement 홈 already uses
+for its second orb card (`457:791`, parked beside the frame). That keeps every
+other element on the frame in its Figma position. **v4 draws neither card**, so
+both now take the v4 주간_기록 card's style — the graph at its exact
+197.436×91.346 — as recorded in `docs/redesign-v4-inventory.md`.
 
 Two things Figma does not answer, both left unbuilt rather than invented:
 

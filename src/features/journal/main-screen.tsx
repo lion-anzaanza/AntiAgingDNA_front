@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ButtonBack } from '@/components/ui/button-back';
 import { DiaryStatus, type DiaryStatusKind } from '@/components/ui/diary-status';
 import { WeeklyConditionChart, type ConditionPoint } from '@/components/ui/weekly-condition-chart';
-import { CARD_WIDTH, WeekCard } from '@/features/journal/components/week-card';
+import { CARD_HEIGHT, CARD_WIDTH, WeekCard } from '@/features/journal/components/week-card';
 import {
   addDays,
   isoDate,
@@ -15,14 +15,18 @@ import {
   mondayFirstIndex,
   WEEKDAYS_MON_FIRST,
 } from '@/lib/dates';
-import { SHADOW } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 import { byDate, gradeFor, scoresPath, type DailyScore, type Grade } from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
- * Figma: 일지/메인 — `480:1268`. The tab's root: this week at a glance, the
- * last few days, and the way in to today's entry.
+ * Figma v4: 일지/메인 — `1363:2135` (was `480:1268`). The tab's root: this
+ * week at a glance, the last few days, and the way in to today's entry.
+ *
+ * Positions are v4's, frame y − 38 for the `PhoneHeader` mock. v4 draws a back
+ * chip on this tab root; it is kept with its `/home` fallback (결정 대기 1).
  *
  * One ranged score query feeds all three sections. `dailyTotal` is what says
  * whether a day was recorded at all — the server's `grade` tracks the smoothed
@@ -48,8 +52,21 @@ const PAST_ENTRY_COUNT = 5;
 /** How far back to look for those five rows. */
 const HISTORY_DAYS = 30;
 
-const CONTENT_INSET = 19;
-const ROW_HEIGHT = 134.83 / PAST_ENTRY_COUNT;
+const CONTENT_INSET = 11.28;
+/** v4 `1363:2160`: five rows in 129.646, dividers every 25.96. */
+const ROW_HEIGHT = 129.646 / PAST_ENTRY_COUNT;
+/**
+ * Inside a row, v4 hangs each piece off the row top by its own amount (the
+ * same in all five rows to within 0.4): the date's line box 6.45 down, the
+ * face 10.6, the score 8.56 — the score sits 1.8 lower than the date, the same
+ * in every row, so it is reproduced rather than centred.
+ */
+const ROW_DATE_TOP = 6.45;
+const ROW_FACE_TOP = 10.6;
+const ROW_SCORE_TOP = 8.56;
+/** Face left and score right edge, from the card's left. */
+const ROW_FACE_LEFT = 126.85;
+const ROW_SCORE_RIGHT = 175.73;
 
 /**
  * `주간_컨디션_그래프` (`585:1436`) is the same 184×95 as 주간_기록 and Figma parks
@@ -70,9 +87,9 @@ const CHART_SUMMARY = '';
 const PAGE_WIDTH = Dimensions.get('window').width;
 
 /**
- * 일지/메인 sits at x=19 and is 184 wide, so the right margin is 17. The orb-card
- * pager has to run full-bleed for its shadow, so the column lives on each
- * section rather than on the scroll view.
+ * v4's column is 11.28 / 197.436, symmetric. The pager has to run full-bleed
+ * for its shadow, so the column lives on each section rather than on the
+ * scroll view.
  */
 const COLUMN = {
   paddingLeft: scale(CONTENT_INSET),
@@ -114,49 +131,63 @@ export default function JournalMainScreen() {
       score: Math.round(total),
     }));
 
+  /*
+   * The ramp's CSS angle depends on the box's aspect, and the card's height
+   * follows how many rows there are. v4's 130.63° is `pastelAngle` of the full
+   * five-row card, so the same rule gives the angle for any row count.
+   */
+  const listHeight = Math.max(1, ROW_HEIGHT * pastEntries.length);
+  const listRamp = cssGradientPoints(pastelAngle(CARD_WIDTH, listHeight), CARD_WIDTH, listHeight);
+
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: scale(8),
-          paddingBottom: scale(24),
-        }}>
-        <View
-          style={{
-            height: scale(22),
-            flexDirection: 'row',
-            alignItems: 'center',
-            ...COLUMN,
-          }}>
-          <ButtonBack fallbackHref="/(tabs)/home" />
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: scale(34.7) }}>
+        {/* Header: everything at v4's own y (frame y − 38); the week card starts at 38.84. */}
+        <View style={{ height: scale(38.84) }}>
+          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(10.08) }}>
+            <ButtonBack fallbackHref="/(tabs)/home" />
+          </View>
           <Text
             style={{
-              fontSize: scale(12),
-              lineHeight: scale(15),
-              marginLeft: scale(9),
-              color: '#000000',
+              position: 'absolute',
+              left: scale(36.28),
+              top: scale(16.56 - 18.051 / 2),
+              fontSize: scale(13.538),
+              lineHeight: scale(18.051),
+              letterSpacing: scale(-0.2708),
+              color: COLOR.text.strong,
             }}
-            className="font-pretendard-extrabold">
+            className="font-plex-bold">
             오늘의 일지
           </Text>
+          {/*
+            * v4 ends this at x 203.81, 4.9pt short of the column, while 캘린더's
+            * caption in the same slot ends on it (208.58). Aligned to the column.
+            */}
           <Text
             style={{
-              marginLeft: 'auto',
-              fontSize: scale(7),
-              lineHeight: scale(10),
-              color: '#696969',
+              position: 'absolute',
+              right: scale(CONTENT_INSET),
+              top: scale(16.82 - 12.41 / 2),
+              fontSize: scale(8.462),
+              lineHeight: scale(12.41),
+              color: COLOR.text.body,
             }}
-            className="font-pretendard">
+            className="font-plex">
             {today.getMonth() + 1}월 {today.getDate()}일 {WEEKDAYS_MON_FIRST[mondayFirstIndex(today)]}요일
           </Text>
         </View>
 
+        {/*
+          * `flexGrow: 0`: a ScrollView grows by default, and inside a
+          * `flexGrow: 1` column it would split the spare height with the
+          * spacer above the button and push 지난 기록 down.
+          */}
         <ScrollView
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          style={{ marginTop: scale(12) }}>
+          style={{ flexGrow: 0 }}>
           <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
             <WeekCard recorded={recorded} todayIndex={todayIndex} />
           </View>
@@ -167,75 +198,91 @@ export default function JournalMainScreen() {
           )}
         </ScrollView>
 
+        {/* v4 starts the heading at 10.88; it goes on the column, as on 홈. */}
         <Text
           style={{
-            fontSize: scale(10),
-            lineHeight: scale(15),
-            marginTop: scale(15),
-            color: '#00352C',
+            fontSize: scale(11.282),
+            lineHeight: scale(15.795),
+            letterSpacing: scale(-0.1128),
+            marginTop: scale(143.73 - (38.84 + CARD_HEIGHT)),
+            color: COLOR.text.heading,
             ...COLUMN,
           }}
-          className="font-pretendard-bold">
+          className="font-plex-bold">
           지난 기록
         </Text>
 
         <LinearGradient
-          colors={['#FBEEFF', '#FFFFFF']}
-          locations={[0.039, 0.638]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          colors={[...GRADIENT_PASTEL.colors]}
+          locations={[...GRADIENT_PASTEL.locations]}
+          start={listRamp.start}
+          end={listRamp.end}
           style={{
-            marginTop: scale(5),
+            marginTop: scale(163.92 - 143.73 - 15.795),
             marginLeft: scale(CONTENT_INSET),
             width: scale(CARD_WIDTH),
-            borderRadius: scale(10),
-            boxShadow: SHADOW,
+            borderRadius: scale(9.615),
+            boxShadow: SHADOW_V4,
             overflow: 'hidden',
           }}>
           {pastEntries.map((entry, index) => (
             <Pressable
               key={entry.date}
               onPress={() => router.push(`/journal/${entry.date}`)}
-              style={{
-                height: scale(ROW_HEIGHT),
-                flexDirection: 'row',
-                alignItems: 'center',
-                // Figma insets the row 19 on the left and ends the score at
-                // 170 of a 184-wide card — 14 on the right. 5/5 was far tighter
-                // than the design and read as text against the edge.
-                paddingLeft: scale(19),
-                paddingRight: scale(14),
-                borderBottomWidth: index < pastEntries.length - 1 ? scale(0.3) : 0,
-                borderBottomColor: '#D3D1C6',
-              }}>
+              style={{ height: scale(ROW_HEIGHT) }}>
               <Text
-                style={{ fontSize: scale(8), lineHeight: scale(15), color: '#674978' }}
-                className="font-pretendard-bold">
+                style={{
+                  position: 'absolute',
+                  left: scale(8.46),
+                  top: scale(ROW_DATE_TOP),
+                  fontSize: scale(9.59),
+                  lineHeight: scale(13.538),
+                  letterSpacing: scale(-0.0959),
+                  color: COLOR.text.plum,
+                }}
+                className="font-plex-semibold">
                 {entry.label}
               </Text>
-              <View style={{ marginLeft: 'auto' }}>
+              <View style={{ position: 'absolute', left: scale(ROW_FACE_LEFT), top: scale(ROW_FACE_TOP) }}>
                 <DiaryStatus kind={entry.face} />
               </View>
               <Text
-                style={{ fontSize: scale(8), lineHeight: scale(15), color: '#88877F' }}
-                className="font-pretendard">
-                {'   '}
+                style={{
+                  position: 'absolute',
+                  right: scale(CARD_WIDTH - ROW_SCORE_RIGHT),
+                  top: scale(ROW_SCORE_TOP),
+                  fontSize: scale(8.462),
+                  lineHeight: scale(12.41),
+                  color: COLOR.text.body,
+                }}
+                className="font-plex">
                 {String(entry.score).padStart(2, '0')}점{'  '}&gt;
               </Text>
+              {/* v4's dividers are 179.385 lines inset 9.03, `border/soft`, 0.288 thick. */}
+              <View
+                style={{
+                  position: 'absolute',
+                  left: scale(9.03),
+                  right: scale(9.03),
+                  bottom: 0,
+                  height: index < pastEntries.length - 1 ? scale(0.288) : 0,
+                  backgroundColor: COLOR.border.soft,
+                }}
+              />
             </Pressable>
           ))}
         </LinearGradient>
 
-      {/*
-        * Figma pushes this to the bottom with a fixed gap measured on its 480pt
-        * frame, but `scale()` converts by *width* — so on a device with a
-        * different aspect ratio the gap lands somewhere else and the screen
-        * either scrolls or leaves a hole. A flexible spacer pins it to the
-        * bottom of the viewport instead, which is what the design means, and
-        * `flexGrow: 1` on the content container is what gives it room to push
-        * against.
-        */}
-      <View style={{ flex: 1, minHeight: scale(24) }} />
+        {/*
+          * Figma pushes this to the bottom with a fixed gap measured on its 480pt
+          * frame, but `scale()` converts by *width* — so on a device with a
+          * different aspect ratio the gap lands somewhere else and the screen
+          * either scrolls or leaves a hole. A flexible spacer pins it to the
+          * bottom of the viewport instead, which is what the design means, and
+          * `flexGrow: 1` on the content container is what gives it room to push
+          * against. The bottom padding is v4's 34.7 gap above the tab bar.
+          */}
+        <View style={{ flex: 1, minHeight: scale(24) }} />
         <View style={{ ...COLUMN }}>
           <Button label="오늘 하루 기록하기" onPress={() => router.push('/journal/today')} />
         </View>

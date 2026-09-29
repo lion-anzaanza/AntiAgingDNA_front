@@ -43,10 +43,10 @@ Paths are under `src/features/`; the route files in `src/app` only re-export the
 | `597:1466` | 홈/메인 (v4: `1363:1953`, see `docs/redesign-v4-inventory.md`) | `home/home-screen.tsx` |
 | `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `home/components/orb-card.tsx` |
 | `480:1269` | 일지/오늘의기록(생성) | `journal/today-screen.tsx` |
-| `480:1268` | 일지/메인 | `journal/main-screen.tsx` |
-| `480:1274` | 일지/캘린더 | `journal/calendar-screen.tsx` |
+| `480:1268` | 일지/메인 (v4: `1363:2135`) | `journal/main-screen.tsx` |
+| `480:1274` | 일지/캘린더 (v4: `1363:2507`) | `journal/calendar-screen.tsx` |
 | `480:1275` | 일지/상세보기 | `journal/detail-screen.tsx` |
-| `585:1436` | 주간_컨디션_그래프 | `src/components/ui/weekly-condition-chart.tsx` |
+| `585:1436` | 주간_컨디션_그래프 (v4에 없음 — 주간_기록 카드를 따름) | `src/components/ui/weekly-condition-chart.tsx` |
 | `559:1297` | 개선책/메인 | `plan/main-screen.tsx` |
 | `559:1295` | 개선책/맞춤영양제 | `plan/supplements-screen.tsx` |
 | `559:1294` | 개선책/주간리포트 | `plan/report-screen.tsx` |
@@ -116,9 +116,9 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 | 회원가입/2 초기 진단 | **17** | **186** | button at 22, Likert cards at 25 |
 | 회원가입/3 약관 동의 | 18 | 184 | button at 19 |
 | 홈/메인 | 18 | **180** | right margin 22 — the only asymmetric one |
-| 일지/메인 | **19** | 184 | right margin 17 |
+| 일지/메인 | **19** | 184 | right margin 17 (v4: 11.28 / 197.436) |
 | 일지/오늘의기록 | 18 | 184 | cards inside are 182 |
-| 일지/캘린더 | **17** | **186** | |
+| 일지/캘린더 | **17** | **186** | (v4: 11.28 / 197.436) |
 | 일지/상세보기 | 18 | 184 | cards 182, loose rects 184 |
 | 개선책/메인 | 18 | 184 | 한달뒤 teaser at 17 |
 | 개선책/맞춤영양제 | **17** | 184 | |

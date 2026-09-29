@@ -9,13 +9,13 @@ export const SHADOW = '0px 0px 4px rgba(169, 169, 169, 0.25)';
 
 /**
  * The pre-v4 `ActiveButton` ramp (old ButtonNextUI and selected SelectButton).
- * v4 draws neither with it; the un-reworked 일지 week card and 영양제 card still do.
+ * v4 draws neither with it; the un-reworked 영양제 card still does.
  * The first stop starts at 18.9% rather than the edge.
  */
 export const GRADIENT_SELECT: readonly [string, string] = ['#4356F7', '#843FF6'];
 export const GRADIENT_SELECT_STOPS: readonly [number, number] = [0.18919, 1];
 
-/** The older, wider brand ramp — calendar cells, daily summary card, weekly chart. */
+/** The older, wider brand ramp — still on screens not yet moved to v4 (오늘의 기록, 개선책, MY). */
 export const GRADIENT_BRAND: readonly [string, string] = ['#4655F6', '#9423FF'];
 
 /**
