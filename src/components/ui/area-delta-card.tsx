@@ -1,35 +1,40 @@
 import { Image, Text, View } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4, TONE_TEXT } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * `지난 주 대비 영역별 변화` — the six-area delta table. 주간 리포트 (`523:391`)
- * and 한 달 뒤 내 모습 (`523:921`) each carry one, and measured against their own
- * card origin the two are identical down to the point, so this is one component.
+ * `지난 주 대비 영역별 변화` — the six-area delta table. 주간 리포트 (v4
+ * `1363:3075`) and 한 달 뒤 내 모습 (`1363:3166`) each carry one.
+ *
+ * Before v4 the two copies were identical to the point. In v4 the left column
+ * and every row still agree, but the **right column** does not: 리포트 puts its
+ * chips at 111.17 and ends the values at 188.4, 한달뒤 at 107.07 and 181.6. That
+ * is 4pt and visible, so the right column is a prop and each screen passes its
+ * own frame's numbers.
  *
  * The area icons are pasted screenshots rather than vectors, so each bitmap
- * brings its own near-white ground. Figma layers it over the `#F2F2F0` chip and
- * the two are close enough to read as one; that stacking is reproduced rather
- * than trying to key the ground out, which would eat the white highlights
- * inside the glyphs.
+ * brings its own near-white ground over the chip — reproduced rather than keyed
+ * out, which would eat the white highlights inside the glyphs. v4's bitmaps are
+ * the same six pictures as `assets/images/plan/area-*.png` (compared side by
+ * side), only drawn in slightly smaller boxes.
  */
-const CARD_WIDTH = 184;
-const CARD_HEIGHT = 79;
+const CARD_HEIGHT = 75.962;
 
 const AREA_ICONS = {
-  body: { source: require('@/assets/images/plan/area-body.png'), width: 8, height: 8 },
-  mind: { source: require('@/assets/images/plan/area-mind.png'), width: 11.545, height: 9 },
-  emotion: { source: require('@/assets/images/plan/area-emotion.png'), width: 10, height: 9 },
-  social: { source: require('@/assets/images/plan/area-social.png'), width: 10, height: 7 },
-  environment: { source: require('@/assets/images/plan/area-environment.png'), width: 10, height: 9 },
-  total: { source: require('@/assets/images/plan/area-total.png'), width: 10, height: 9 },
+  body: { source: require('@/assets/images/plan/area-body.png'), width: 7.871, height: 7.692 },
+  mind: { source: require('@/assets/images/plan/area-mind.png'), width: 11.101, height: 8.654 },
+  emotion: { source: require('@/assets/images/plan/area-emotion.png'), width: 10.096, height: 8.654 },
+  social: { source: require('@/assets/images/plan/area-social.png'), width: 9.124, height: 6.731 },
+  environment: {
+    source: require('@/assets/images/plan/area-environment.png'),
+    width: 9.959,
+    height: 8.654,
+  },
+  total: { source: require('@/assets/images/plan/area-total.png'), width: 9.692, height: 8.654 },
 } as const;
 
 export type AreaKey = keyof typeof AREA_ICONS;
-
-const GAIN = '#00A172';
-const LOSS = '#F53942';
 
 /** Rows read down the left column, then down the right. */
 const ROWS: { key: AreaKey; label: string }[][] = [
@@ -45,39 +50,51 @@ const ROWS: { key: AreaKey; label: string }[][] = [
   ],
 ];
 
-/** Card-relative geometry, shared by both screens. */
-const HEADING_CENTRE = 14;
-const ROW_TOPS = [26, 43, 60];
-const DIVIDERS = [40, 57];
-const COLUMN_LEFT = [13, 100];
-const LABEL_LEFT = [32, 118];
-const VALUE_RIGHT = [81, 168];
-const CHIP_WIDTH = 12;
-const CHIP_HEIGHT = 11;
+/** Card-relative, from v4. Chip tops; the label sits 0.6 and the value 1.1 below the chip's centre. */
+const CHIP_TOPS = [25, 41.35, 57.69];
+const CHIP_WIDTH = 11.538;
+const CHIP_HEIGHT = 10.577;
+const DIVIDERS = [38.46, 54.81];
+const LABEL_LINE = 12.41;
+const VALUE_LINE = 10.154;
+
+/** Where one column's chip starts, its label starts, and its values end. */
+export type DeltaColumn = { chip: number; label: number; valueRight: number };
+
+/** Both v4 copies agree on the left column to within 0.2. */
+const LEFT_COLUMN: DeltaColumn = { chip: 9.4, label: 30.1, valueRight: 84.0 };
 
 export type AreaDeltas = Record<AreaKey, number>;
 
-export function AreaDeltaCard({ heading, deltas }: { heading: string; deltas: AreaDeltas }) {
+export function AreaDeltaCard({
+  heading,
+  deltas,
+  rightColumn,
+}: {
+  heading: string;
+  deltas: AreaDeltas;
+  rightColumn: DeltaColumn;
+}) {
+  const columns = [LEFT_COLUMN, rightColumn];
   return (
     <View
       style={{
-        width: scale(CARD_WIDTH),
         height: scale(CARD_HEIGHT),
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
+        borderRadius: scale(9.615),
+        backgroundColor: COLOR.surface.card,
+        boxShadow: SHADOW_V4,
       }}>
       <Text
         style={{
           position: 'absolute',
-          left: scale(11),
-          top: scale(HEADING_CENTRE - 4.5),
-          fontSize: scale(8),
-          lineHeight: scale(9),
-          letterSpacing: scale(-0.24),
-          color: '#000000',
+          left: scale(8.63),
+          top: scale(13.32 - 13.538 / 2),
+          fontSize: scale(9.59),
+          lineHeight: scale(13.538),
+          letterSpacing: scale(-0.0959),
+          color: COLOR.text.strong,
         }}
-        className="font-pretendard-extrabold">
+        className="font-plex-semibold">
         {heading}
       </Text>
 
@@ -86,11 +103,11 @@ export function AreaDeltaCard({ heading, deltas }: { heading: string; deltas: Ar
           key={top}
           style={{
             position: 'absolute',
-            left: scale(11),
-            top: scale(top),
-            width: scale(165),
-            height: scale(0.3),
-            backgroundColor: '#D3D1C6',
+            left: scale(9.03),
+            right: scale(9.03),
+            top: scale(top - 0.144),
+            height: scale(0.288),
+            backgroundColor: COLOR.border.soft,
           }}
         />
       ))}
@@ -99,18 +116,20 @@ export function AreaDeltaCard({ heading, deltas }: { heading: string; deltas: Ar
         column.map((area, rowIndex) => {
           const icon = AREA_ICONS[area.key];
           const delta = deltas[area.key];
-          const top = ROW_TOPS[rowIndex];
+          const { chip, label, valueRight } = columns[columnIndex];
+          const top = CHIP_TOPS[rowIndex];
+          const centre = top + CHIP_HEIGHT / 2;
           return (
             <View key={area.key}>
               <View
                 style={{
                   position: 'absolute',
-                  left: scale(COLUMN_LEFT[columnIndex]),
+                  left: scale(chip),
                   top: scale(top),
                   width: scale(CHIP_WIDTH),
                   height: scale(CHIP_HEIGHT),
-                  borderRadius: scale(5),
-                  backgroundColor: '#F2F2F0',
+                  borderRadius: scale(4.808),
+                  backgroundColor: COLOR.surface.chip,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
@@ -123,29 +142,27 @@ export function AreaDeltaCard({ heading, deltas }: { heading: string; deltas: Ar
               <Text
                 style={{
                   position: 'absolute',
-                  left: scale(LABEL_LEFT[columnIndex]),
-                  top: scale(top + 1),
-                  fontSize: scale(7),
-                  lineHeight: scale(9),
-                  letterSpacing: scale(-0.21),
-                  color: '#88877F',
+                  left: scale(label),
+                  top: scale(centre + 0.6 - LABEL_LINE / 2),
+                  fontSize: scale(8.462),
+                  lineHeight: scale(LABEL_LINE),
+                  color: COLOR.text.body,
                 }}
-                className="font-pretendard">
+                className="font-plex">
                 {area.label}
               </Text>
               <Text
                 style={{
                   position: 'absolute',
-                  left: scale(VALUE_RIGHT[columnIndex] - 56),
-                  top: scale(top + 1),
-                  width: scale(56),
+                  left: scale(valueRight - 30),
+                  top: scale(centre + 1.1 - VALUE_LINE / 2),
+                  width: scale(30),
                   textAlign: 'right',
-                  fontSize: scale(7),
-                  lineHeight: scale(9),
-                  letterSpacing: scale(-0.21),
-                  color: delta < 0 ? LOSS : GAIN,
+                  fontSize: scale(7.333),
+                  lineHeight: scale(VALUE_LINE),
+                  color: delta < 0 ? TONE_TEXT.danger : TONE_TEXT.good,
                 }}
-                className="font-pretendard-semibold">
+                className="font-plex-semibold">
                 {delta > 0 ? `+${delta}` : String(delta)}
               </Text>
             </View>

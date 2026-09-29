@@ -47,10 +47,10 @@ Paths are under `src/features/`; the route files in `src/app` only re-export the
 | `480:1274` | 일지/캘린더 (v4: `1363:2507`) | `journal/calendar-screen.tsx` |
 | `480:1275` | 일지/상세보기 | `journal/detail-screen.tsx` |
 | `585:1436` | 주간_컨디션_그래프 (v4에 없음 — 주간_기록 카드를 따름) | `src/components/ui/weekly-condition-chart.tsx` |
-| `559:1297` | 개선책/메인 | `plan/main-screen.tsx` |
-| `559:1295` | 개선책/맞춤영양제 | `plan/supplements-screen.tsx` |
-| `559:1294` | 개선책/주간리포트 | `plan/report-screen.tsx` |
-| `523:490` | 개선책/한달뒤내모습 | `plan/forecast-screen.tsx` |
+| `559:1297` | 개선책/메인 (v4: `1363:2935`) | `plan/main-screen.tsx` |
+| `559:1295` | 개선책/맞춤영양제 (v4: `1363:3003`) | `plan/supplements-screen.tsx` |
+| `559:1294` | 개선책/주간리포트 (v4: `1363:3061`) | `plan/report-screen.tsx` |
+| `523:490` | 개선책/한달뒤내모습 (v4: `1363:3134`) | `plan/forecast-screen.tsx` |
 | `583:969` | 마이페이지 (Frame 28) | `my/main-screen.tsx` |
 | `583:862` | 웨어러블 연동 (Frame 26) | `my/wearable-screen.tsx` |
 | `583:913` | 데이터 개인정보 (Frame 27) | `my/privacy-screen.tsx` |
@@ -120,10 +120,10 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 | 일지/오늘의기록 | 18 | 184 | cards inside are 182 |
 | 일지/캘린더 | **17** | **186** | (v4: 11.28 / 197.436) |
 | 일지/상세보기 | 18 | 184 | cards 182, loose rects 184 |
-| 개선책/메인 | 18 | 184 | 한달뒤 teaser at 17 |
-| 개선책/맞춤영양제 | **17** | 184 | |
-| 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 |
-| 개선책/한달뒤내모습 | **17** | 184 | |
+| 개선책/메인 | 18 | 184 | 한달뒤 teaser at 17 (v4: 11.28 / 197.436) |
+| 개선책/맞춤영양제 | **17** | 184 | (v4: 11.28 / 197.436) |
+| 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 (v4: 11.28 / 197.436) |
+| 개선책/한달뒤내모습 | **17** | 184 | (v4: 11.28 / 197.436) |
 | 마이페이지 | **17** | 184 | menu card radius 6, not 10 |
 | 웨어러블 연동 | **17** | 184 | watch is full-bleed 220×220 |
 
@@ -248,7 +248,7 @@ Medium 6 label whose line box sits at y 22–30:
 | State | Background | Text |
 |---|---|---|
 | Inactive | `#F2F2F0` | `#5F5E5B` |
-| Active | GRADIENT_SELECT @ 18.9% | `#FFFFFF` |
+| Active | pre-v4: GRADIENT_SELECT @ 18.9% (constant deleted; v4 is `brand/selected`) | `#FFFFFF` |
 | History | `#7786A8` | `#F1F1F1` |
 
 `_NeedAnswer` swaps the card to `#FFF9F9` with a 0.3pt pure-`red` border and

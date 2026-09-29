@@ -1,129 +1,101 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, Text } from 'react-native';
 
 import { LivingArtwork } from '@/components/ui/living-artwork';
-import { SHADOW } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * `Frame 33` (`677:1083`) — the locked forecast. The orb is deliberately
- * unreadable: a grey "?" sits over it and the score reads `??`, because the
+ * v4 `1363:2996` — the locked forecast. The orb is deliberately unreadable: a
+ * white "?" sits over the dark orb and the score reads `??`, because the
  * forecast itself lives behind 한 달 뒤 내 모습.
+ *
+ * v4's orb bitmap (`Rectangle 3190`) is the same picture as `orb-unknown.png`
+ * (compared side by side; opaque-body aspect 1.060 vs 1.058). v4 dropped the
+ * three highlight dots the old teaser carried.
  */
+const WIDTH = 197.436;
+const HEIGHT = 50;
+const RAMP = cssGradientPoints(pastelAngle(WIDTH, HEIGHT), WIDTH, HEIGHT);
+
+/** Centred text boxes: v4 centres the title on 115.4 and the score on 127.05. */
+const TEXT_BOX = 110;
+
 export function ForecastTeaser({ onPress }: { onPress: () => void }) {
   return (
     <Pressable onPress={onPress}>
       <LinearGradient
-        colors={['#FDF0FF', '#FFFFFF']}
-        locations={[0.234, 0.984]}
-        /*
-         * Figma states 151.2°, but converting that angle through the card's
-         * 184×52 aspect gives a near-vertical ramp, which is not what the file
-         * renders. Taken from the export's own corners instead: pink at the top
-         * left, white at the bottom right, and more horizontal than diagonal.
-         */
-        start={{ x: 0, y: 0.2 }}
-        end={{ x: 1, y: 0.8 }}
+        colors={[...GRADIENT_PASTEL.colors]}
+        locations={[...GRADIENT_PASTEL.locations]}
+        start={RAMP.start}
+        end={RAMP.end}
         style={{
-          height: scale(52),
-          borderRadius: scale(10),
-          boxShadow: SHADOW,
-          overflow: 'hidden',
+          height: scale(HEIGHT),
+          borderRadius: scale(9.615),
+          boxShadow: SHADOW_V4,
+          // No clip: v4's Frame 33 has clipsContent off, and the orb's glow
+          // hangs ~5.6pt below the card.
         }}>
-        {/* The bitmap overhangs its 37.3×35 box — the glow — so it is drawn larger. */}
+        {/*
+          * v4 sizes the orb's body 36.1 × 33.9 at (24.68, 8.15) and lets the
+          * bitmap overhang it (the glow) to 55.36 × 53.27 at (15.05, 2.34).
+          */}
         <LivingArtwork
           source={require('@/assets/images/plan/orb-unknown.png')}
-          frame={{ left: 13.06, top: 2.0, width: 57.157, height: 55 }}
+          frame={{ left: 15.05, top: 2.34, width: 55.36, height: 53.27 }}
           accessibilityLabel="한 달 뒤 예상 컨디션 오브"
         />
-        {SPARKLES.map((sparkle) => (
-          <View
-            key={`${sparkle.left}-${sparkle.top}`}
-            style={{
-              position: 'absolute',
-              left: scale(sparkle.left),
-              top: scale(sparkle.top),
-              width: scale(sparkle.size),
-              height: scale(sparkle.size),
-              borderRadius: scale(sparkle.size),
-              backgroundColor: sparkle.color,
-              boxShadow: sparkle.glow,
-            }}
-          />
-        ))}
         <Text
           style={{
             position: 'absolute',
-            left: scale(23),
-            top: scale(14.5),
-            width: scale(37),
+            left: scale(42.34 - 15),
+            top: scale(21.47 - 22.564 / 2),
+            width: scale(30),
             textAlign: 'center',
-            fontSize: scale(18),
-            lineHeight: scale(21),
-            color: '#CFCFCF',
+            fontSize: scale(18.051),
+            lineHeight: scale(22.564),
+            letterSpacing: scale(-0.361),
+            color: '#FFFFFF',
             textShadowColor: '#858585',
-            textShadowOffset: { width: 0, height: scale(4) },
-            textShadowRadius: scale(3),
+            textShadowOffset: { width: 0, height: scale(4.513) },
+            textShadowRadius: scale(3.385),
           }}
-          className="font-pretendard-extrabold">
+          className="font-plex-bold">
           ?
         </Text>
 
         <Text
           style={{
             position: 'absolute',
-            left: scale(63),
-            top: scale(13),
-            width: scale(120),
+            left: scale(115.4 - TEXT_BOX / 2),
+            top: scale(16.04 - 13.538 / 2),
+            width: scale(TEXT_BOX),
             textAlign: 'center',
-            fontSize: scale(8),
-            lineHeight: scale(9),
-            letterSpacing: scale(-0.24),
-            color: '#A07EAD',
+            fontSize: scale(9.59),
+            lineHeight: scale(13.538),
+            letterSpacing: scale(-0.0959),
+            color: COLOR.text.plum,
           }}
-          className="font-pretendard-semibold">
+          className="font-plex-semibold">
           한달 뒤 내 모습 예상하기
         </Text>
-        <View
+        <Text
           style={{
             position: 'absolute',
-            left: scale(83),
-            top: scale(23),
-            width: scale(83),
-            flexDirection: 'row',
-            alignItems: 'baseline',
-            justifyContent: 'center',
-          }}>
-          <Text
-            style={{
-              fontSize: scale(18),
-              lineHeight: scale(21),
-              letterSpacing: scale(-0.24),
-              color: '#542173',
-            }}
-            className="font-pretendard-extrabold">
-            ??
-          </Text>
-          <Text
-            style={{
-              marginLeft: scale(3),
-              fontSize: scale(10),
-              lineHeight: scale(12),
-              letterSpacing: scale(-0.24),
-              color: '#A07EAD',
-            }}
-            className="font-pretendard">
-            ← 현재 74
-          </Text>
-        </View>
+            left: scale(127.05 - TEXT_BOX / 2),
+            top: scale(31.56 - 18.051 / 2),
+            width: scale(TEXT_BOX),
+            textAlign: 'center',
+            fontSize: scale(13.538),
+            lineHeight: scale(18.051),
+            letterSpacing: scale(-0.2708),
+            color: '#A07EAD',
+          }}
+          className="font-plex-bold">
+          <Text style={{ color: COLOR.text.plum }}>??</Text> ← 현재 74
+        </Text>
       </LinearGradient>
     </Pressable>
   );
 }
-
-/** Card-relative, and the same near-white treatment the 홈 orb uses. */
-const SPARKLES = [
-  { left: 33.05, top: 27.77, size: 1.06, color: 'rgba(251,232,255,0.5)', glow: '0px 0px 5px rgba(255,255,255,0.5)' },
-  { left: 50.49, top: 15.76, size: 1.06, color: 'rgba(251,232,255,0.5)', glow: '0px 0px 5px rgba(255,255,255,0.5)' },
-  { left: 44.15, top: 29.27, size: 1.59, color: 'rgba(231,221,255,0.75)', glow: '0px 0px 4px 1px rgba(255,255,255,0.25)' },
-];

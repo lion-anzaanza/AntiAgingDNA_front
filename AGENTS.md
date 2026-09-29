@@ -75,21 +75,22 @@ text — easy to misread as a mystery crash. `StepHeader` takes a `backHref` for
 ### 5. Two gradients, and they are not interchangeable
 
 - `GRADIENT_SELECT` — the `ActiveButton` style, `#4356F7 → #843FF6`, first stop at
-  **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Filled selected
-  SelectButton 1/2/3/5 and `ButtonNextUI` before v4; in v4 neither uses it (a
-  selected pill is flat `brand/selected`). Screens not yet reworked to v4 still do.
+  **18.9%**. Filled selected SelectButton 1/2/3/5 and `ButtonNextUI` before v4;
+  in v4 neither uses it (a selected pill is flat `brand/selected`). Its last
+  user, 개선책's 담기 button, went pastel in v4 and the constant was deleted.
 
 **v4 (2026-09-30) replaced the button ramp.** `Button` now draws
 `GRADIENT_PASTEL` (pink → lavender → periwinkle) at CSS 166.3°. Figma hands v4
 gradients over as a CSS angle, and that angle is in *pixels* — on a 197×27 button
 166° runs nearly top to bottom — so convert it with `cssGradientPoints(angle, w, h)`
-from `src/lib/gradient.ts` rather than guessing `start`/`end`. The two ramps above
-stay until the components that use them are redesigned; the tracker is
+from `src/lib/gradient.ts` rather than guessing `start`/`end`. The old ramps
+go as the components that use them are redesigned; the tracker is
 `docs/redesign-v4-inventory.md`.
 - `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Filled a selected
   SelectButton4 before v4; the 일지 calendar, daily-summary card and weekly
-  chart dropped it in their v4 pass, so it survives only on screens not yet
-  redesigned (오늘의 기록, 개선책, MY).
+  chart dropped it in their v4 pass, so it survives only on MY screens not yet
+  redesigned — and as the stroke of 개선책's 예상 성장 곡선, which v4 still draws
+  in exactly these two stops.
 
 `ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
 
@@ -823,8 +824,13 @@ a real `TabTrigger` now, so only MY is still an inert button.
 메인 (`559:1297`) is the tab root; 맞춤 영양제 (`559:1295`), 주간 리포트
 (`559:1294`) and 한 달 뒤 내 모습 (`523:490`) push on top. Two pieces are shared
 in `components/ui`: `PlanCard` (the icon + title + caption row, which 메인 and
-리포트 draw a point or two apart) and `AreaDeltaCard` (지난 주 대비 영역별 변화,
-identical on 리포트 and 한달뒤).
+리포트 draw a point or two apart) and `AreaDeltaCard` (지난 주 대비 영역별 변화
+on 리포트 and 한달뒤 — identical before v4; v4 moved the right column 4pt, so it
+is a prop now).
+
+**v4 (2026-09-30)** moved all four to `1363:2935` / `3003` / `3061` / `3134`;
+what changed and why is in `docs/redesign-v4-inventory.md` (화면별 결정, 개선책
+rows). Three items below are superseded by it and marked.
 
 What is drawn but does nothing:
 
@@ -840,13 +846,15 @@ Slips worth a designer's eye, resolved by picking the majority reading:
 - **한달뒤내모습 carries `BottomBar4`**, which lights MY rather than 개선책. The
   bar derives its active tab from the route, so it lights 개선책.
 - **The 오늘의 실천 progress bar does not match its own label** — the filled and
-  empty halves are 70 and 22 wide, which is 76%, beside a "70%".
+  empty halves are 70 and 22 wide, which is 76%, beside a "70%". (v4: 76.6 and
+  24.1 — still 76%.)
 - **The 예상 성장 곡선's middle point sits ~2pt below** where a straight 74→81
   scale puts it, so the drawn curve is less optimistic in the middle than the
-  numbers beside it. The linear scale is used.
+  numbers beside it. The linear scale is used. (v4: ~3.5pt, same call.)
 - **The teaser card's stated 151.2° gradient** converts, through the card's
   184×52 aspect, to a near-vertical ramp that is not what the file renders. The
-  ramp is taken from the export's own corners instead.
+  ramp is taken from the export's own corners instead. (v4: pastel, and its
+  155.8° is exactly `pastelAngle` of the card — no longer a slip.)
 
 #### 개선책 — re-pulled 2026-08-17 after a design review
 
@@ -856,16 +864,22 @@ the running app rather than from the type-checker.
 - **오늘의 실천 rows are checkboxes now.** Figma replaced the `#E9F0FF` 완료! pill
   with a 13×13 `rounded-[3px]` box at x=172 (`Rectangle 3091`–`3795`): `#F2E4FF`
   while open, `#B3B3B3` with a `#686868` `∨` once done. The pill is gone.
+  *(v4: 12.41 box at x 176, open `surface/tint-2`, done `#B3B3B3` with the same `∨`.)*
 - **The strike on a completed row is `textDecorationLine`, not a drawn View.**
   The old 0.5pt View sat at `top: '50%'` of the label box, and with `lineHeight`
   15 on a 7pt font the ink rides high in that box — so the geometric middle fell
   *below* the glyphs and it read as an underline. Font metrics get it right;
   geometry guessed from the line box does not.
+  *(v4: drawn again — v4's strike is `surface/track`, a different colour from
+  the label, which Android cannot give a text decoration. It sits where v4 puts
+  it, 0.18 below the Plex line box's centre; checked against the export.)*
 - **한달뒤내모습's hero card has no orb in Figma.** `523:490` leaves the top 57.5pt
   of the 184×110 card empty — no node, no instance — while its own teaser on
   메인 (`Frame 33`) does carry one. Read as a dropped layer, not a design, so the
   screen draws 홈's `orb-nice.png` there, centred and breathing, with a comment
   saying so. **Worth a designer's eye**; replace once the frame is fixed.
+  *(v4: fixed — v4 draws `orb-better`, squashed sideways like 홈's orb; the code
+  draws it round. 결정 대기 9 in the inventory.)*
 - **Every orb breathes.** 개선책's teaser and the forecast hero both go through
   `LivingArtwork` now rather than a plain `<Image>`, so the motion phase-1 work
   applies everywhere an orb appears, not just on 홈.

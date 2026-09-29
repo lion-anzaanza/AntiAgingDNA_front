@@ -1,106 +1,126 @@
 import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
  * The icon + title + caption row that 05_사용자_맞춤_개선책 is built out of:
- * 더 알아보기 on 메인 (`225:392`, `225:403`), and the 인사이트 / 제안 cards on
- * 주간 리포트 (`559:1290`–`559:1292`).
+ * 더 알아보기 on 메인 (v4 `1363:2945`, `1363:2953`), and the 인사이트 / 제안 cards
+ * on 주간 리포트 (`1363:3122`, `1363:3128`, `1363:3116`).
  *
- * Figma draws the two families a point or two apart — 184 wide with the tile at
- * 13 and a trailing arrow on 메인, 183 wide with the tile at 11 and no arrow on
- * 리포트 — so those are props rather than a single averaged card.
+ * v4 draws both families 197.436 × 46.154, but a few points apart inside: 메인
+ * puts the tile at 9.73 / 9.61 with the text at 47.6 and a trailing `→` chip,
+ * 리포트 puts the tile at 9.03 / 10.1 with the text at 41.65 and no arrow. Each
+ * family is consistent across its own cards, so the two are kept as layouts
+ * rather than averaged. The icon is centred in its tile in every v4 card.
  */
+const LAYOUT = {
+  link: { tileLeft: 9.73, tileTop: 9.61, textLeft: 47.6 },
+  insight: { tileLeft: 9.03, tileTop: 10.1, textLeft: 41.65 },
+} as const;
+
+const CARD_HEIGHT = 46.154;
+const TILE = 25.962;
+/** Line-box tops: v4 centres the title at 17.14–17.23 and the caption at 28.87–28.92. */
+const TITLE_TOP = 17.18 - 13.538 / 2;
+const CAPTION_TOP = 28.89 - 10.154 / 2;
+/** `→` chip: 19.231 round at x 168.66, centred on the card (v4 13.46; the second card's copy is 14.42). */
+const ARROW_LEFT = 168.66;
+const ARROW_SIZE = 19.231;
+
 type PlanCardProps = {
   icon: ImageSourcePropType;
-  /** Figma sizes a few of these off-square; width is always 25. */
+  iconWidth?: number;
   iconHeight?: number;
   title: string;
   caption: string;
-  width?: number;
-  tileInset?: number;
+  layout: keyof typeof LAYOUT;
   arrow?: boolean;
   onPress?: () => void;
 };
 
 export function PlanCard({
   icon,
-  iconHeight = 25,
+  iconWidth = 24.038,
+  iconHeight = 24.038,
   title,
   caption,
-  width = 183,
-  tileInset = 11,
+  layout,
   arrow = false,
   onPress,
 }: PlanCardProps) {
+  const { tileLeft, tileTop, textLeft } = LAYOUT[layout];
   return (
     <Pressable
       onPress={onPress}
       style={{
-        width: scale(width),
-        height: scale(48),
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
-        flexDirection: 'row',
-        alignItems: 'center',
+        height: scale(CARD_HEIGHT),
+        borderRadius: scale(9.615),
+        backgroundColor: COLOR.surface.card,
+        boxShadow: SHADOW_V4,
       }}>
       <View
         style={{
-          marginLeft: scale(tileInset),
-          width: scale(27),
-          height: scale(27),
-          borderRadius: scale(8),
-          backgroundColor: '#F2F2F0',
+          position: 'absolute',
+          left: scale(tileLeft),
+          top: scale(tileTop),
+          width: scale(TILE),
+          height: scale(TILE),
+          borderRadius: scale(7.692),
+          backgroundColor: COLOR.surface.chip,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
         <Image
           source={icon}
-          style={{ width: scale(25), height: scale(iconHeight) }}
+          style={{ width: scale(iconWidth), height: scale(iconHeight) }}
           resizeMode="contain"
         />
       </View>
 
-      <View style={{ marginLeft: scale(7), flexShrink: 1 }}>
-        <Text
-          style={{
-            fontSize: scale(8),
-            lineHeight: scale(9),
-            letterSpacing: scale(-0.24),
-            color: '#000000',
-          }}
-          className="font-pretendard-extrabold">
-          {title}
-        </Text>
-        <Text
-          style={{
-            marginTop: scale(2.5),
-            fontSize: scale(7),
-            lineHeight: scale(9),
-            letterSpacing: scale(-0.21),
-            color: '#9C9C9C',
-          }}
-          className="font-pretendard-semibold">
-          {caption}
-        </Text>
-      </View>
+      <Text
+        numberOfLines={1}
+        style={{
+          position: 'absolute',
+          left: scale(textLeft),
+          top: scale(TITLE_TOP),
+          fontSize: scale(9.59),
+          lineHeight: scale(13.538),
+          letterSpacing: scale(-0.0959),
+          color: COLOR.text.strong,
+        }}
+        className="font-plex-semibold">
+        {title}
+      </Text>
+      <Text
+        numberOfLines={1}
+        style={{
+          position: 'absolute',
+          left: scale(textLeft),
+          top: scale(CAPTION_TOP),
+          fontSize: scale(7.333),
+          lineHeight: scale(10.154),
+          color: COLOR.text.body,
+        }}
+        className="font-plex-semibold">
+        {caption}
+      </Text>
 
       {arrow ? (
         <View
           style={{
-            marginLeft: 'auto',
-            marginRight: scale(10),
-            width: scale(20),
-            height: scale(20),
-            borderRadius: scale(500),
-            backgroundColor: '#F2F2F0',
+            position: 'absolute',
+            left: scale(ARROW_LEFT),
+            top: scale((CARD_HEIGHT - ARROW_SIZE) / 2),
+            width: scale(ARROW_SIZE),
+            height: scale(ARROW_SIZE),
+            borderRadius: scale(ARROW_SIZE),
+            backgroundColor: COLOR.surface.chip,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
           <Text
-            style={{ fontSize: scale(9), lineHeight: scale(9), color: '#696969' }}
+            style={{ fontSize: scale(9.026), lineHeight: scale(9.026), color: COLOR.text.body }}
             className="font-pretendard-semibold">
             →
           </Text>
