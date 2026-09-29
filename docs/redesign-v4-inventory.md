@@ -35,7 +35,7 @@ v4를 Figma에서 컴포넌트화하는 대신 이 방식을 고른 이유: 파�
 |---|---|---|---|---|---|
 | `ButtonNextUI` | 5 | 로그인, 회원가입/1·2·3, 일지/메인 | `Button` | 7 | ✅ 리뷰 1 |
 | `TextInput` | 6 | 로그인, 회원가입/1 | `TextInputField` | 2 | ✅ 리뷰 1 |
-| `ButtonBack` | 5 (+이름 없는 것 10) | 로그인·홈 빼고 15화면 전부 | `ButtonBack` | 12 | 🔶 |
+| `ButtonBack` | 5 (+이름 없는 것 10) | 로그인·홈 빼고 15화면 전부 | `ButtonBack` | 12 | ✅ 리뷰 |
 | (그라디언트 글자) | 0 | 없음 — 아래 "`GradientText`" 참고 | `GradientText` | 14 | 🔶 조사만 |
 | `SelectButton1~5`, `_White` | 150+ | 회원가입/1·2, 일지/오늘의기록·상세보기 | `SelectButton` | 2 | |
 | `SelectItem{3,4}[_Caption]_Card` | 각 2 | 일지/오늘의기록·상세보기 | `SelectCard` | 2 | |
