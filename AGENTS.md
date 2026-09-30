@@ -417,6 +417,48 @@ the routes.
 
 `npx tsc --noEmit`, `npx expo lint` and `npm test` all pass. Keep them that way.
 
+### From the review of the folder restructure (2026-09-30) — not yet done
+
+A `/code-review` of #11–#13 found no regression from the move itself. These are
+what it turned up instead, recorded rather than fixed so the restructure stays
+a pure move. Most urgent first.
+
+- **Bug: 오늘의 기록 can wipe a saved entry.** The restore `GET` in
+  `features/journal/today-screen.tsx` catches *every* error as "no entry yet",
+  not just 404. If the read fails with a 500, 401 or timeout, the form opens
+  empty, 저장 is enabled, and a save — which is a replacing `PUT` (backlog 30)
+  — nulls every earlier answer. Only `ApiError.status === 404` should mean
+  "nothing to restore"; any other failure should keep 저장 blocked. Predates
+  the restructure.
+- **The lint boundary only covers listed features.** `eslint.config.js` builds
+  its zones from a hand-written `FEATURES` array, so a new folder under
+  `src/features` is unchecked until someone adds it. Reading the directory
+  (`fs.readdirSync(..., { withFileTypes: true })`) removes the manual step.
+- **`OrbState` is declared twice** — `features/home/components/orb-card.tsx`
+  redeclares the union `@/lib/score` already exports. Import it instead.
+- **Stale comments and docs**, each contradicting the code next to it:
+  - `features/my/main-screen.tsx` header says 데이터 개인정보·구독관리 are
+    unbuilt and their rows do nothing; `MENU` links to both.
+  - `docs/figma-reference.md` intro still says 06 has two undesigned frames;
+    its own Screens table maps both to built screens.
+  - `features/home/home-screen.tsx` header says there is no data layer; the
+    screen reads `/api/scores` and `/api/diaries`.
+  - `features/journal/today-screen.tsx` justifies the save `Alert` by 일지 메인
+    being static; it reads live scores now.
+  - The "Tests" heading below (and CLAUDE.md's "the tests cover `src/lib`")
+    is no longer true — `sign-up-form.test.ts` moved to `features/auth` — and
+    the count is 59, not 55. CLAUDE.md is project instruction, so change it
+    with the owner's say-so.
+- **README's placement rules read as conflicting**: "a helper used by one screen
+  stays in the screen" vs "hand-built cards go to `features/<tab>/components`".
+  The line actually drawn in #12 was size — cards of ~40 lines or more moved,
+  small helpers stayed. Say so in the README.
+- `release.yml`'s checks run `tsc` and lint but not `npm test`.
+
+Deliberately deferred, not a defect: `home-screen` still picks the orb artwork
+and sparkles from `ORB_STATES` itself rather than handing `OrbCard` the state.
+Move that lookup into `OrbCard` when a second screen needs an orb card.
+
 ### Tests — `src/lib` only, and deliberately so
 
 `jest-expo` + `npm test`. 55 tests across `dates`, `score`, `diary-request` and
@@ -486,7 +528,7 @@ in [docs/backend-api.md](docs/backend-api.md); the request list is
   to show (the server's `title` is already Korean and specific).
 - `src/lib/auth.tsx` — the session. JWT in expo-secure-store, replayed against
   `GET /api/auth/me` on launch; a token the server rejects is discarded.
-- `src/lib/sign-up-request.ts` — the only place Korean labels become enum
+- `src/features/auth/sign-up-request.ts` — the only place Korean labels become enum
   constants. Screens never see a constant; this file never sees a component.
 - The tabs are gated by `Stack.Protected` in the root layout, and `(tabs)` pins
   its own `initialRouteName` — without it the group reopened on whichever tab
@@ -570,7 +612,7 @@ Two traps this screen already stepped in, worth not repeating:
   load-then-write shape (backlog 30).
 - **The date must come from the device, not from `toISOString()`.** The latter is
   UTC and names the previous day in KST until 09:00, which would file every
-  morning's diary against yesterday. `isoDate()` in `today.tsx` formats local
+  morning's diary against yesterday. `isoDate()` in `lib/dates.ts` formats local
   components; the header string is derived from the same pinned `Date` so the
   two cannot drift apart.
 
@@ -621,7 +663,7 @@ Known and deliberately deferred:
 - **No input validation anywhere.** Password mismatch and impossible dates all
   pass. The rules cannot be written yet regardless: the API documents no
   constraint on password, nickname or the identifier (backlog 19).
-- **The signup draft is lifted but not submitted.** `src/lib/sign-up-form.tsx`
+- **The signup draft is lifted but not submitted.** `src/features/auth/sign-up-form.tsx`
   holds all three steps' answers, mounted by `(auth)/sign-up/_layout.tsx` so the
   draft dies when the user leaves the flow. It deliberately stops short of
   building a `SignUpRequest`: the sensitivity sliders' enum boundaries are the
@@ -656,7 +698,7 @@ Known and deliberately deferred:
 
 All four 일지 screens are built: 메인 (`480:1268`) is the tab root, with
 오늘의 기록 (`480:1269`), 캘린더 (`480:1274`) and 상세보기 (`480:1275`) pushing on
-top. 상세보기 is `[date].tsx`, and confirmed against Figma: the answer that was
+top. 상세보기 is the `[date]` route (`features/journal/detail-screen.tsx`), and confirmed against Figma: the answer that was
 given renders `history`, every other pill stays `inactive`.
 
 Still to port from 04_일지:
@@ -704,7 +746,7 @@ across every column, and the mock scores round-trip to Figma's exact dots.
 
 ### 홈 — built, and what is still missing
 
-`(tabs)/home.tsx` is 홈/메인 (`597:1466`), replacing the Expo template screen.
+`features/home/home-screen.tsx` is 홈/메인 (`597:1466`), replacing the Expo template screen.
 The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 *beside* the frame rather than inside it, and it reuses the login screen's
 `dna-nice.png`.
@@ -848,10 +890,9 @@ emulator.
 `Frame 28` (`583:969`) is the MY tab root and `Frame 26` (`583:862`) is
 웨어러블 연동. Every tab in the bar is a real route now.
 
-**The other two frames are not designed.** 데이터 개인정보 (`583:913`) repeats the
-same five-row menu under a different title, and 구독관리 (`585:1399`) is a title
-over an empty 184×160 rectangle. Neither is built and the rows that would open
-them do nothing — inventing content for them is a product decision, not a port.
+데이터 개인정보 (`583:913`) and 구독관리 (`585:1399`) were empty placeholders at
+first and have since been designed and built (`features/my/privacy-screen.tsx`,
+`subscription-screen.tsx`); the menu rows open them.
 
 The five menu icons are a single screenshot sheet cropped per row (rule 7's
 "one bitmap can back several nodes"), cut into `assets/images/my/ic-*.png`.
@@ -861,8 +902,9 @@ One slip corrected rather than reproduced: Figma puts the `무료` tier beside
 values against a different label order, which is what gives it away — a tier
 belongs to 구독 관리, so it sits there.
 
-Nothing behind 연동하기, 개발자 커피사주기 or 로그아웃 | 회원탈퇴: pairing a watch
-needs a native module, and the API has neither wearable nor commerce endpoints.
+로그아웃 and 회원탈퇴 are wired to the session. Nothing is behind 연동하기 or
+개발자 커피사주기: pairing a watch needs a native module, and the API has neither
+wearable nor commerce endpoints.
 
 Next planned work: there is no unported Figma screen left. The open fronts are
 wiring the backend (the backlog got its first reply on 2026-08-16) and the

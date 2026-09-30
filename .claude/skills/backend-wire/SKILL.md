@@ -21,7 +21,7 @@ description: lifeDNA 앱(React Native/Expo)에서 백엔드 API를 화면에 붙
 | 세션·JWT·`Stack.Protected` | `src/lib/auth.tsx` |
 | 점수 타입·등급·캘린더 색·경로 빌더 | `src/lib/score.ts` |
 | 일지 한국어 라벨 ↔ enum (양방향) | `src/lib/diary-request.ts` |
-| 회원가입 라벨 ↔ enum | `src/lib/sign-up-request.ts` |
+| 회원가입 라벨 ↔ enum | `src/features/auth/sign-up-request.ts` |
 | 인증된 GET 훅 (포커스 시 재조회) | `src/lib/use-api-query.ts` |
 | 로컬 달력 날짜 헬퍼 | `src/lib/dates.ts` |
 
