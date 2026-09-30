@@ -455,13 +455,15 @@ A `/code-review` of #11–#13 found no regression from the move itself. These ar
 what it turned up instead, recorded rather than fixed so the restructure stays
 a pure move. Most urgent first.
 
-- **Bug: 오늘의 기록 can wipe a saved entry.** The restore `GET` in
-  `features/journal/today-screen.tsx` catches *every* error as "no entry yet",
-  not just 404. If the read fails with a 500, 401 or timeout, the form opens
-  empty, 저장 is enabled, and a save — which is a replacing `PUT` (backlog 30)
-  — nulls every earlier answer. Only `ApiError.status === 404` should mean
-  "nothing to restore"; any other failure should keep 저장 blocked. Predates
-  the restructure.
+- **Bug: a failed session check signs the user out.** `lib/auth.tsx` discards
+  the stored token on *any* failure of `GET /api/auth/me` at launch, so opening
+  the app offline, or during a server 5xx, logs the user out. Only a 401/403
+  means the token is bad. Same shape as the 오늘의 기록 restore bug fixed on
+  2026-09-30, which treated every error as a 404.
+- **Requests have no timeout.** `lib/api.ts` never aborts a `fetch`, and on the
+  emulator with Wi-Fi and data off a request sat pending for over two minutes
+  rather than failing. Anything gated on a request — 오늘의 기록's 저장 while it
+  restores — stays locked that long, with no message.
 - **The lint boundary only covers listed features.** `eslint.config.js` builds
   its zones from a hand-written `FEATURES` array, so a new folder under
   `src/features` is unchecked until someone adds it. Reading the directory

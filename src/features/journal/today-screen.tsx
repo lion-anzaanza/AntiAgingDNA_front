@@ -10,7 +10,7 @@ import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
 import { SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
-import { messageFor, request } from '@/lib/api';
+import { ApiError, messageFor, request } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
@@ -66,6 +66,8 @@ export default function JournalTodayScreen() {
   const [today] = useState(() => new Date());
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [restoreFailed, setRestoreFailed] = useState(false);
+  const [restoreAttempt, setRestoreAttempt] = useState(0);
   const [conditionMissing, setConditionMissing] = useState(false);
   const scroller = useRef<ScrollView>(null);
 
@@ -95,9 +97,10 @@ export default function JournalTodayScreen() {
    * time in one day wipes the first save's answers. A day with no entry answers
    * 404 (backlog 23) and simply leaves the form empty.
    *
-   * Any other failure leaves it empty too. That is safe here because the same
-   * network that fails this read fails the write: an empty form the user then
-   * saves would have to reach the server to destroy anything.
+   * Any other failure is *not* "no entry". A 500, a 401 or a timeout says
+   * nothing about what is saved, and the network can recover before the user
+   * presses 저장 — at which point an empty form would replace the day. So the
+   * form stays locked (`restoreFailed` feeds `busy`) until a retry succeeds.
    */
   useEffect(() => {
     let cancelled = false;
@@ -123,8 +126,21 @@ export default function JournalTodayScreen() {
         setScreenTime(draft.screenTime);
         setMoodRecovery(draft.moodRecovery);
         setMetPeople(draft.metPeople);
-      } catch {
+      } catch (error) {
         // 404 — 기록이 없는 날. Nothing to restore.
+        if (cancelled || (error instanceof ApiError && error.status === 404)) return;
+        setRestoreFailed(true);
+        Alert.alert('오늘 기록을 불러오지 못했어요', messageFor(error), [
+          { text: '닫기', style: 'cancel' },
+          {
+            text: '다시 시도',
+            onPress: () => {
+              setRestoreFailed(false);
+              setLoading(true);
+              setRestoreAttempt((n) => n + 1);
+            },
+          },
+        ]);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -132,7 +148,7 @@ export default function JournalTodayScreen() {
     return () => {
       cancelled = true;
     };
-  }, [today, token]);
+  }, [today, token, restoreAttempt]);
 
   /*
    * `conditionLevel` is the only field the server requires, so it is the only
@@ -146,9 +162,10 @@ export default function JournalTodayScreen() {
    *
    * `saving`/`loading` still disable it, but those are not validation: they stop
    * a double submit and stop a save landing between mount and the restore above,
-   * which would overwrite the day with a form the user never saw.
+   * which would overwrite the day with a form the user never saw. A failed
+   * restore keeps it disabled for the same reason.
    */
-  const busy = saving || loading;
+  const busy = saving || loading || restoreFailed;
 
   async function save() {
     if (condition === null) {
