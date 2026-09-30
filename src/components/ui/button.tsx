@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, Text, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 
-import { GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 type ButtonProps = Omit<PressableProps, 'style'> & {
@@ -9,26 +10,40 @@ type ButtonProps = Omit<PressableProps, 'style'> & {
   style?: StyleProp<ViewStyle>;
 };
 
-/** Figma: ButtonNextUI — 184×30, radius 10, ActiveButton gradient, ExtraBold 10. */
+// The CSS angle depends on the box's aspect, so it is resolved against the
+// Figma box once; the button keeps that aspect wherever it is placed.
+const RAMP = cssGradientPoints(GRADIENT_PASTEL.angle, 197.436, 27.077);
+
+/**
+ * Figma v4: ButtonNextUI — 197.4×27.1, radius 9.6, pastel ramp, Bold 11.3 in
+ * `text/on-pastel`. v4 draws it two ways (로그인·회원가입/1: SemiBold 9.6;
+ * 회원가입/2·3·일지/메인: Bold 11.3, two of them at radius 7.9); each property
+ * takes its own 3-to-2 majority.
+ */
 export function Button({ label, style, ...pressableProps }: ButtonProps) {
   return (
     <Pressable
       {...pressableProps}
-      style={[{ height: scale(30), borderRadius: scale(10), boxShadow: SHADOW }, style]}>
+      style={[{ height: scale(27.077), borderRadius: scale(9.615), boxShadow: SHADOW_V4 }, style]}>
       <LinearGradient
-        colors={[...GRADIENT_SELECT]}
-        locations={[...GRADIENT_SELECT_STOPS]}
-        start={{ x: 0, y: 0.5 }}
-        end={{ x: 1, y: 0.5 }}
+        colors={[...GRADIENT_PASTEL.colors]}
+        locations={[...GRADIENT_PASTEL.locations]}
+        start={RAMP.start}
+        end={RAMP.end}
         style={{
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: scale(10),
+          borderRadius: scale(9.615),
         }}>
         <Text
-          style={{ fontSize: scale(10), lineHeight: scale(15), color: '#FFFFFF' }}
-          className="font-pretendard-extrabold">
+          style={{
+            fontSize: scale(11.282),
+            lineHeight: scale(15.795),
+            letterSpacing: scale(-0.1128),
+            color: COLOR.text.onPastel,
+          }}
+          className="font-plex-bold">
           {label}
         </Text>
       </LinearGradient>

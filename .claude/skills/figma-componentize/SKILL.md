@@ -1,6 +1,6 @@
 ---
 name: figma-componentize
-description: lifeDNA Figma 파일 안에서 화면의 개별 도형(사각형+텍스트 등)을 디자인 시스템 컴포넌트 인스턴스로 교체("컴포넌트화")할 때 사용. use_figma로 Figma 파일 자체를 고치는 작업 전용 — 코드 작성에는 관여하지 않는다. 화면을 코드로 만드는 작업은 figma-build-ui/figma-implement-component 스킬을 대신 쓸 것. use_figma를 쓰기 전에 먼저 figma-use 스킬과 함께 로드.
+description: lifeDNA Figma 파일 안에서 화면의 개별 도형(사각형+텍스트 등)을 디자인 시스템 컴포넌트 인스턴스로 교체("컴포넌트화")할 때 사용. use_figma로 Figma 파일 자체를 고치는 작업 전용 — 코드 작성에는 관여하지 않는다. 화면을 코드로 만드는 작업은 figma-redesign 스킬을 대신 쓸 것. `99_개선안_v4`는 컴포넌트화하지 않는다(docs/redesign-v4-inventory.md). use_figma를 쓰기 전에 먼저 figma-use 스킬과 함께 로드.
 ---
 
 # Figma 컴포넌트화 규칙 (lifeDNA)
@@ -51,7 +51,7 @@ Figma 원본 화면에는 "질문 라벨 + 버튼 여러 개"가 **낱개 도형
 
 - **hidden 프레임에 새 인스턴스를 추가하면 빈 채로 생성된다**: `frame.visible === false`인 프레임에 `createInstance()` 결과를 `appendChild`한 뒤 같은 스크립트에서 바로 `findOne`/`children`을 읽으면 자식이 비어 있어 `null` 에러가 난다. 작업 전 `frame.visible = true`로 잠깐 켰다가, 스크립트 마지막에 원래 hidden이었으면 다시 `false`로 되돌린다.
 - **겹쳐진 중복 레이어를 조심한다**: 같은 자리에 완전히 동일한 내용이 두 벌 겹쳐 있는 경우가 실제로 있었다(디자이너의 복붙 실수로 추정). raw 도형을 지우기 전에 같은 텍스트/좌표를 가진 노드가 더 있는지 한 번 더 확인한다.
-- **Pretendard 폰트는 Plugin API에서 로드가 안 된다**: 로컬/시스템에 정상 설치되어 있어도 `figma.loadFontAsync({family: 'Pretendard', ...})`는 항상 실패한다(구조적 한계로 확인됨). 텍스트를 새로 채워야 하면 `Noto Sans KR`을 임시로 쓰고, 수정한 텍스트 노드의 `name`에 `[TEMP-FONT: Noto Sans KR -> Pretendard {weight}]`를 붙여 표시한다. 실제 폰트 복원은 사람이 데스크톱 앱에서 직접 해야 한다(레이어 패널에서 "TEMP-FONT" 검색). 코드 쪽은 실제 Pretendard 폰트 파일을 쓰므로 이 제약과 무관하다 — 자세한 건 `figma-implement-component` 스킬 참고.
+- **Pretendard 폰트는 Plugin API에서 로드가 안 된다**: 로컬/시스템에 정상 설치되어 있어도 `figma.loadFontAsync({family: 'Pretendard', ...})`는 항상 실패한다(구조적 한계로 확인됨). 텍스트를 새로 채워야 하면 `Noto Sans KR`을 임시로 쓰고, 수정한 텍스트 노드의 `name`에 `[TEMP-FONT: Noto Sans KR -> Pretendard {weight}]`를 붙여 표시한다. 실제 폰트 복원은 사람이 데스크톱 앱에서 직접 해야 한다(레이어 패널에서 "TEMP-FONT" 검색). 코드 쪽은 실제 Pretendard 폰트 파일을 쓰므로 이 제약과 무관하다 — 코드 폰트 규칙은 `figma-redesign`의 references/rn-translation.md 참고.
 - **`search_design_system` 툴은 이 파일에서 빈 결과만 준다**: 로컬(비공개) 컴포넌트라 published 라이브러리 검색 대상이 아닌 것으로 보인다. 컴포넌트를 찾을 때는 `get_metadata`/`use_figma`로 `00_디자인_시스템` 섹션을 직접 순회한다.
 - **fileKey를 스크립트마다 다시 타이핑하지 말고 복붙할 것**: 한 글자만 틀려도(`86` → `28` 같은) "파일 접근 권한 없음" 에러가 나서 원인 파악에 시간을 뺏긴다.
 - **`node.findAll()`이 방금 만든 인스턴스 내부를 못 찾을 때가 있다**: 페이지/서브트리가 완전히 로드되지 않은 상태에서 벌크 탐색하면 일부 노드가 누락될 수 있다. 특정 노드 존재를 검증할 땐 `getNodeByIdAsync`로 직접 조회하거나 `.children`을 직접 재귀하는 게 더 안전하다.

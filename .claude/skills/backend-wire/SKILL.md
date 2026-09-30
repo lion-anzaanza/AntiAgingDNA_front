@@ -1,11 +1,11 @@
 ---
 name: backend-wire
-description: lifeDNA 앱(React Native/Expo)에서 백엔드 API를 화면에 붙일 때 사용 — 서버 계약을 실제로 검증하고, 조회/저장을 연결하고, 에뮬레이터에서 확인하고, 백로그·문서를 갱신하는 전체 흐름을 다룬다. 백엔드 회신이 "배포 완료"라고 해서 그대로 믿고 코드를 고치는 것을 막는 것이 이 스킬의 핵심 목적. Figma 디자인을 화면으로 옮기는 작업은 figma-build-ui, 컴포넌트 하나를 만드는 작업은 figma-implement-component 스킬을 대신 쓸 것.
+description: lifeDNA 앱(React Native/Expo)에서 백엔드 API를 화면에 붙일 때 사용 — 서버 계약을 실제로 검증하고, 조회/저장을 연결하고, 에뮬레이터에서 확인하고, 백로그·문서를 갱신하는 전체 흐름을 다룬다. 백엔드 회신이 "배포 완료"라고 해서 그대로 믿고 코드를 고치는 것을 막는 것이 이 스킬의 핵심 목적. Figma 디자인을 화면·컴포넌트로 옮기거나 v4로 개편하는 작업은 figma-redesign 스킬을 대신 쓸 것.
 ---
 
 # 백엔드 API 연동 규칙 (lifeDNA)
 
-이 스킬은 **서버를 화면에 붙이는 단계**를 다룬다. UI를 Figma에서 옮기는 작업은 `figma-build-ui` / `figma-implement-component`를 본다.
+이 스킬은 **서버를 화면에 붙이는 단계**를 다룬다. UI를 Figma에서 옮기는 작업은 `figma-redesign`을 본다.
 
 ## 프로젝트 컨텍스트
 
@@ -21,7 +21,7 @@ description: lifeDNA 앱(React Native/Expo)에서 백엔드 API를 화면에 붙
 | 세션·JWT·`Stack.Protected` | `src/lib/auth.tsx` |
 | 점수 타입·등급·캘린더 색·경로 빌더 | `src/lib/score.ts` |
 | 일지 한국어 라벨 ↔ enum (양방향) | `src/lib/diary-request.ts` |
-| 회원가입 라벨 ↔ enum | `src/lib/sign-up-request.ts` |
+| 회원가입 라벨 ↔ enum | `src/features/auth/sign-up-request.ts` |
 | 인증된 GET 훅 (포커스 시 재조회) | `src/lib/use-api-query.ts` |
 | 로컬 달력 날짜 헬퍼 | `src/lib/dates.ts` |
 
@@ -61,7 +61,7 @@ description: lifeDNA 앱(React Native/Expo)에서 백엔드 API를 화면에 붙
 
 ## 에뮬레이터 확인
 
-기동·스크린샷·딥링크·좌표 스케일 절차는 `figma-build-ui`의 "실기기 검증"을 그대로 쓴다. 연동 작업에만 해당하는 것:
+기동·스크린샷·딥링크·좌표 스케일 절차는 AGENTS.md "Verifying on the Android emulator"와 `figma-redesign/references/verification.md`(adb 포트, 두 번째 Metro, 로그아웃)를 그대로 쓴다. 연동 작업에만 해당하는 것:
 
 - **타입체크는 검증이 아니다.** 붙인 값이 화면에 맞게 나오는지 눈으로 본다.
 - **시드 데이터를 넣은 뒤에 본다.** 빈 계정에서는 붙였는지 안 붙였는지 구분되지 않는다.

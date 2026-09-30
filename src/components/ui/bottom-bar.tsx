@@ -11,55 +11,62 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `BottomBar0`–`BottomBar4` (`457:820`) — the app's tab bar. The five
- * nodes are the same bar with a different tab active; only the **icon**
- * changes, the label stays `#B4B2A8` throughout.
+ * Figma v4: the tab bar drawn at the foot of every tab frame (`BottomBar2`,
+ * `BottomBar3`, `Component 2`, and an unnamed copy on 홈). Ten of the eleven
+ * are the same 220×39.42 white bar; 홈's is the un-rescaled 41-tall original.
+ * Only the **icon** changes with the active tab — the label is Plex Regular
+ * `text/body` in every state.
  *
- * Figma hand-places the four columns slightly off centre (31.5 / 83.5 / 135.5 /
- * 187.5 rather than even quarters). They are laid out evenly here — the intent
- * is plainly a four-up bar, and even columns also survive a change of device
- * width.
+ * Each icon has its own box per state, because the bitmaps pad their artwork
+ * differently (MY's active icon fills more of its canvas than the inactive one,
+ * so Figma draws it smaller). Sizes and tops are v4's, in Figma points.
+ *
+ * The four columns are even, inside Figma's inset: v4 centres the icons at
+ * 31.5 / 83 / 135 / 187, a ~52pt pitch that leaves 5.5 on the left and ~7 on
+ * the right, and the padding below lands every centre within 0.4pt of that.
  */
 export type BottomBarTabName = 'home' | 'journal' | 'plan' | 'my';
 
-const TABS: Record<
-  BottomBarTabName,
-  { label: string; size: number; top: number; off: number; on: number }
-> = {
+type TabIcon = { source: number; size: number; top: number };
+
+const TABS: Record<BottomBarTabName, { label: string; off: TabIcon; on: TabIcon }> = {
   home: {
     label: '홈',
-    size: 25,
-    top: 5,
-    off: require('@/assets/images/tabs/home-off.png'),
-    on: require('@/assets/images/tabs/home-on.png'),
+    off: { source: require('@/assets/images/tabs/home-off.png'), size: 24.04, top: 3.85 },
+    // Only 홈's un-rescaled bar lights 홈 (26 @ 4); this is that × 39.42/41.
+    on: { source: require('@/assets/images/tabs/home-on.png'), size: 25, top: 3.85 },
   },
   journal: {
     label: '오늘의 일지',
-    size: 28,
-    top: 3,
-    off: require('@/assets/images/tabs/journal-off.png'),
-    on: require('@/assets/images/tabs/journal-on.png'),
+    off: { source: require('@/assets/images/tabs/journal-off.png'), size: 26.92, top: 1.92 },
+    on: { source: require('@/assets/images/tabs/journal-on.png'), size: 28.85, top: 0.96 },
   },
   plan: {
     label: '개선책',
-    size: 26,
-    top: 4,
-    off: require('@/assets/images/tabs/plan-off.png'),
-    on: require('@/assets/images/tabs/plan-on.png'),
+    off: { source: require('@/assets/images/tabs/plan-off.png'), size: 25, top: 2.88 },
+    // v4 `image 1104` — the violet bulb. The dark bulb-and-gear it replaces
+    // (`image 1101`) is still stacked under the inactive icon in v4, unseen.
+    on: { source: require('@/assets/images/tabs/plan-on.png'), size: 25, top: 2.88 },
   },
   my: {
     label: 'MY',
-    size: 28,
-    top: 3,
-    off: require('@/assets/images/tabs/my-off.png'),
-    on: require('@/assets/images/tabs/my-on.png'),
+    off: { source: require('@/assets/images/tabs/my-off.png'), size: 26.92, top: 1.92 },
+    on: { source: require('@/assets/images/tabs/my-on.png'), size: 23.08, top: 3.85 },
   },
 };
 
-const BAR_HEIGHT = 41;
+const BAR_HEIGHT = 39.42;
+const PADDING_LEFT = 5.5;
+const PADDING_RIGHT = 7.5;
+/**
+ * Label line-box top. v4 draws 홈 / 오늘의 일지 / 개선책 at 25.05 and MY about
+ * 1pt lower at 26.01; the three win.
+ */
+const LABEL_TOP = 25.05;
 
 /**
  * The bar itself. Used as `<TabList asChild><BottomBar>…</BottomBar></TabList>`,
@@ -79,6 +86,8 @@ export const BottomBar = forwardRef<View, ViewProps>(function BottomBar({ style,
           backgroundColor: '#FFFFFF',
           height: scale(BAR_HEIGHT) + insets.bottom,
           paddingBottom: insets.bottom,
+          paddingLeft: scale(PADDING_LEFT),
+          paddingRight: scale(PADDING_RIGHT),
         },
         style,
       ]}
@@ -88,21 +97,21 @@ export const BottomBar = forwardRef<View, ViewProps>(function BottomBar({ style,
 
 type BottomBarButtonProps = Omit<PressableProps, 'style'> & {
   tab: BottomBarTabName;
-  /** Supplied by `TabTrigger`; absent on the tabs that have no screen yet. */
+  /** Supplied by `TabTrigger` from the route. */
   isFocused?: boolean;
   /** Narrowed from Pressable's union — its function form will not compose. */
   style?: StyleProp<ViewStyle>;
 };
 
 /**
- * One tab. Wrap it in a `TabTrigger asChild` to make it navigate; rendered bare
- * it is inert, which is how 개선책 and MY sit until those screens exist.
+ * One tab. Wrap it in a `TabTrigger asChild` to make it navigate.
  */
 export const BottomBarButton = forwardRef<View, BottomBarButtonProps>(function BottomBarButton(
   { tab, isFocused = false, style, ...props },
   ref,
 ) {
-  const { label, size, top, off, on } = TABS[tab];
+  const { label, off, on } = TABS[tab];
+  const icon = isFocused ? on : off;
 
   // The layout goes *after* the incoming style, which is the reverse of the
   // usual order: `TabTrigger` hands its child a hardcoded
@@ -117,20 +126,20 @@ export const BottomBarButton = forwardRef<View, BottomBarButtonProps>(function B
         { flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' },
       ]}>
       <Image
-        source={isFocused ? on : off}
-        style={{ width: scale(size), height: scale(size), marginTop: scale(top) }}
+        source={icon.source}
+        style={{ width: scale(icon.size), height: scale(icon.size), marginTop: scale(icon.top) }}
         resizeMode="contain"
       />
       <Text
         numberOfLines={1}
         style={{
           position: 'absolute',
-          bottom: scale(4.5),
-          fontSize: scale(7),
-          lineHeight: scale(9),
-          color: '#B4B2A8',
+          top: scale(LABEL_TOP),
+          fontSize: scale(6.769),
+          lineHeight: scale(9.026),
+          color: COLOR.text.body,
         }}
-        className="font-pretendard">
+        className="font-plex">
         {label}
       </Text>
     </Pressable>

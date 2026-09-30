@@ -4,7 +4,8 @@ LifeDNA 만들기 프로젝트.
 
 매일의 기록을 모아 사용자별 '유전자'를 만들어가는 앱입니다. 현재 **Figma에 그려진 화면이 전부** 구현돼 있습니다 (로그인·회원가입, 홈,
 일지, 개선책, 마이페이지).
-**백엔드에는 아직 아무것도 연결돼 있지 않습니다.**
+**백엔드는 연결돼 있습니다** — 인증, 일지 저장, 홈·일지의 점수·기록 조회 (아래
+"동작하지 않는 것" 참고). 개선책은 아직 API 엔드포인트가 없습니다.
 
 ## 기술 스택
 
@@ -13,8 +14,8 @@ LifeDNA 만들기 프로젝트.
 - NativeWind (Tailwind CSS)
 - react-native-svg (일지 주간 컨디션 그래프 전용. Expo Go에 포함돼 있어
   개발용 빌드가 따로 필요하지 않습니다)
-- iOS/Android 타겟 (`app.json`의 `platforms`). 웹은 지원 대상이 아니지만
-  템플릿 잔재가 남아 있습니다 — AGENTS.md의 미해결 항목 참고
+- iOS/Android 타겟 (`app.json`의 `platforms`). 웹은 지원하지 않고, 웹 전용
+  잔재(`react-dom` 등)도 2026-08-17에 지웠습니다 — AGENTS.md 참고
 
 ## 시작하기
 
@@ -55,6 +56,11 @@ npm test
 | `(tabs)/plan/forecast` | 개선책 · 한 달 뒤 내 모습 |
 | `(tabs)/my` | MY · 마이페이지 ※※ |
 | `(tabs)/my/wearable` | MY · 웨어러블 연동 |
+| `(tabs)/my/privacy` | MY · 데이터 개인정보 |
+| `(tabs)/my/subscription` | MY · 구독관리 |
+
+라우트 파일은 한 줄 re-export이고, 화면 본체는 `src/features/<탭>/*-screen.tsx`에
+있습니다 (아래 디렉터리 구조 참고).
 
 캘린더에서 날짜를 누르면 **하루 요약 카드**가 먼저 뜨고, 그 카드의 "입력 기록 보기"로
 상세보기에 들어갑니다.
@@ -69,9 +75,8 @@ npm test
 버튼은 눌러도 아무 일도 하지 않습니다 — 장바구니가 없고 API에도 커머스
 엔드포인트가 없습니다.
 
-06_마이페이지는 **네 프레임 중 둘만 실제로 디자인돼 있어** 그 둘만 옮겼습니다.
-데이터 개인정보는 같은 메뉴를 제목만 바꿔 반복하고, 구독관리는 제목 아래 빈
-상자뿐입니다. 두 메뉴 행은 눌러도 아무 일도 하지 않습니다.
+06_마이페이지는 네 프레임(마이페이지·웨어러블 연동·데이터 개인정보·구독관리)이
+모두 구현돼 있습니다.
 
 일지 탭 안에서 메인 → 오늘의 기록 / 캘린더 / 상세보기로 이동합니다. 홈의
 "오늘 기록하기 →"는 오늘의 기록으로 바로 갑니다. **전부 데이터 계층이 없어서
@@ -100,7 +105,8 @@ npm test
   (백로그 31). 개선책은 아직 엔드포인트 자체가 없습니다.
 - **못 채운 자리는 `—`로 둡니다.** 홈의 수면 카드(`sleepMinutes`가 항상 null,
   백로그 29), 5개 영역 중 감정·환경(백로그 33), 캘린더 코멘트와 그래프 요약
-  문장(백로그 27)이 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
+  문장(백로그 27), 일지 하단의 오늘 날씨(백로그 12 — 저장에 위경도를 안 보내 기록되는
+  날씨가 없습니다)가 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
   그대로 박혀 있습니다** — 지표별 등급 규칙이 없습니다(백로그 10).
   **무엇이 남았는지는 `docs/backend-backlog.md`의 "프론트 연동 현황" 표가
   목록입니다.**
@@ -109,29 +115,46 @@ npm test
   단계는 여전히 **다음 버튼 비활성화**까지만이라 왜 막혔는지 알려주지 못합니다 —
   그 컨트롤들에는 미응답 디자인이 없습니다. 서버가 거절한 경우만 `Alert`로
   서버 메시지를 그대로 보여줍니다.
-- 회원가입 입력값은 3단계에 걸쳐 유지되고(`lib/sign-up-form.tsx`),
-  `lib/sign-up-request.ts`가 서버 enum으로 변환해 실제로 전송합니다.
+- 회원가입 입력값은 3단계에 걸쳐 유지되고(`features/auth/sign-up-form.tsx`),
+  `features/auth/sign-up-request.ts`가 서버 enum으로 변환해 실제로 전송합니다.
 
 ## 디렉터리 구조
 
 ```
 src/
-  app/                 Expo Router 라우트 (파일 = 경로)
+  app/                 Expo Router 라우트 전용 (파일 = 경로)
     index.tsx          "/" → 로그인으로 리다이렉트
-    (auth)/            가입 플로우 — 구현 완료
-    (tabs)/            가입 이후 앱 — 홈/일지 구현, 탭 바는 Figma BottomBar
-    _layout.tsx        폰트 로드 + global.css + 스택 앵커
-  components/ui/       Figma 디자인 시스템 컴포넌트 (collapsible 은 템플릿)
-  components/          템플릿 잔여 컴포넌트
-  lib/
+    (auth)/ (tabs)/    화면 파일은 features를 가리키는 한 줄 re-export
+    **/_layout.tsx     레이아웃만 실제 코드 (폰트·global.css·스택 앵커·탭 바)
+  features/            탭 하나 = 폴더 하나. 담당도 이 단위로 나눕니다
+    auth/              로그인·회원가입 화면 + sign-up-form(입력 상태)·sign-up-request
+    home/              홈 화면 + components/ (OrbCard, StatCard, JournalCta)
+    journal/           일지 4화면 + components/ + journal-options(선택지)
+    plan/              개선책 4화면 + components/
+    my/                MY 4화면 + components/
+  components/ui/       Figma 디자인 시스템 컴포넌트 (아래 표)
+  components/          animated-icon (스플래시)
+  lib/                 둘 이상의 feature가 쓰는 것
+    api.ts auth.tsx use-api-query.ts   서버 호출·세션·조회 훅
+    dates.ts score.ts diary-request.ts 날짜·점수·일지 변환 (홈과 일지가 공유)
     scale.ts           Figma 220pt 좌표 → 실기기 dp 변환
     design.ts          그림자·그라디언트 등 Figma 원시값
     motion.ts          오브·DNA 모션 튜닝값 (Figma 기준 아님 — 기기에서 조정)
-    sign-up-form.tsx   회원가입 3단계 공용 입력 상태 (Context)
-    journal-options.ts 일지 선택지 (오늘의 기록·상세보기 공용)
   global.css           NativeWind 진입점 (_layout.tsx 에서 1회 import)
-  constants/, hooks/   템플릿 유틸
 ```
+
+**import는 한 방향으로만 흐릅니다: `lib`·`components` → `features` → `app`.**
+feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 되면 `lib`이나
+`components/ui`로 올립니다. `eslint.config.js`의 `import/no-restricted-paths`가
+이것을 강제하므로 어기면 `npx expo lint`가 실패합니다. 새 feature 폴더를
+만들면 그 파일의 `FEATURES` 목록에도 추가해주세요.
+
+어디에 둘지 헷갈리면:
+
+- **Figma 컴포넌트 마스터**를 옮긴 것 → `components/ui/` (한 화면에서만 써도)
+- Figma에서 컴포넌트가 아닌 **수작업 카드·블록** → `features/<탭>/components/`
+- 화면 하나에서만 쓰는 작은 도우미 → 그 화면 파일 안에 그대로
+- 파일은 kebab-case, export는 이름 있는 export, barrel(`index.ts`) 파일은 만들지 않습니다
 
 경로 별칭은 `@/*` → `src/*`, **`@/assets/*` → `assets/*`** 두 가지입니다
 (두 번째는 `src` 밖을 가리키므로 주의). `app.json`의 `typedRoutes` 때문에
@@ -149,11 +172,14 @@ src/
 `src/components/ui/`의 아래 항목은 전부 Figma 마스터를 옮긴 것입니다. 화면을 새로
 만들 때는 직접 스타일을 쓰지 말고 이것들을 조합해주세요.
 
+모든 컴포넌트는 v4 개편(`99_개선안_v4`)을 따릅니다. 값을 어떻게 정했는지는
+[docs/redesign-v4-inventory.md](docs/redesign-v4-inventory.md)에 있습니다.
+
 | 컴포넌트 | Figma | 용도 |
 |---|---|---|
 | `button` | ButtonNextUI | 하단 주요 액션 버튼 |
-| `button-back` | ButtonBack | 14×13 뒤로가기 칩 (빈 스택 가드 포함) |
-| `select-button` | SelectButton1~5 | 선택 알약 (5단계 × 회색/흰색 × 3상태) |
+| `button-back` | ButtonBack | 13.46×12.5 뒤로가기 칩 (v4, 빈 스택 가드 포함) |
+| `select-button` | SelectButton1~5 | 선택 알약 (`size`: 일지·회원가입·리커트 × 3상태) |
 | `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열, 카드 없음) |
 | `select-card` | SelectItem{3,4,6}[_Caption]_Card | 카드 + 라벨 + 설명 + 알약 한 줄 |
 | `likert-card` | SelectItem6_Card | 0~5 숫자 척도 카드 |
@@ -170,30 +196,33 @@ src/
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
 | `weekly-condition-chart` | 주간_컨디션_그래프 | 7일 컨디션 꺾은선 (react-native-svg) |
-| `gradient-text` | LifeDNA 워드마크 | 그라디언트 텍스트 |
+| `diary-status` | Diary_Status | 일지/메인 지난 기록의 등급별 얼굴 (비트맵 3종) |
+| `plan-card` | (개선책 더 알아보기·인사이트 카드) | 아이콘 + 제목 + 설명 행 (`layout`: `link`·`insight`) |
+| `area-delta-card` | 지난 주 대비 영역별 변화 | 6개 영역 변화 표 (주간 리포트·한 달 뒤) |
 
 **`pill-group`과 `select-card`는 형제입니다.** Figma가 같은 알약 묶음을 카드 없는
 `SelectItem*`(회원가입)과 카드 있는 `SelectItem*_Card`(일지) 두 벌로 그려두었고,
-콘텐츠 폭(186 vs 182)과 안쪽 여백이 달라서 별도 컴포넌트로 두었습니다.
+크기가 달라서(v4: 그룹은 179.385 폭·필 24.8, 카드는 열 폭 197.44·필 18.1) 별도 컴포넌트로 두었습니다.
 
 **필은 3상태입니다** — `inactive` / `active` / `history`. `history`는 지난 기록을
-읽기 전용으로 되비출 때 쓰는 회청색(`#7786A8`) 상태로, 눌리지 않습니다.
+읽기 전용으로 되비출 때 쓰는 상태로, v4부터 `active`와 같은 색이고 눌리지만 않습니다.
 `PillGroup`·`SelectCard`·`LikertCard`·`FeelSelect`는 `history` boolean으로 넘깁니다.
 
 크기·간격은 모두 Figma 값을 `scale()`로 감싸서 씁니다 (`scale(17)` = Figma 17pt).
-색상은 `src/lib/design.ts`와 명시적 hex를 씁니다. `tailwind.config.js`의 색상
-스케일은 쓰이지 않고 값도 일부 어긋나 있으니 `text-primary-900` 같은 클래스에
-손대지 마세요 (AGENTS.md 참고).
+색상은 `src/lib/design.ts`(`COLOR`)와 명시적 hex를 씁니다. `tailwind.config.js`에는
+`fontFamily`만 남아 있습니다 — 색상 스케일은 2026-08-17에 지웠으니 다시 만들지
+마세요 (AGENTS.md 참고).
 
-**단, 아래 두 화면은 이 규칙을 따르지 않습니다.** Figma 원본이 컴포넌트가 아닌
+**단, 아래 세 곳은 이 규칙을 따르지 않습니다.** Figma 원본이 컴포넌트가 아닌
 수작업 도형이거나 `PillGroup`이 표현할 수 없는 배치라서 직접 조립했습니다.
 새 화면의 본보기로 삼지 마세요.
 
-- `survey.tsx` — 수면 유형·수면의 질 알약을 `Pressable`로 직접 구성
-- `personal-info.tsx` — 직업 5열 배치 (`PillGroup`의 `columns`는 최대 4)
-- `journal/today.tsx` — 카페인 섭취·운동 습관 카드. Figma 원본이 컴포넌트가 아닌
-  낱개 도형이고, 알약 폭이 균등 그리드가 아니라 글자 길이에 맞춰져 있습니다
-- `(tabs)/home.tsx` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
+- `features/auth/survey-screen.tsx` — 수면 유형 알약(아이콘)은 `Pressable`로, 수면의 질·운동량은
+  글자 폭에 맞춘 19pt `SelectButton`으로 직접 배치 (v4의 `NoSelect`·수작업 도형)
+- `features/journal/today-screen.tsx`·`detail-screen.tsx` — 카페인 섭취(질문 두 개가 한 카드)·운동 습관
+  카드. Figma 원본이 컴포넌트가 아닌 낱개 도형이라 `journal/components/form-text`의 조각으로
+  조립합니다 (v4에서 알약은 `SelectCard`와 같은 균등 그리드가 됐습니다)
+- `features/home/components/` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
   아니고, 오브 카드는 절대 위치로 조립해야 하는 배치입니다
 
 ## 함께 읽을 것

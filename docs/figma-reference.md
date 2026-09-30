@@ -31,28 +31,30 @@ undesigned frames (see the screens table). Component library lives under
 
 ## Screens
 
+Paths are under `src/features/`; the route files in `src/app` only re-export them.
+
 | Node | Screen | Code |
 |---|---|---|
-| `585:1352` | 로그인/메인 | `(auth)/sign-in.tsx` |
-| `500:121` | 회원가입/1 개인정보 | `(auth)/sign-up/personal-info.tsx` |
-| `457:828` | 회원가입/2 초기 진단 | `(auth)/sign-up/survey.tsx` |
-| `457:829` | 회원가입/3 약관 동의 | `(auth)/sign-up/terms.tsx` |
-| `457:738` | (hidden draft) 시작해보기 | `(auth)/sign-up/index.tsx` |
-| `597:1466` | 홈/메인 | `(tabs)/home.tsx` |
-| `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `(tabs)/home.tsx` |
-| `480:1269` | 일지/오늘의기록(생성) | `journal/today.tsx` |
-| `480:1268` | 일지/메인 | — |
-| `480:1274` | 일지/캘린더 | — |
-| `480:1275` | 일지/상세보기 | `journal/[date].tsx` |
-| `585:1436` | 주간_컨디션_그래프 | `ui/weekly-condition-chart.tsx` |
-| `559:1297` | 개선책/메인 | `(tabs)/plan/index.tsx` |
-| `559:1295` | 개선책/맞춤영양제 | `(tabs)/plan/supplements.tsx` |
-| `559:1294` | 개선책/주간리포트 | `(tabs)/plan/report.tsx` |
-| `523:490` | 개선책/한달뒤내모습 | `(tabs)/plan/forecast.tsx` |
-| `583:969` | 마이페이지 (Frame 28) | `(tabs)/my/index.tsx` |
-| `583:862` | 웨어러블 연동 (Frame 26) | `(tabs)/my/wearable.tsx` |
-| `583:913` | 데이터 개인정보 (Frame 27) | — **디자인 완료, 미구현** |
-| `585:1399` | 구독관리 (Frame 25) | — **디자인 완료, 미구현** |
+| `585:1352` | 로그인/메인 | `auth/sign-in-screen.tsx` |
+| `500:121` | 회원가입/1 개인정보 | `auth/personal-info-screen.tsx` |
+| `457:828` | 회원가입/2 초기 진단 | `auth/survey-screen.tsx` |
+| `457:829` | 회원가입/3 약관 동의 | `auth/terms-screen.tsx` |
+| `457:738` | (hidden draft) 시작해보기 | `auth/sign-up-intro-screen.tsx` |
+| `597:1466` | 홈/메인 (v4: `1363:1953`, see `docs/redesign-v4-inventory.md`) | `home/home-screen.tsx` |
+| `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `home/components/orb-card.tsx` |
+| `480:1269` | 일지/오늘의기록(생성) | `journal/today-screen.tsx` |
+| `480:1268` | 일지/메인 (v4: `1363:2135`) | `journal/main-screen.tsx` |
+| `480:1274` | 일지/캘린더 (v4: `1363:2507`) | `journal/calendar-screen.tsx` |
+| `480:1275` | 일지/상세보기 | `journal/detail-screen.tsx` |
+| `585:1436` | 주간_컨디션_그래프 (v4에 없음 — 주간_기록 카드를 따름) | `src/components/ui/weekly-condition-chart.tsx` |
+| `559:1297` | 개선책/메인 (v4: `1363:2935`) | `plan/main-screen.tsx` |
+| `559:1295` | 개선책/맞춤영양제 (v4: `1363:3003`) | `plan/supplements-screen.tsx` |
+| `559:1294` | 개선책/주간리포트 (v4: `1363:3061`) | `plan/report-screen.tsx` |
+| `523:490` | 개선책/한달뒤내모습 (v4: `1363:3134`) | `plan/forecast-screen.tsx` |
+| `583:969` | 마이페이지 (Frame 28) | `my/main-screen.tsx` |
+| `583:862` | 웨어러블 연동 (Frame 26, v4: `1363:3340`) | `my/wearable-screen.tsx` |
+| `583:913` | 데이터 개인정보 (Frame 27, v4: `1363:3364`) | `my/privacy-screen.tsx` |
+| `585:1399` | 구독관리 (Frame 25, v4: `1363:3269`) | `my/subscription-screen.tsx` |
 
 ## 2026-08-17 재대조에서 바뀐 것
 
@@ -114,26 +116,30 @@ frame — that uniform offset is correct, and only *departures* from it are bugs
 | 회원가입/2 초기 진단 | **17** | **186** | button at 22, Likert cards at 25 |
 | 회원가입/3 약관 동의 | 18 | 184 | button at 19 |
 | 홈/메인 | 18 | **180** | right margin 22 — the only asymmetric one |
-| 일지/메인 | **19** | 184 | right margin 17 |
+| 일지/메인 | **19** | 184 | right margin 17 (v4: 11.28 / 197.436) |
 | 일지/오늘의기록 | 18 | 184 | cards inside are 182 |
-| 일지/캘린더 | **17** | **186** | |
+| 일지/캘린더 | **17** | **186** | (v4: 11.28 / 197.436) |
 | 일지/상세보기 | 18 | 184 | cards 182, loose rects 184 |
-| 개선책/메인 | 18 | 184 | 한달뒤 teaser at 17 |
-| 개선책/맞춤영양제 | **17** | 184 | |
-| 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 |
-| 개선책/한달뒤내모습 | **17** | 184 | |
+| 개선책/메인 | 18 | 184 | 한달뒤 teaser at 17 (v4: 11.28 / 197.436) |
+| 개선책/맞춤영양제 | **17** | 184 | (v4: 11.28 / 197.436) |
+| 개선책/주간리포트 | **17** | 184 | 인사이트·제안 cards 183 at x=18 (v4: 11.28 / 197.436) |
+| 개선책/한달뒤내모습 | **17** | 184 | (v4: 11.28 / 197.436) |
 | 마이페이지 | **17** | 184 | menu card radius 6, not 10 |
-| 웨어러블 연동 | **17** | 184 | watch is full-bleed 220×220 |
+| 웨어러블 연동 | **17** | 184 | watch is full-bleed 220×220 (v4: 11.28 / 197.436) |
+| 데이터 개인정보 · 구독관리 | 17 | 184 / 186 | (v4: 11.28 / 197.436) |
 
 Getting this wrong is not cosmetic: sizing the 수면 유형 pills against 186 in a
 184pt column overflowed the row and collapsed the 2×2 grid into one column.
 
-`SelectItem*_Card`, `SelectFeel5` and `InputTime_Card` are **182 wide in every
+*(Pre-v4 — in v4 these cards are 197.44, the column's full width, and fill their
+parent; see redesign-v4-inventory.md.)* `SelectItem*_Card`, `SelectFeel5` and
+`InputTime_Card` were **182 wide in every
 instance**, so they carry their own width rather than filling the screen's
 column — on the 일지 screens that column is 184 and they would come out 2pt wide.
 The hand-built loose cards on 상세보기 really are 184 and do fill it.
 
-The step progress bar is **180pt wide**, not the content width — segments at
+*(Pre-v4 — in v4 the bar is the 197.44 column; see below.)* The step progress
+bar was **180pt wide**, not the content width — segments at
 0–56 / 60–118 / 121–179, fill to 56 / 119 / 180 for steps 1–3.
 
 The 약관 동의 screen **does** have a back button and a title (`약관 동의`,
@@ -141,6 +147,10 @@ The 약관 동의 screen **does** have a back button and a title (`약관 동의
 later, which is the usual reason to re-pull rather than trust the code.
 
 ## SelectButton — the pill family
+
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
 
 Five sizes × two tones (`gray` / `white`). Implemented as
 `src/components/ui/select-button.tsx` (`level`, `tone`).
@@ -162,6 +172,10 @@ All five grey levels now carry a third variant `*_History` — `#7786A8` bg,
 levels 1–5. The white tone has only active/inactive.
 
 ## SelectItem — labelled pill groups
+
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
 
 Rendered by `src/components/ui/pill-group.tsx`. The number in `SelectItem<N>` is
 the **option count, not the column count** — `SelectItem4_1` holds four options
@@ -195,6 +209,10 @@ label the text inputs use).
 
 ## SelectItem*_Card — the carded pill groups (일지)
 
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
+
 Rendered by `src/components/ui/select-card.tsx`. All are 182 wide on a white
 card, radius 10, with the same Bold 8 `#00352C` title on a 15pt line box. The
 pill count picks the whole row geometry.
@@ -215,6 +233,10 @@ bottom, and `SelectItem6_Card` uses a 10pt title line box instead of 15.
 
 ## SelectFeel5 — the five-face 컨디션 scale
 
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
+
 `603:1836` (182×66), plus `677:1175` `SelectFeel5_NeedAnswer` (182×76).
 Implemented as `src/components/ui/feel-select.tsx`.
 
@@ -227,7 +249,7 @@ Medium 6 label whose line box sits at y 22–30:
 | State | Background | Text |
 |---|---|---|
 | Inactive | `#F2F2F0` | `#5F5E5B` |
-| Active | GRADIENT_SELECT @ 18.9% | `#FFFFFF` |
+| Active | pre-v4: GRADIENT_SELECT @ 18.9% (constant deleted; v4 is `brand/selected`) | `#FFFFFF` |
 | History | `#7786A8` | `#F1F1F1` |
 
 `_NeedAnswer` swaps the card to `#FFF9F9` with a 0.3pt pure-`red` border and
@@ -242,6 +264,10 @@ face sits on a gradient.
 
 ## InputTime_Card
 
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
+
 `457:884` — 182×60. Title row (Bold 8) with a `#E9F0FF` duration badge at the
 right (33×10, radius 10, Medium 5 `#4800FF`). Below it two Medium 5 `#88877F`
 field labels, then two 68×19 fields (white, radius 5, 0.7pt `#F1EFE7` border,
@@ -250,12 +276,22 @@ arrow. Light is the only place that weight is used so far.
 
 ## Select0To10_Card
 
+> **Pre-v4.** v4 values for this family (colours, sizes, card width, no `history`
+> slate) are in [redesign-v4-inventory.md](redesign-v4-inventory.md) and the code;
+> the numbers below describe the older design.
+
 `597:1582` — 182×55. The bare `Select0To10` in a card: title drops to Bold 8 on a
 15pt line box, the handle shrinks from 13×12 to 10×10, and the end labels use a
 8pt line box. Same `#E9F0FF` badge. `Select0To10_History` (`603:1849`, 184×55)
 is the read-only twin and is **not built yet**.
 
 ## BottomBar
+
+> **Pre-v4.** v4 draws the bar 220×39.42 with Plex Regular 6.77 `text/body`
+> labels, and lights 개선책 with a violet bulb (`image 1104`) instead of the dark
+> bulb-and-gear. Per-icon sizes are in `bottom-bar.tsx`, decisions in
+> [redesign-v4-inventory.md](redesign-v4-inventory.md); the numbers below
+> describe the older design.
 
 `457:820` — `BottomBar0`–`BottomBar4` (`496:1958`, `1960`, `1961`, `1959`,
 `1962`). The same 220×41 white bar five times; **only the icon changes**, the
@@ -321,7 +357,7 @@ visible. The DNA 카드 (`457:791`) has **no** dots — `NiceDNA` (`485:110`) is
 single rotated bitmap with no children.
 
 The 홈 stat cards, orb card and 일지 CTA are loose shapes, not components; their
-values live in `(tabs)/home.tsx`. Badge colours are their own palette, not the
+values live in `src/features/home/components/`. Badge colours are their own palette, not the
 tone trio: 조금 부족 `#FBF2E1`/`#E5A64E`, 좋아요 `#E6F4EE`/`#4B9977`,
 높음 `#F9E9E8`/`#D25D53`.
 
@@ -329,8 +365,8 @@ tone trio: 조금 부족 `#FBF2E1`/`#E5A64E`, 좋아요 `#E6F4EE`/`#4B9977`,
 
 | Node | Name | Notes |
 |---|---|---|
-| `457:742` | ButtonNextUI | 184×30, radius 10, SELECT gradient, ExtraBold 10 |
-| `549:846` | TextInput | 184×34 — Bold 7 `#88877F` label band (10) + 23pt white field |
+| `457:742` | ButtonNextUI | **pre-v4** — 184×30, radius 10, SELECT gradient, ExtraBold 10. v4 is 197.4×27.1, see `docs/redesign-v4-inventory.md` |
+| `549:846` | TextInput | **pre-v4** — 184×34 — Bold 7 `#88877F` label band (10) + 23pt white field |
 | `480:1293` | Select0To10 | 186×43 — see below |
 | `485:35` | NoSelect | unanswered/error state, red border `#FFF9F9` bg — not implemented |
 | `457:797` | PhoneHeader | status bar mock, replaced by SafeAreaView |
@@ -345,6 +381,11 @@ It gained a current-value badge: 35×10, radius 10, `#E9F0FF` background,
 Medium 5 `#4800FF`, sitting on the label row against the right edge.
 
 ### Step progress bar
+
+> **Pre-v4.** In v4 the fill is the pastel ramp (`GRADIENT_PASTEL`) over the
+> 197.44 column, segments at 0–61.77 / 66.18–130.15 / 133.46–197.43, tracks
+> `surface/track`; values and the frame-by-frame split are in
+> [redesign-v4-inventory.md](redesign-v4-inventory.md) and `step-header.tsx`.
 
 One continuous gradient whose width covers the completed steps, with the
 remaining segments drawn as thinner grey (`#D3D1C6`) bars. Against the 180pt bar

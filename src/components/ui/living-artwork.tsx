@@ -16,6 +16,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { COLOR } from '@/lib/design';
 import { MOTION } from '@/lib/motion';
 import { scale } from '@/lib/scale';
 
@@ -342,7 +343,7 @@ export function SpinningRing({
           height: scale(size),
           borderRadius: scale(size),
           borderWidth: scale(1),
-          borderColor: '#F1EFE7',
+          borderColor: COLOR.border.soft, // v4 `border/soft` — only 홈's orb card uses this ring
           borderStyle: 'dashed',
         },
         animatedStyle,

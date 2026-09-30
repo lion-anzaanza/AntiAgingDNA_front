@@ -123,7 +123,7 @@ rejects 0 with a 400, and there is no "unanswered" position — so
 `DiagnosisRequest` is the STEP 2 초기 진단. Everything is required except
 `socialContactLevel` and `who5Q1`–`who5Q5`.
 
-| Field | Enum | UI (`survey.tsx`) |
+| Field | Enum | UI (`survey-screen.tsx`) |
 |---|---|---|
 | `sleepType` | `MORNING` `EVENING` `NORMAL` `SENSITIVE` | 아침형 · 저녁형 · 일반형 · 예민형 |
 | `sleepOnsetDelayed` | boolean | 잠드는데 30분 이상 걸려요 |
@@ -153,7 +153,7 @@ sensitivity sliders**, which the API models as four levels.
 
 `AreaScoreResponse` — `physical` `mental` `emotion` `social` `environment` plus
 `grades` (the same five keys, `"GOOD"|"WARN"|"DANGER"|null`). This is the
-5개 영역 밸런스 row on 홈 (신체 · 정신 · 감정 · 사회 · 환경).
+5개 영역 밸런스 row on 홈 (UI tab order, not the response's key order: 신체 · 정신 · 환경 · 감정 · 사회).
 
 **Do not call `GET /api/scores/{date}` or `/today`.** Reading a single date
 **creates** that date's score row on the server, permanently and irreversibly
@@ -206,8 +206,12 @@ from the reference itself.
 
 - 홈 stat cards (수면 6.4시간 · 수분 1.6L · 스트레스 72%) — no aggregate endpoint,
   and the diary stores buckets rather than volumes
-- 나의 LifeDNA 정보 weekly cards — no trend endpoint
-- 날씨 자동 기록 on 일지 — no field, no endpoint
+- 나의 LifeDNA 정보 weekly cards — no trend endpoint for four of the five areas;
+  신체's 수면·수분 come from `GET /api/scores/items` (backlog 11, 🟡 프론트 since v4)
+- ~~날씨 자동 기록 on 일지 — no field, no endpoint~~ Stale: `DiaryRequest` takes
+  `lat`/`lon`/`weatherLocationLabel` and `DiaryResponse` returns `weather*` fields
+  (checked against `/v3/api-docs` 2026-09-30). The app sends no location, so the
+  card draws `—` (backlog 12)
 - 05_개선책 and 06_마이페이지 — nothing at all
 - Token refresh, logout, 아이디·비밀번호 찾기, duplicate-identifier check
 - Gender and occupation, which 회원가입 STEP 1 collects

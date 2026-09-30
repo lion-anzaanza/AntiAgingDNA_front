@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth';
  *
  * Four screens read the API and every one of them wants the same three things —
  * the token, a cancel guard so a slow response cannot land on an unmounted
- * screen, and a `loading` flag to gate the first paint. `today.tsx` wrote that
+ * screen, and a `loading` flag to gate the first paint. `today-screen.tsx` wrote that
  * by hand before this existed; it keeps its own copy because it *writes* too and
  * has to hold the result in editable state rather than render it.
  *
