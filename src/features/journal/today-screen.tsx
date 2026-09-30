@@ -6,7 +6,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { ButtonBack } from '@/components/ui/button-back';
 import { FeelSelect, type FeelValue } from '@/components/ui/feel-select';
-import { GradientText } from '@/components/ui/gradient-text';
 import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
 import { SelectCard } from '@/components/ui/select-card';
@@ -14,15 +13,22 @@ import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { messageFor, request } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
-import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { toDiaryDraft, toDiaryRequest, type DiaryFields } from '@/lib/diary-request';
-import { CardCaption, CardTitle, FieldCaption, SectionHeading } from '@/features/journal/components/form-text';
+import {
+  CardCaption,
+  CardTitle,
+  FieldCaption,
+  LooseCard,
+  PillRow,
+  SectionHeading,
+  WeatherCard,
+} from '@/features/journal/components/form-text';
 import {
   CAFFEINE_CAPTION,
   CAFFEINE_CUPS,
   CAFFEINE_TIME,
   CAFFEINE_TIME_CAPTION,
-  CAFFEINE_TIME_WIDTH,
   CARD_GAP,
   DID_EXERCISE,
   EXERCISE_KIND,
@@ -44,12 +50,13 @@ import {
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: 일지/오늘의기록(생성) — `480:1269`.
+ * Figma v4: 일지/오늘의기록(생성) — `1363:2209` (was `480:1269`). Positions are
+ * v4's, frame y − 38 for the `PhoneHeader` mock; the column is 11.28 / 197.436.
  *
  * 카페인 섭취 and 운동 습관 are drawn as loose shapes in Figma rather than as
- * SelectItem components, and their pills are content-sized rather than an even
- * grid, so they are assembled by hand below. Like `survey-screen.tsx` and
- * `personal-info-screen.tsx`, do not copy them as a pattern for a new screen.
+ * SelectItem components (a card holding two questions, and one with captioned
+ * sub-rows), so they are assembled by hand from `form-text`'s pieces. v4 made
+ * their pills the same even grid as `SelectCard`'s.
  */
 export default function JournalTodayScreen() {
   const router = useRouter();
@@ -194,62 +201,92 @@ export default function JournalTodayScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
       <ScrollView
         ref={scroller}
         contentContainerStyle={{
-          paddingHorizontal: scale(18),
-          paddingTop: scale(3),
-          paddingBottom: scale(24),
+          paddingHorizontal: scale(CONTENT_INSET),
+          // v4 leaves 28.96 between the button and the tab bar; the shared
+          // `Button` is 27.08 tall where this frame draws 29.33, so the
+          // difference is added here to keep the page the same length.
+          paddingBottom: scale(28.96 + (29.333 - 27.077)),
         }}>
-        <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
-          <ButtonBack fallbackHref="/(tabs)/home" />
+        {/* Header: v4's own y (frame y − 38); the banner starts at 34.12. */}
+        <View style={{ height: scale(72.12 - 38), marginHorizontal: scale(-CONTENT_INSET) }}>
+          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(43.27 - 38) }}>
+            <ButtonBack fallbackHref="/(tabs)/home" />
+          </View>
           <Text
             style={{
-              fontSize: scale(12),
-              lineHeight: scale(15),
-              marginLeft: scale(9),
-              color: '#000000',
+              position: 'absolute',
+              left: scale(31.16),
+              top: scale(49.75 - 38 - 18.051 / 2),
+              fontSize: scale(13.538),
+              lineHeight: scale(18.051),
+              letterSpacing: scale(-0.2708),
+              color: COLOR.text.strong,
             }}
-            className="font-pretendard-extrabold">
+            className="font-plex-bold">
             오늘의 기록
           </Text>
           <Text
             style={{
-              marginLeft: 'auto',
-              fontSize: scale(7),
-              lineHeight: scale(9),
-              color: '#696969',
+              position: 'absolute',
+              right: scale(CONTENT_INSET),
+              top: scale(50.01 - 38 - 12.41 / 2),
+              fontSize: scale(8.462),
+              lineHeight: scale(12.41),
+              color: COLOR.text.body,
             }}
-            className="font-pretendard">
+            className="font-plex">
             {koreanDate(today)}
           </Text>
         </View>
 
+        {/*
+          * The two lines' boxes overlap (the second starts 0.9 above the
+          * first's bottom), so both are placed absolutely. The heading used to
+          * be a `GradientText`; v4 has no gradient text anywhere and draws it
+          * in `brand/violet-text`.
+          */}
         <View
           style={{
-            height: scale(41),
-            marginTop: scale(12),
-            borderRadius: scale(10),
-            backgroundColor: '#F3E9FF',
-            boxShadow: SHADOW,
-            paddingLeft: scale(12),
-            justifyContent: 'center',
+            height: scale(35.472),
+            borderRadius: scale(9.615),
+            backgroundColor: COLOR.surface.tint2,
+            boxShadow: SHADOW_V4,
           }}>
-          <GradientText
-            colors={[...GRADIENT_BRAND]}
-            style={{ fontSize: scale(9), lineHeight: scale(14) }}
-            className="font-pretendard-extrabold">
-            항목별로 오늘의 기록을 채워주세요!
-          </GradientText>
           <Text
-            style={{ fontSize: scale(7), lineHeight: scale(10), color: '#88877F' }}
-            className="font-pretendard">
+            style={{
+              position: 'absolute',
+              left: scale(8.78),
+              top: scale(12.31 - 13.538 / 2),
+              fontSize: scale(9.59),
+              lineHeight: scale(13.538),
+              letterSpacing: scale(-0.0959),
+              color: COLOR.brand.violetText,
+            }}
+            className="font-plex-semibold">
+            항목별로 오늘의 기록을 채워주세요!
+          </Text>
+          {/* v4 writes "LifeDAN" here; the name is LifeDNA (AGENTS, 2026-08-17). */}
+          <Text
+            style={{
+              position: 'absolute',
+              left: scale(8.51),
+              top: scale(22.67 - 9.026 / 2),
+              fontSize: scale(6.769),
+              lineHeight: scale(9.026),
+              color: COLOR.text.body,
+            }}
+            className="font-plex">
             기록할수록 나의 LifeDNA가 더 정교해져요
           </Text>
         </View>
 
-        <SectionHeading firstGap={FIRST_HEADING_GAP}>오늘의 컨디션</SectionHeading>
+        <SectionHeading above={9.87} below={5.1}>
+          오늘의 컨디션
+        </SectionHeading>
         <FeelSelect
           needAnswer={conditionMissing}
           label="오늘 하루 컨디션은 어땠나요?"
@@ -260,7 +297,9 @@ export default function JournalTodayScreen() {
           }}
         />
 
-        <SectionHeading>수면습관</SectionHeading>
+        <SectionHeading above={9.26} below={5.07}>
+          수면습관
+        </SectionHeading>
         {/*
          * Display-only, and therefore **not saved**: there is no picker behind
          * `InputTime_Card` in Figma or in code, so 취침·기상 시각 is never
@@ -283,11 +322,13 @@ export default function JournalTodayScreen() {
             onChange={setSleepOnset}
           />
         </View>
-        <View style={{ marginTop: scale(CARD_GAP + 1) }}>
+        <View style={{ marginTop: scale(CARD_GAP) }}>
           <FeelSelect label="수면 만족도" value={sleepFeel} onChange={setSleepFeel} />
         </View>
 
-        <SectionHeading>식습관</SectionHeading>
+        <SectionHeading above={8.23} below={5.15}>
+          식습관
+        </SectionHeading>
         <SelectCard label="오늘 식사 횟수" options={MEAL_COUNT} value={meals} onChange={setMeals} />
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
@@ -299,49 +340,35 @@ export default function JournalTodayScreen() {
           />
         </View>
 
-        <View
-          style={{
-            marginTop: scale(CARD_GAP),
-            borderRadius: scale(10),
-            backgroundColor: '#FFFFFF',
-            boxShadow: SHADOW,
-            paddingTop: scale(4.5),
-            paddingBottom: scale(9),
-            paddingLeft: scale(12),
-            paddingRight: scale(10),
-          }}>
-          <CardTitle>카페인 섭취</CardTitle>
-          <CardCaption>{CAFFEINE_CAPTION}</CardCaption>
-          <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(2.5) }}>
-            {CAFFEINE_CUPS.map((option) => (
-              <SelectButton
-                key={option}
-                label={option}
-                state={option === caffeineCups ? 'active' : 'inactive'}
-                onPress={() => setCaffeineCups(option)}
-                level={5}
-                tone="gray"
-                style={{ width: scale(34) }}
-              />
-            ))}
-          </View>
-          <View style={{ marginTop: scale(6) }}>
-            <CardTitle>마지막 섭취 시각</CardTitle>
-          </View>
-          <CardCaption>{CAFFEINE_TIME_CAPTION}</CardCaption>
-          <View style={{ flexDirection: 'row', gap: scale(7), marginTop: scale(2) }}>
-            {CAFFEINE_TIME.map((option, index) => (
-              <SelectButton
-                key={option}
-                label={option}
-                state={option === caffeineTime ? 'active' : 'inactive'}
-                onPress={() => setCaffeineTime(option)}
-                level={5}
-                tone="gray"
-                style={{ width: scale(CAFFEINE_TIME_WIDTH[index]) }}
-              />
-            ))}
-          </View>
+        <View style={{ marginTop: scale(CARD_GAP) }}>
+          <LooseCard>
+            <CardTitle>카페인 섭취</CardTitle>
+            <CardCaption>{CAFFEINE_CAPTION}</CardCaption>
+            <PillRow marginTop={4.89}>
+              {CAFFEINE_CUPS.map((option) => (
+                <SelectButton
+                  key={option}
+                  label={option}
+                  state={option === caffeineCups ? 'active' : 'inactive'}
+                  onPress={() => setCaffeineCups(option)}
+                  style={{ flex: 1 }}
+                />
+              ))}
+            </PillRow>
+            <CardTitle marginTop={5.47}>마지막 섭취 시각</CardTitle>
+            <CardCaption>{CAFFEINE_TIME_CAPTION}</CardCaption>
+            <PillRow marginTop={4.89}>
+              {CAFFEINE_TIME.map((option) => (
+                <SelectButton
+                  key={option}
+                  label={option}
+                  state={option === caffeineTime ? 'active' : 'inactive'}
+                  onPress={() => setCaffeineTime(option)}
+                  style={{ flex: 1 }}
+                />
+              ))}
+            </PillRow>
+          </LooseCard>
         </View>
 
         <View style={{ marginTop: scale(CARD_GAP) }}>
@@ -354,19 +381,12 @@ export default function JournalTodayScreen() {
           />
         </View>
 
-        <SectionHeading>운동 습관</SectionHeading>
-        <View
-          style={{
-            borderRadius: scale(10),
-            backgroundColor: '#FFFFFF',
-            boxShadow: SHADOW,
-            paddingTop: scale(4.5),
-            paddingBottom: scale(9),
-            paddingLeft: scale(12),
-            paddingRight: scale(11),
-          }}>
+        <SectionHeading above={10.76} below={5.17}>
+          운동 습관
+        </SectionHeading>
+        <LooseCard>
           <CardTitle>오늘 운동했나요?</CardTitle>
-          <View style={{ flexDirection: 'row', gap: scale(9), marginTop: scale(4.5) }}>
+          <PillRow marginTop={4.55}>
             {DID_EXERCISE.map((option) => (
               <SelectButton
                 key={option}
@@ -379,12 +399,10 @@ export default function JournalTodayScreen() {
                     setExerciseKind(null);
                   }
                 }}
-                level={5}
-                tone="gray"
                 style={{ flex: 1 }}
               />
             ))}
-          </View>
+          </PillRow>
           {/*
             * 운동 시간 and 운동 종류 only make sense once 오늘 운동했나요 is 네.
             * Figma draws them unconditionally, but answering 아니요 and then
@@ -395,37 +413,33 @@ export default function JournalTodayScreen() {
             */}
           {didExercise === '네' ? (
             <>
-              <FieldCaption>운동 시간</FieldCaption>
-              <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(3.5) }}>
+              <FieldCaption marginTop={7.81}>운동 시간</FieldCaption>
+              <PillRow marginTop={3.56}>
                 {EXERCISE_MINUTES.map((option) => (
                   <SelectButton
                     key={option}
                     label={option}
                     state={option === exerciseMinutes ? 'active' : 'inactive'}
                     onPress={() => setExerciseMinutes(option)}
-                    level={5}
-                    tone="gray"
-                    style={{ width: scale(34) }}
+                    style={{ flex: 1 }}
                   />
                 ))}
-              </View>
-              <FieldCaption>운동 종류</FieldCaption>
-              <View style={{ flexDirection: 'row', gap: scale(8), marginTop: scale(3.5) }}>
+              </PillRow>
+              <FieldCaption marginTop={7.7}>운동 종류</FieldCaption>
+              <PillRow marginTop={3.56}>
                 {EXERCISE_KIND.map((option) => (
                   <SelectButton
                     key={option}
                     label={option}
                     state={option === exerciseKind ? 'active' : 'inactive'}
                     onPress={() => setExerciseKind(option)}
-                    level={5}
-                    tone="gray"
-                    style={{ width: scale(34) }}
+                    style={{ flex: 1 }}
                   />
                 ))}
-              </View>
+              </PillRow>
             </>
           ) : null}
-        </View>
+        </LooseCard>
 
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
@@ -439,7 +453,9 @@ export default function JournalTodayScreen() {
           <SelectCard label="앉아 있던 시간" options={SAT} value={sat} onChange={setSat} />
         </View>
 
-        <SectionHeading>기타</SectionHeading>
+        <SectionHeading above={11.47} below={3.5}>
+          기타
+        </SectionHeading>
         <Slider0To10
           card
           label="오늘 스트레스 지수"
@@ -475,50 +491,18 @@ export default function JournalTodayScreen() {
           />
         </View>
 
-        <SectionHeading>자동 기록</SectionHeading>
-        <View
-          style={{
-            height: scale(42),
-            borderRadius: scale(10),
-            backgroundColor: '#ECECEC',
-            borderWidth: scale(0.3),
-            borderColor: '#D2D2D2',
-            paddingTop: scale(4.5),
-            paddingLeft: scale(12),
-            paddingRight: scale(10),
-          }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <CardTitle>오늘 날씨</CardTitle>
-            <View
-              style={{
-                marginLeft: 'auto',
-                width: scale(35),
-                height: scale(10),
-                borderRadius: scale(10),
-                backgroundColor: '#FFFFFF',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{ fontSize: scale(5), lineHeight: scale(10), color: '#5F5E5B' }}
-                className="font-pretendard-medium">
-                자동 기록됨
-              </Text>
-            </View>
-          </View>
-          <Text
-            style={{
-              fontSize: scale(8),
-              lineHeight: scale(14),
-              marginTop: scale(2),
-              color: '#88877F',
-            }}
-            className="font-pretendard-bold">
-            📍 서울 · ☀️ 맑음 · 28°C · 습도 55%
-          </Text>
-        </View>
+        <SectionHeading above={9.8} below={5.17}>
+          자동 기록
+        </SectionHeading>
+        {/*
+          * The server can record the day's weather now (backlog 12), but only
+          * when the save carries `lat`/`lon`, and this screen sends neither —
+          * so nothing is ever recorded and v4's "서울 · 맑음 · 28°C" would be
+          * invented. 결정 대기 13 in the v4 inventory.
+          */}
+        <WeatherCard value={NO_WEATHER} />
 
-        <View style={{ marginTop: scale(39) }}>
+        <View style={{ marginTop: scale(37.5) }}>
           <Button
             label="오늘 기록 저장하기 →"
             onPress={save}
@@ -536,8 +520,7 @@ function koreanDate(date: Date) {
   return `${date.getMonth() + 1}월 ${date.getDate()}일 ${WEEKDAYS_SUN_FIRST[date.getDay()]}요일`;
 }
 
-/**
- * 오늘의 기록's first heading follows the 항목별로 banner, not the screen header,
- * so it sits further down than 상세보기's — see that file's own constant.
- */
-const FIRST_HEADING_GAP = 12.5;
+const CONTENT_INSET = 11.28;
+
+/** Nothing is recorded yet — see the comment at `WeatherCard`. */
+const NO_WEATHER = '—';

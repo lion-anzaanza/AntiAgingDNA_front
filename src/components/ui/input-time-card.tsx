@@ -1,11 +1,13 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
+import { CARD_INSET, CARD_SURFACE, CARD_TITLE, CARD_TITLE_INSET } from './select-card';
+
 /**
- * Figma: `InputTime_Card` (182×60) — a start/end time pair with a duration
- * badge in the corner. 일지 uses it for 취침 · 기상 시각.
+ * Figma: `InputTime_Card` (197.44×57.69 in v4) — a start/end time pair with a
+ * duration badge in the corner. 일지 uses it for 취침 · 기상 시각.
  *
  * There is no picker behind it yet; like the rest of the app the fields are
  * display-only and the screen decides what tapping one does.
@@ -17,11 +19,14 @@ type InputTimeCardProps = {
   /** Preformatted, e.g. `오전 00:00` — this component does no time maths. */
   start: string;
   end: string;
-  /** The `#E9F0FF` corner badge, e.g. `7시간 20분`. Hidden when absent. */
+  /** The corner badge, e.g. `7시간 20분`. Hidden when absent. */
   duration?: string;
   onPressStart?: () => void;
   onPressEnd?: () => void;
 };
+
+/** The gap between the two fields, which the `→` sits centred in. */
+const ARROW_WIDTH = 27.82;
 
 export function InputTimeCard({
   label,
@@ -35,63 +40,53 @@ export function InputTimeCard({
 }: InputTimeCardProps) {
   return (
     <View
-      style={{
-        // Figma draws InputTime_Card 182 wide inside the 일지 screens' 184 column.
-        width: scale(182),
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
-        paddingTop: scale(4.5),
-        paddingBottom: scale(9),
-        paddingHorizontal: scale(10.5),
-      }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text
+      style={[
+        CARD_SURFACE,
+        { paddingTop: scale(4.08), paddingBottom: scale(6.96), paddingHorizontal: scale(CARD_INSET) },
+      ]}>
+      <Text
+        style={[CARD_TITLE, { marginLeft: scale(CARD_TITLE_INSET - CARD_INSET) }]}
+        className="font-plex-semibold">
+        {label}
+      </Text>
+      {duration ? (
+        // Figma places the badge on its own, 0.7pt lower than the title's
+        // centre, so it is absolute rather than a flex sibling (rule 14).
+        <View
           style={{
-            fontSize: scale(8),
-            lineHeight: scale(15),
-            marginLeft: scale(1.5),
-            color: '#00352C',
-          }}
-          className="font-pretendard-bold">
-          {label}
-        </Text>
-        {duration ? (
-          <View
-            style={{
-              marginLeft: 'auto',
-              minWidth: scale(33),
-              height: scale(10),
-              borderRadius: scale(10),
-              paddingHorizontal: scale(3),
-              backgroundColor: '#E9F0FF',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Text
-              style={{ fontSize: scale(5), lineHeight: scale(10), color: '#4800FF' }}
-              className="font-pretendard-medium">
-              {duration}
-            </Text>
-          </View>
-        ) : null}
+            position: 'absolute',
+            top: scale(6.73),
+            right: scale(CARD_INSET),
+            height: scale(9.615),
+            borderRadius: scale(9.615),
+            paddingHorizontal: scale(1),
+            backgroundColor: COLOR.surface.tint2,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text
+            style={{ fontSize: scale(7.333), lineHeight: scale(10.154), color: COLOR.brand.violetText }}
+            className="font-plex-semibold">
+            {duration}
+          </Text>
+        </View>
+      ) : null}
+
+      <View style={{ flexDirection: 'row', marginTop: scale(4.28) }}>
+        <FieldLabel>{startLabel}</FieldLabel>
+        <View style={{ width: scale(ARROW_WIDTH) }} />
+        <FieldLabel>{endLabel}</FieldLabel>
       </View>
 
-      <View style={{ flexDirection: 'row', marginTop: scale(1.5) }}>
-        <FieldLabel style={{ flex: 1 }}>{startLabel}</FieldLabel>
-        <View style={{ width: scale(25) }} />
-        <FieldLabel style={{ flex: 1 }}>{endLabel}</FieldLabel>
-      </View>
-
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: scale(3) }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: scale(1.53) }}>
         <TimeField value={start} onPress={onPressStart} />
         <Text
           style={{
-            width: scale(25),
-            fontSize: scale(10),
-            lineHeight: scale(19),
+            width: scale(ARROW_WIDTH),
+            fontSize: scale(9.026),
+            lineHeight: scale(9.026),
             textAlign: 'center',
-            color: '#B4B2A8',
+            color: COLOR.text.body,
           }}
           className="font-pretendard-light">
           →
@@ -102,14 +97,11 @@ export function InputTimeCard({
   );
 }
 
-function FieldLabel({ children, style }: { children: string; style?: { flex: number } }) {
+function FieldLabel({ children }: { children: string }) {
   return (
     <Text
-      style={[
-        { fontSize: scale(5), lineHeight: scale(8), color: '#88877F' },
-        style,
-      ]}
-      className="font-pretendard-medium">
+      style={{ flex: 1, fontSize: scale(6.769), lineHeight: scale(9.026), color: COLOR.text.body }}
+      className="font-plex">
       {children}
     </Text>
   );
@@ -121,22 +113,17 @@ function TimeField({ value, onPress }: { value: string; onPress?: () => void }) 
       onPress={onPress}
       style={{
         flex: 1,
-        height: scale(19),
-        borderRadius: scale(5),
-        borderWidth: scale(0.7),
-        borderColor: '#F1EFE7',
-        backgroundColor: '#FFFFFF',
+        height: scale(18.27),
+        borderRadius: scale(4.808),
+        borderWidth: scale(0.673),
+        borderColor: COLOR.border.soft,
+        backgroundColor: COLOR.surface.card,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
       <Text
-        style={{
-          fontSize: scale(7),
-          lineHeight: scale(8),
-          letterSpacing: scale(0.21),
-          color: '#2C2C2A',
-        }}
-        className="font-pretendard-bold">
+        style={{ fontSize: scale(7.333), lineHeight: scale(10.154), color: COLOR.text.strong }}
+        className="font-plex-semibold">
         {value}
       </Text>
     </Pressable>

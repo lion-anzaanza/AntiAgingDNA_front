@@ -1,16 +1,21 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Text, View, type ImageSourcePropType } from 'react-native';
 
-import { GRADIENT_SCORE, SHADOW_HAIRLINE, TONE_TEXT, type Tone } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, TONE_TEXT, type Tone } from '@/lib/design';
+import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `LifeDNA_WeeklyInfo_Card` (158×61) — one metric inside 나의 LifeDNA
- * 정보 on 홈. Icon chip and title on top, a progress bar under them, then a
- * week of score bars beside a sentence about the trend.
+ * Figma: `LifeDNA_WeeklyInfo_Card` — v4 179.385×67.291 (`1363:2072`), one
+ * metric inside 나의 LifeDNA 정보 on 홈. Icon chip and title on top, a progress
+ * bar under them, then a week of score bars beside a sentence about the trend.
  *
- * Composed from three Figma sub-components: `_Word` (the 좋음/주의/위험 label),
- * `_ProgressBar` (Low/Mid/High) and `_ScoreBar` (seven fill levels).
+ * Every piece is placed absolutely at Figma's own coordinates, because the card
+ * is a fixed box in v4 and the caption now wraps to two lines inside it.
+ *
+ * Composed from Figma sub-components: `_Status` (the 좋음/주의/위험 word),
+ * `_ProgressBar` (Low/Mid/High) and `_ScoreBar` (seven fill levels). v4 fills
+ * both the progress and the score bars with the pastel ramp (`pastelAngle`).
  */
 const WORD: Record<Tone, string> = { good: '좋음', warn: '주의', danger: '위험' };
 const PROGRESS_FILL: Record<Level, number> = { low: 0.2606, mid: 0.5211, high: 0.7817 };
@@ -19,9 +24,14 @@ export type Level = 'low' | 'mid' | 'high';
 /** A day's score, 1–7. Figma draws exactly seven fill heights. */
 export type ScoreBarValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-const BAR_HEIGHT = 16;
-const BAR_WIDTH = 3;
-const BAR_GAP = 1;
+const CARD_HEIGHT = 67.291;
+const PROGRESS_WIDTH = 161.219;
+const PROGRESS_HEIGHT = 3.309;
+const BAR_HEIGHT = 17.65;
+const BAR_WIDTH = 3.309;
+const BAR_PITCH = 4.538;
+/** v4's hairline on the icon chip, progress bar and score bars. */
+const HAIRLINE = '0px 0px 1.103px rgba(148, 148, 148, 0.25)';
 
 type WeeklyInfoCardProps = {
   title: string;
@@ -33,6 +43,14 @@ type WeeklyInfoCardProps = {
   caption: string;
 };
 
+function pastel(width: number, height: number) {
+  return {
+    colors: [...GRADIENT_PASTEL.colors] as const,
+    locations: [...GRADIENT_PASTEL.locations] as const,
+    ...cssGradientPoints(pastelAngle(width, height), width, height),
+  };
+}
+
 export function WeeklyInfoCard({
   title,
   icon,
@@ -41,107 +59,122 @@ export function WeeklyInfoCard({
   scores,
   caption,
 }: WeeklyInfoCardProps) {
+  const fillWidth = PROGRESS_WIDTH * PROGRESS_FILL[level];
+
   return (
     <View
       style={{
-        borderRadius: scale(10),
-        backgroundColor: '#F2F2F0',
-        paddingTop: scale(7),
-        paddingBottom: scale(6),
-        paddingLeft: scale(7),
-        paddingRight: scale(8),
+        height: scale(CARD_HEIGHT),
+        borderRadius: scale(11.031),
+        backgroundColor: COLOR.surface.chip,
       }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <View
-          style={{
-            width: scale(19),
-            height: scale(19),
-            borderRadius: scale(3),
-            backgroundColor: '#FFFFFF',
-            boxShadow: SHADOW_HAIRLINE,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Image
-            source={icon}
-            style={{ width: scale(13), height: scale(13) }}
-            resizeMode="contain"
-          />
-        </View>
-        <Text
-          style={{ fontSize: scale(8), lineHeight: scale(9), marginLeft: scale(6) }}
-          className="font-pretendard-extrabold">
-          {title}
-        </Text>
-        <Text
-          style={{
-            marginLeft: 'auto',
-            marginRight: scale(4.5),
-            fontSize: scale(5),
-            lineHeight: scale(9),
-            color: TONE_TEXT[tone],
-          }}
-          className="font-pretendard-bold">
-          {WORD[tone]}
-        </Text>
+      <View
+        style={{
+          position: 'absolute',
+          left: scale(8.25),
+          top: scale(7.725),
+          width: scale(20.95),
+          height: scale(20.95),
+          borderRadius: scale(3.309),
+          backgroundColor: COLOR.surface.card,
+          boxShadow: HAIRLINE,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        {/* v4's slot is the hidden 14.34 `IconHere` placeholder, centred. */}
+        <Image
+          source={icon}
+          style={{ width: scale(14.34), height: scale(14.34) }}
+          resizeMode="contain"
+        />
       </View>
+      <Text
+        numberOfLines={1}
+        style={{
+          position: 'absolute',
+          left: scale(36.68),
+          top: scale(10.69),
+          maxWidth: scale(105),
+          fontSize: scale(9.59),
+          lineHeight: scale(13.538),
+          letterSpacing: scale(-0.0959),
+          color: COLOR.text.strong,
+        }}
+        className="font-plex-semibold">
+        {title}
+      </Text>
+      <Text
+        style={{
+          position: 'absolute',
+          left: scale(155.3 - 10),
+          top: scale(19.47 - 5.077),
+          width: scale(20),
+          textAlign: 'center',
+          fontSize: scale(7.333),
+          lineHeight: scale(10.154),
+          color: TONE_TEXT[tone],
+        }}
+        className="font-plex-semibold">
+        {WORD[tone]}
+      </Text>
 
       <View
         style={{
-          height: scale(3),
-          marginTop: scale(4),
-          marginLeft: scale(1),
-          borderRadius: scale(3),
-          backgroundColor: '#FFFFFF',
-          boxShadow: SHADOW_HAIRLINE,
+          position: 'absolute',
+          left: scale(9.08),
+          top: scale(33.09),
+          width: scale(PROGRESS_WIDTH),
+          height: scale(PROGRESS_HEIGHT),
+          borderRadius: scale(3.309),
+          backgroundColor: COLOR.surface.card,
+          boxShadow: HAIRLINE,
         }}>
         <LinearGradient
-          colors={[...GRADIENT_SCORE]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
+          {...pastel(fillWidth, PROGRESS_HEIGHT)}
           style={{
-            width: `${PROGRESS_FILL[level] * 100}%`,
+            width: scale(fillWidth),
             height: '100%',
-            borderRadius: scale(3),
+            borderTopLeftRadius: scale(3.309),
+            borderBottomLeftRadius: scale(3.309),
+            boxShadow: HAIRLINE,
           }}
         />
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: scale(6) }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-end',
-            gap: scale(BAR_GAP),
-            height: scale(BAR_HEIGHT),
-          }}>
-          {scores.map((score, index) => (
-            <LinearGradient
-              // Position is the identity here — the same day keeps its slot.
-              key={index}
-              colors={[...GRADIENT_SCORE]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={{
-                width: scale(BAR_WIDTH),
-                // Figma steps the fill in eighths, starting at two.
-                height: scale((BAR_HEIGHT * (score + 1)) / 8),
-                borderTopLeftRadius: scale(2),
-                borderTopRightRadius: scale(2),
-              }}
-            />
-          ))}
-        </View>
+      {scores.map((score, index) => {
+        // Figma steps the fill in eighths, starting at two.
+        const height = (BAR_HEIGHT * (score + 1)) / 8;
+        return (
+          <LinearGradient
+            // Position is the identity here — the same day keeps its slot.
+            key={index}
+            {...pastel(BAR_WIDTH, height)}
+            style={{
+              position: 'absolute',
+              left: scale(9.13 + index * BAR_PITCH),
+              top: scale(43.02 + BAR_HEIGHT - height),
+              width: scale(BAR_WIDTH),
+              height: scale(height),
+              borderTopLeftRadius: scale(2.206),
+              borderTopRightRadius: scale(2.206),
+              boxShadow: HAIRLINE,
+            }}
+          />
+        );
+      })}
+      <View
+        style={{
+          position: 'absolute',
+          left: scale(46.21),
+          top: scale(40.7),
+          width: scale(123.9),
+          height: scale(21),
+          justifyContent: 'center',
+        }}>
         <Text
-          numberOfLines={1}
-          style={{
-            flex: 1,
-            marginLeft: scale(8),
-            fontSize: scale(5),
-            lineHeight: scale(9),
-            color: '#7A7A7A',
-          }}
-          className="font-pretendard-semibold">
+          numberOfLines={2}
+          style={{ fontSize: scale(7.333), lineHeight: scale(10.154), color: COLOR.text.body }}
+          className="font-plex-semibold">
           {caption}
         </Text>
       </View>

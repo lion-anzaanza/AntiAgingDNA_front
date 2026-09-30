@@ -1,87 +1,97 @@
 import { router } from 'expo-router';
-import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Pressable, Text, type ImageSourcePropType } from 'react-native';
 
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
-
-const ROW_PITCH = 22.25;
 
 export type MenuItem = {
   label: string;
   icon: ImageSourcePropType;
   iconWidth: number;
   iconHeight: number;
+  /** Figma places each icon absolutely, not centred — up to 1.5pt high. */
+  iconTop: number;
   value?: string;
   href?: string;
 };
 
+/**
+ * One row of v4 마이페이지/메인's `Card/Rectangle 3822`. Figma draws two kinds
+ * of trailing mark: a plain row carries a Pretendard Light 11.3 `>`, while a
+ * row with a value writes `값  >` as one IBM Plex 8.5 string — both reproduced.
+ */
 export function MenuRow({
   label,
   icon,
   iconWidth,
   iconHeight,
+  iconTop,
   value,
   href,
+  height,
   first,
-}: MenuItem & { first: boolean }) {
+}: MenuItem & { height: number; first: boolean }) {
   return (
     <Pressable
       onPress={href ? () => router.push(href as never) : undefined}
       style={{
-        height: scale(ROW_PITCH),
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderTopWidth: first ? 0 : scale(0.3),
-        borderTopColor: '#F1EFE7',
+        height: scale(height),
+        justifyContent: 'center',
+        borderTopWidth: first ? 0 : scale(0.288),
+        borderTopColor: COLOR.border.soft,
       }}>
-      <View
+      <Image
+        source={icon}
         style={{
-          width: scale(21),
-          marginLeft: scale(7),
-          alignItems: 'center',
-        }}>
-        <Image
-          source={icon}
-          style={{ width: scale(iconWidth), height: scale(iconHeight) }}
-          resizeMode="contain"
-        />
-      </View>
+          position: 'absolute',
+          left: scale(9.1),
+          top: scale(iconTop),
+          width: scale(iconWidth),
+          height: scale(iconHeight),
+        }}
+        resizeMode="contain"
+      />
       <Text
         style={{
-          marginLeft: scale(5),
-          fontSize: scale(7),
-          lineHeight: scale(9),
-          letterSpacing: scale(-0.21),
-          color: '#2C2C2A',
+          position: 'absolute',
+          left: scale(29),
+          fontSize: scale(6.769),
+          lineHeight: scale(9.026),
+          color: COLOR.text.strong,
         }}
-        className="font-pretendard">
+        className="font-plex">
         {label}
       </Text>
 
-      <View style={{ marginLeft: 'auto', marginRight: scale(10), flexDirection: 'row', alignItems: 'center' }}>
-        {value ? (
-          <Text
-            style={{
-              marginRight: scale(3),
-              fontSize: scale(6),
-              lineHeight: scale(18),
-              letterSpacing: scale(-0.1),
-              color: '#B4B2A8',
-            }}
-            className="font-pretendard-light">
-            {value}
-          </Text>
-        ) : null}
+      {value ? (
         <Text
           style={{
-            fontSize: scale(10),
-            lineHeight: scale(18),
-            letterSpacing: scale(-0.1),
-            color: '#B4B2A8',
+            position: 'absolute',
+            right: scale(9.5),
+            // Both value rows in Figma sit 3.2pt below their row's middle.
+            transform: [{ translateY: scale(3.2) }],
+            fontSize: scale(8.462),
+            lineHeight: scale(12.41),
+            color: COLOR.text.body,
+          }}
+          className="font-plex">
+          {`${value}  >`}
+        </Text>
+      ) : (
+        <Text
+          style={{
+            position: 'absolute',
+            right: scale(8),
+            transform: [{ translateY: scale(0.6) }],
+            fontSize: scale(11.282),
+            lineHeight: scale(20.308),
+            letterSpacing: scale(-0.1128),
+            color: COLOR.text.body,
           }}
           className="font-pretendard-light">
           {'>'}
         </Text>
-      </View>
+      )}
     </Pressable>
   );
 }

@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DnaKind } from '@/components/ui/dna-kind';
-import { GradientText } from '@/components/ui/gradient-text';
 import {
   WeeklyInfoCard,
   type Level,
@@ -29,26 +28,26 @@ import { StatCard, STATS } from '@/features/home/components/stat-card';
 import { useAuth } from '@/lib/auth';
 import { addDays, isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { toDiaryDraft, type DiaryRow } from '@/lib/diary-request';
-import { SHADOW, type Tone } from '@/lib/design';
+import { COLOR, SHADOW, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { byDate, diariesPath, scoresPath, type DailyScore } from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
- * Figma: 홈/메인 — `597:1466`.
+ * Figma: 홈/메인 v4 — `1363:1953`.
  *
- * The orb card is a two-page swipe: 오늘의 LifeDNA 컨디션 with the gene orb
- * (`463:1195`), then 나의 유전자 나선 with the DNA helix (`457:791`, which sits
- * beside the frame rather than inside it).
+ * The orb card is a two-page swipe: 오늘의 LifeDNA 컨디션 with the gene orb,
+ * then 나의 유전자 나선 with the DNA helix (`457:791` in the old design). v4
+ * draws only the first page but keeps both page dots and a hint pointing at the
+ * helix ("나선형 모델"), so the second page stays, in the first page's v4 style.
  *
- * Everything here is still static — there is no data layer yet, so the numbers
- * are the ones Figma shows.
+ * v4 reorders the page: orb → 오늘의 일지 → the three metric cards → 나의
+ * LifeDNA 정보 (the metrics used to sit above 오늘의 일지).
+ *
+ * Vertical gaps are v4's, measured between line boxes (frame y − 38).
  */
-const CONTENT_INSET = 18;
-/**
- * 홈 is inset asymmetrically: every section starts at 18 and is 180 wide, so the
- * right margin is 22. Padding both sides by 18 made each card 4pt too wide.
- */
+const CONTENT_INSET = 11.28;
+/** v4 is symmetric: every section is the 197.436 column. */
 const CONTENT_INSET_RIGHT = 220 - CONTENT_INSET - CARD_WIDTH;
 /**
  * `pagingEnabled` snaps by the scroll view's own width, so each page is a
@@ -58,14 +57,14 @@ const CONTENT_INSET_RIGHT = 220 - CONTENT_INSET - CARD_WIDTH;
 const PAGE_WIDTH = Dimensions.get('window').width;
 
 /**
- * 나의 LifeDNA 정보 — re-pulled 2026-08-17, when Figma turned the five `DNAKind`
+ * 나의 LifeDNA 정보 — since the 2026-08-17 pull, when Figma turned the five `DNAKind`
  * chips into a **tab strip** (`725:1213`, `725:1294`, `725:1375`, `725:1456`,
  * `726:1472`). Selecting an area swaps the two weekly cards below it.
  *
  * Two things changed at once and both matter:
  *
- * - **The order is 신체 · 정신 · 감정 · 사회 · 환경**, not the 신체 · 정신 · 환경 ·
- *   감정 · 사회 this screen used to draw.
+ * - **The order is 신체 · 정신 · 환경 · 감정 · 사회.** The 2026-08-17 pull had
+ *   moved 환경 to the end; v4 (`1363:2057`…`2069`) puts it back third.
  * - **Only the selected chip carries a grade colour**; the other four are
  *   `default`. That is how the design shows selection — there is no separate
  *   underline or highlight.
@@ -79,6 +78,11 @@ const PAGE_WIDTH = Dimensions.get('window').width;
  * only, reusing one glyph for both cards, and leaves 감정·사회·환경 as empty
  * white squares. Rather than pick five new icons, the port uses the 5 영역 icons
  * the 개선책 screens already ship — one per area — as a visible stand-in.
+ *
+ * v4 draws only 신체, as "수면 시간" / "수분 섭취량" with a moon and a drop in the
+ * icon slot (the slot itself is a hidden `IconHere` placeholder) and the same
+ * caption pasted on both. Those strings are mock too, so the per-area set below
+ * stays — see 결정 대기 in `docs/redesign-v4-inventory.md`.
  */
 type BalanceArea = {
   label: string;
@@ -127,6 +131,25 @@ const BALANCE_AREAS: BalanceArea[] = [
     ],
   },
   {
+    label: '환경',
+    tone: 'good',
+    icon: require('@/assets/images/plan/area-environment.png'),
+    cards: [
+      {
+        title: '날씨 영향',
+        caption: '흐린 날 컨디션이 낮아지는 경향이 보여요.',
+        tone: 'good',
+        level: 'high',
+      },
+      {
+        title: '수면 환경(빛·소음)',
+        caption: '어두운 침실·낮은 소음이 수면 질을 받쳐줘요.',
+        tone: 'warn',
+        level: 'mid',
+      },
+    ],
+  },
+  {
     label: '감정',
     tone: 'danger',
     icon: require('@/assets/images/plan/area-emotion.png'),
@@ -159,25 +182,6 @@ const BALANCE_AREAS: BalanceArea[] = [
       {
         title: '사회적 지지감',
         caption: '기댈 사람이 있다는 느낌은 꾸준히 유지되고 있어요.',
-        tone: 'warn',
-        level: 'mid',
-      },
-    ],
-  },
-  {
-    label: '환경',
-    tone: 'good',
-    icon: require('@/assets/images/plan/area-environment.png'),
-    cards: [
-      {
-        title: '날씨 영향',
-        caption: '흐린 날 컨디션이 낮아지는 경향이 보여요.',
-        tone: 'good',
-        level: 'high',
-      },
-      {
-        title: '수면 환경(빛·소음)',
-        caption: '어두운 침실·낮은 소음이 수면 질을 받쳐줘요.',
         tone: 'warn',
         level: 'mid',
       },
@@ -245,31 +249,30 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: scale(24) }}>
+    <SafeAreaView
+      edges={['top', 'left', 'right']}
+      style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: scale(7.5) }}>
         <View
           style={{
             paddingLeft: scale(CONTENT_INSET),
             paddingRight: scale(CONTENT_INSET_RIGHT),
-            paddingTop: scale(10),
+            paddingTop: scale(49.87 - 38),
           }}>
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={GREETING} className="font-pretendard-extrabold">
-              안녕하세요,{' '}
-            </Text>
-            <GradientText
-              colors={['#4B4CF5', '#8E56FF']}
-              style={GREETING}
-              className="font-pretendard-black">
-              {user?.nickname ?? ''}
-            </GradientText>
-            <Text style={GREETING} className="font-pretendard-extrabold">
-              님!
-            </Text>
-          </View>
+          <Text style={GREETING} className="font-plex-bold">
+            안녕하세요,{' '}
+            <Text style={{ color: COLOR.brand.violetText }}>{user?.nickname ?? ''}</Text>
+            님!
+          </Text>
           <Text
-            style={{ fontSize: scale(7), lineHeight: scale(10), color: '#696969' }}
-            className="font-pretendard">
+            style={{
+              // v4 lets the two line boxes overlap by 0.27.
+              marginTop: scale(67.655 - 49.87 - 18.051),
+              fontSize: scale(8.462),
+              lineHeight: scale(12.41),
+              color: COLOR.text.body,
+            }}
+            className="font-plex">
             오늘도 나를 조금 더 알아가요
           </Text>
         </View>
@@ -280,19 +283,20 @@ export default function HomeScreen() {
           showsHorizontalScrollIndicator={false}
           onScroll={handlePageScroll}
           scrollEventThrottle={16}
-          style={{ marginTop: scale(9) }}>
+          style={{ marginTop: scale(87 - 67.655 - 12.41) }}>
           {ORB_PAGES.map(({ key, ...orbPage }, index) => (
             // The page is the full window so paging snaps, but the card itself
-            // lines up with every other section at CONTENT_INSET — centring the
-            // 180pt card in a 220pt page would push it 2pt right of Figma.
+            // lines up with every other section at CONTENT_INSET.
             <View key={key} style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
               <OrbCard
                 {...orbPage}
                 artwork={index === 0 ? ORB_STATES[orbState].artwork : orbPage.artwork}
                 sparklesOver={index === 0 ? ORB_STATES[orbState].sparkles : orbPage.sparklesOver}
-                // Only the first card is 오늘의 컨디션; 나의 유전자 나선 has no
-                // endpoint behind its own number and keeps Figma's.
-                score={index === 0 && todayScore !== null ? String(Math.round(todayScore)) : orbPage.score}
+                // Only the first card is 오늘의 컨디션. Until the range answers —
+                // or on a day with no score — it shows `—`, not Figma's 100.
+                // 나의 유전자 나선 reads as the user's own score too, and no
+                // endpoint backs it, so it is `—` as well.
+                score={index === 0 && todayScore !== null ? String(Math.round(todayScore)) : NO_VALUE}
                 delta={delta}
                 dateLabel={dateLabel(today)}
                 page={page}
@@ -304,44 +308,54 @@ export default function HomeScreen() {
 
         <View
           style={{
-            flexDirection: 'row',
-            gap: scale(6),
-            marginTop: scale(16),
             paddingLeft: scale(CONTENT_INSET),
             paddingRight: scale(CONTENT_INSET_RIGHT),
           }}>
-          {stats.map((stat) => (
-            <StatCard key={stat.label} {...stat} />
-          ))}
-        </View>
-
-        <View
-          style={{
-            paddingLeft: scale(CONTENT_INSET),
-            paddingRight: scale(CONTENT_INSET_RIGHT),
-          }}>
-          <SectionHeading>오늘의 일지</SectionHeading>
+          <SectionHeading top={357.01 - 343} bottom={377.92 - 372.805}>
+            오늘의 일지
+          </SectionHeading>
           <JournalCta />
 
-          <SectionHeading>나의 LifeDNA 정보</SectionHeading>
           <View
             style={{
-              borderRadius: scale(10),
-              backgroundColor: '#FFFFFF',
+              flexDirection: 'row',
+              gap: scale(6.77),
+              marginTop: scale(479.15 - 463.92),
+            }}>
+            {stats.map((stat) => (
+              <StatCard key={stat.label} {...stat} />
+            ))}
+          </View>
+
+          <SectionHeading top={565.813 - 557.15} bottom={588 - 581.608}>
+            나의 LifeDNA 정보
+          </SectionHeading>
+          <View
+            style={{
+              borderRadius: scale(11.031),
+              backgroundColor: COLOR.surface.card,
               boxShadow: SHADOW,
-              // Figma puts the 5개 영역 밸런스 heading's box 10pt below the card
-              // top; 5.5 was measured off the ink, which sits lower in its line
-              // box than the box itself starts.
-              paddingTop: scale(10),
-              paddingBottom: scale(10),
-              paddingHorizontal: scale(11),
+              paddingTop: scale(8.79),
+              paddingBottom: scale(208.492 - 197.461),
+              paddingHorizontal: scale(9.03),
             }}>
             <Text
-              style={{ fontSize: scale(8), lineHeight: scale(9) }}
-              className="font-pretendard-bold">
+              style={{
+                marginLeft: scale(-0.53),
+                fontSize: scale(9.59),
+                lineHeight: scale(13.538),
+                letterSpacing: scale(-0.0959),
+                color: COLOR.text.strong,
+              }}
+              className="font-plex-semibold">
               5개 영역 밸런스
             </Text>
-            <View style={{ flexDirection: 'row', gap: scale(2), marginTop: scale(8) }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                gap: scale(2.27),
+                marginTop: scale(30.89 - 8.79 - 13.538),
+              }}>
               {BALANCE_AREAS.map((area, index) => (
                 <DnaKind
                   key={area.label}
@@ -352,7 +366,7 @@ export default function HomeScreen() {
               ))}
             </View>
             {BALANCE_AREAS[areaIndex].cards.map((card, index) => (
-              <View key={card.title} style={{ marginTop: scale(9) }}>
+              <View key={card.title} style={{ marginTop: scale(52.95 - 43.024) }}>
                 <WeeklyInfoCard
                   title={card.title}
                   icon={BALANCE_AREAS[areaIndex].icon}
@@ -370,18 +384,34 @@ export default function HomeScreen() {
   );
 }
 
-const GREETING = { fontSize: scale(12), lineHeight: scale(15), color: '#000000' };
+const GREETING = {
+  fontSize: scale(13.538),
+  lineHeight: scale(18.051),
+  letterSpacing: scale(-0.2708),
+  color: COLOR.text.strong,
+};
 
-function SectionHeading({ children }: { children: string }) {
+/** v4 section title: Plex Bold 11.282 / 15.795, `text/strong`. Gaps are per section. */
+function SectionHeading({
+  children,
+  top,
+  bottom,
+}: {
+  children: string;
+  top: number;
+  bottom: number;
+}) {
   return (
     <Text
       style={{
-        fontSize: scale(10),
-        lineHeight: scale(13),
-        marginTop: scale(15),
-        marginBottom: scale(6),
+        fontSize: scale(11.282),
+        lineHeight: scale(15.795),
+        letterSpacing: scale(-0.1128),
+        marginTop: scale(top),
+        marginBottom: scale(bottom),
+        color: COLOR.text.strong,
       }}
-      className="font-pretendard-extrabold">
+      className="font-plex-bold">
       {children}
     </Text>
   );

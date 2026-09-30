@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { StepHeader } from '@/components/ui/step-header';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { useSignUpForm } from '@/features/auth/sign-up-form';
 import { toSignUpRequest } from '@/features/auth/sign-up-request';
@@ -26,6 +27,13 @@ const TERMS = [
 ] as const;
 
 type TermKey = (typeof TERMS)[number]['key'];
+
+/*
+ * Figma v4 회원가입/3 (`1363:1921`). Gaps below the header are measured from
+ * v4's own "STEP 3" line, so they hold wherever `StepHeader` ends.
+ */
+const COLUMN_INSET = 11.28;
+const ROW_TEXT = { fontSize: scale(8.462), lineHeight: scale(12.41) } as const;
 
 export default function TermsScreen() {
   const { form, update } = useSignUpForm();
@@ -58,8 +66,13 @@ export default function TermsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <View style={{ flex: 1, paddingHorizontal: scale(18), paddingTop: scale(5) }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
+      <View
+        style={{
+          flex: 1,
+          paddingHorizontal: scale(COLUMN_INSET),
+          paddingTop: scale(9.42),
+        }}>
         <StepHeader
           title="약관 동의"
           backHref="/(auth)/sign-up/survey"
@@ -69,52 +82,71 @@ export default function TermsScreen() {
 
         <Text
           style={{
-            fontSize: scale(12),
-            lineHeight: scale(15),
-            marginTop: scale(15),
-            color: '#00352C',
+            fontSize: scale(11.282),
+            lineHeight: scale(15.795),
+            letterSpacing: scale(-0.1128),
+            marginTop: scale(11.4),
+            color: COLOR.text.heading,
           }}
-          className="font-pretendard-bold">
+          className="font-plex-bold">
           마지막이에요! 약관에 동의해주세요
         </Text>
 
+        {/* v4 sits the circle 0.95pt below the label's centre; reproduced. */}
         <Pressable
           onPress={toggleAll}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: scale(8),
-            marginTop: scale(20.5),
-          }}>
-          <Checkbox checked={allAgreed} onPress={toggleAll} />
+          style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: scale(20.55) }}>
+          <View style={{ marginTop: scale(2.08) }}>
+            <Checkbox checked={allAgreed} onPress={toggleAll} />
+          </View>
           <Text
-            style={{ fontSize: scale(9), lineHeight: scale(10), color: '#00352C' }}
-            className="font-pretendard-semibold">
+            style={{
+              fontSize: scale(9.59),
+              lineHeight: scale(13.538),
+              letterSpacing: scale(-0.0959),
+              marginLeft: scale(6.79),
+              color: COLOR.text.heading,
+            }}
+            className="font-plex-semibold">
             약관 전체 동의
           </Text>
         </Pressable>
 
-        <View style={{ marginTop: scale(11), marginLeft: scale(14), gap: scale(7) }}>
+        <View style={{ marginTop: scale(12.8), gap: scale(12.41) }}>
           {TERMS.map((term) => (
             <Pressable
               key={term.key}
               onPress={() => toggle(term.key)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: scale(8) }}>
+              style={{ flexDirection: 'row', alignItems: 'center', marginLeft: scale(COLUMN_INSET) }}>
               <Checkbox checked={agreed[term.key]} onPress={() => toggle(term.key)} />
               <Text
                 style={{
-                  fontSize: scale(8),
-                  lineHeight: scale(10),
-                  color: agreed[term.key] ? '#00352C' : '#88877F',
+                  ...ROW_TEXT,
+                  marginLeft: scale(6.83),
+                  color: agreed[term.key] ? COLOR.text.heading : COLOR.text.body,
                 }}
-                className="font-pretendard-medium">
+                className="font-plex">
                 {term.label}
+              </Text>
+              {/*
+                v4 ends every row in a `>` as if it opened the term's full text.
+                There is no such screen, so it is drawn and does nothing.
+                */}
+              <Text
+                style={{
+                  ...ROW_TEXT,
+                  position: 'absolute',
+                  right: scale(COLUMN_INSET),
+                  color: COLOR.text.body,
+                }}
+                className="font-plex">
+                {'>'}
               </Text>
             </Pressable>
           ))}
         </View>
 
-        <View style={{ marginTop: scale(30) }}>
+        <View style={{ marginTop: scale(15.53) }}>
           <Button
             label="가입하고 LifeDNA 만들기 →"
             disabled={!canSubmit}

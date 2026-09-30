@@ -1,47 +1,43 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, Text, type StyleProp, type ViewStyle } from 'react-native';
 
-import { GRADIENT_BRAND, GRADIENT_SELECT, GRADIENT_SELECT_STOPS, SHADOW } from '@/lib/design';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma ships five sizes of select pill (SelectButton1…5), each in a grey and a
- * white flavour. They differ only in height, text size, whether the resting
- * state carries a shadow, and — for level 4 — which gradient the active state
- * uses. Everything else is shared.
+ * v4 draws the select pill (`SelectButton1…5`, `_White`) in one colour scheme
+ * everywhere — `surface/chip` at rest, `brand/selected` with `text/on-pastel`
+ * when chosen — so the old level number and grey/white tone no longer change
+ * anything; the width comes from the container. What does change is the
+ * **context**, and it does so consistently:
+ *
+ * - `journal` — every pill inside a 일지 card: 18.05 tall, radius 4.81.
+ * - `signup` — 회원가입/2's questions: 24.82 tall, radius 5.64.
+ * - `likert` — 회원가입/2's 0–5 WHO-5 row: 14 tall with a larger 8.46 digit.
  */
-export type SelectButtonLevel = 1 | 2 | 3 | 4 | 5;
-export type SelectButtonTone = 'gray' | 'white';
+export type SelectButtonSize = 'journal' | 'signup' | 'likert';
 
 /**
- * `history` is the read-only rendering the 일지 screens use to show an answer
- * that was recorded on an earlier day: slate fill, no press target. It exists
- * on all five grey levels; the white tone only has active/inactive.
+ * `history` is the read-only replay of an earlier day's answer. v4 dropped the
+ * old slate colour for it — 상세보기 draws the recorded answer exactly like a
+ * selected pill — so it only differs from `active` by not being pressable.
  */
 export type SelectButtonState = 'inactive' | 'active' | 'history';
 
-const HISTORY_BG = '#7786A8';
-const HISTORY_TEXT = '#F7F8FA';
-
-const HEIGHT: Record<SelectButtonLevel, number> = { 1: 19, 2: 17, 3: 16, 4: 15, 5: 14 };
-const FONT_SIZE: Record<SelectButtonLevel, number> = { 1: 6, 2: 6, 3: 6, 4: 5, 5: 5 };
-/** Only SelectButton3 and SelectButton4 keep their shadow while unselected. */
-const RESTING_SHADOW: Record<SelectButtonLevel, boolean> = {
-  1: false,
-  2: false,
-  3: true,
-  4: true,
-  5: false,
+const SIZE: Record<
+  SelectButtonSize,
+  { height: number; radius: number; fontSize: number; lineHeight: number }
+> = {
+  journal: { height: 18.051, radius: 4.808, fontSize: 7.333, lineHeight: 10.154 },
+  signup: { height: 24.821, radius: 5.641, fontSize: 7.333, lineHeight: 10.154 },
+  likert: { height: 14, radius: 5.641, fontSize: 8.462, lineHeight: 11.282 },
 };
-const TONE_BG: Record<SelectButtonTone, string> = { gray: '#F2F2F0', white: '#FFFFFF' };
 
 type SelectButtonProps = {
   label: string;
   state: SelectButtonState;
   /** Omitted in the `history` state, which is not pressable. */
   onPress?: () => void;
-  level?: SelectButtonLevel;
-  tone?: SelectButtonTone;
+  size?: SelectButtonSize;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -49,58 +45,44 @@ export function SelectButton({
   label,
   state,
   onPress,
-  level = 2,
-  tone = 'white',
+  size = 'journal',
   style,
 }: SelectButtonProps) {
-  const active = state === 'active';
-  const history = state === 'history';
-  const gradient = level === 4 ? GRADIENT_BRAND : GRADIENT_SELECT;
+  const selected = state !== 'inactive';
+  const { height, radius, fontSize, lineHeight } = SIZE[size];
 
-  // One element type every render — swapping the tree or a className remounts
-  // the subtree mid-press and corrupts the navigation context (AGENTS.md #3).
-  // A solid fill is just a gradient whose two stops are the same colour.
-  const fill: [string, string] = active
-    ? [...gradient]
-    : history
-      ? [HISTORY_BG, HISTORY_BG]
-      : [TONE_BG[tone], TONE_BG[tone]];
-
+  // Same element tree every render; only style values change (AGENTS.md #3).
   return (
     <Pressable
       onPress={onPress}
-      disabled={history}
+      disabled={state === 'history'}
       style={[
         {
-          height: scale(HEIGHT[level]),
-          borderRadius: scale(5),
-          boxShadow: active || history || RESTING_SHADOW[level] ? SHADOW : 'none',
+          height: scale(height),
+          borderRadius: scale(radius),
+          backgroundColor: selected ? COLOR.brand.selected : COLOR.surface.chip,
+          alignItems: 'center',
+          justifyContent: 'center',
+          // No inner padding: v4 puts "10시간 이상" (37pt) in a 41.46 pill.
+          paddingHorizontal: 0,
         },
         style,
       ]}>
-      <LinearGradient
-        colors={fill}
-        locations={active && level !== 4 ? [...GRADIENT_SELECT_STOPS] : undefined}
-        start={{ x: 0, y: 0.5 }}
-        end={{ x: 1, y: 0.5 }}
+      <Text
+        numberOfLines={1}
+        // At 1.0 this is Figma's size; at a phone's 1.1 font scale it shrinks
+        // rather than truncating in its fixed-width cell (AGENTS rule 14).
+        adjustsFontSizeToFit
+        minimumFontScale={0.85}
         style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          paddingHorizontal: scale(4),
-          borderRadius: scale(5),
-        }}>
-        <Text
-          numberOfLines={1}
-          style={{
-            fontSize: scale(FONT_SIZE[level]),
-            lineHeight: scale(8),
-            color: active ? '#FFFFFF' : history ? HISTORY_TEXT : '#5F5E5B',
-          }}
-          className="font-pretendard-medium">
-          {label}
-        </Text>
-      </LinearGradient>
+          fontSize: scale(fontSize),
+          lineHeight: scale(lineHeight),
+          color: selected ? COLOR.text.onPastel : COLOR.text.body,
+          textAlign: 'center',
+        }}
+        className="font-plex-semibold">
+        {label}
+      </Text>
     </Pressable>
   );
 }

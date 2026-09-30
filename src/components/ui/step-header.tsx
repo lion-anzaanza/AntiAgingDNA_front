@@ -2,25 +2,36 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { type Href } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { GRADIENT_PROGRESS } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 import { ButtonBack } from './button-back';
 
 /**
- * Figma draws the progress bar as one continuous gradient whose width covers
- * the steps completed so far, with the remaining segments left as thinner grey
- * bars. The three segments sit at 0–56, 60–118 and 121–179, and the fill runs
- * to 56 / 119 / 180 for steps 1–3.
+ * Figma v4 회원가입/1·2·3: back chip + title, a three-segment progress bar, and
+ * the "STEP n" label.
  *
- * The bar is **180pt wide, not the width of the content column** — the three
- * step screens are 184 or 186 wide, so expressing these as percentages of the
- * parent stretched the whole bar past Figma's right edge.
+ * The bar spans the 197.44 column. The filled part is one pastel ramp covering
+ * the steps done so far; the segments still to come are thinner `surface/track`
+ * bars centred on it. Every value is 회원가입/1's — the only frame whose header
+ * was rescaled with the rest of v4 (2 and 3 still carry the 5 / 3 / r3 / 4px
+ * shadow of the old 220 file, the same leftover as their 14×13 back chip).
+ *
+ * The ramp's CSS angle is measured in pixels, so it differs with the fill's
+ * width; each step keeps the angle v4 gives for that width.
  */
-const BAR_WIDTH = 180;
-const FILL_WIDTH = [56, 119, 180];
+const BAR_WIDTH = 197.44;
+const FILL_HEIGHT = 4.81;
+const TRACK_HEIGHT = 2.88;
+const RADIUS = 2.885;
+const STEPS = [
+  { fill: 61.77, angle: 172.13 },
+  { fill: 130.53, angle: 176.11 },
+  { fill: 197.44, angle: 177.43 },
+];
 const SEGMENTS = [
-  { left: 60, width: 58 },
-  { left: 121, width: 58 },
+  { left: 66.18, width: 63.97 },
+  { left: 133.46, width: 63.97 },
 ];
 
 type StepHeaderProps = {
@@ -37,51 +48,59 @@ type StepHeaderProps = {
 };
 
 export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHeaderProps) {
-  const fill = FILL_WIDTH[currentStep - 1] ?? 0;
+  const step = STEPS[currentStep - 1];
+  const fill = step?.fill ?? 0;
+  const ramp = step ? cssGradientPoints(step.angle, step.fill, FILL_HEIGHT) : null;
 
   return (
     <View>
       {title ? (
-        <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <ButtonBack fallbackHref={backHref} />
           <Text
             style={{
-              fontSize: scale(12),
-              lineHeight: scale(15),
-              marginLeft: scale(9),
-              color: '#000000',
+              fontSize: scale(13.538),
+              lineHeight: scale(18.051),
+              letterSpacing: scale(-0.271),
+              marginLeft: scale(9.4),
+              color: COLOR.text.strong,
             }}
-            className="font-pretendard-extrabold">
+            className="font-plex-bold">
             {title}
           </Text>
         </View>
       ) : null}
 
-      <View style={{ width: scale(BAR_WIDTH), height: scale(5), marginTop: scale(5) }}>
-        <LinearGradient
-          colors={[...GRADIENT_PROGRESS]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            height: scale(5),
-            width: scale(fill),
-            borderRadius: scale(3),
-          }}
-        />
+      <View style={{ width: scale(BAR_WIDTH), height: scale(FILL_HEIGHT), marginTop: scale(7.12) }}>
+        {ramp ? (
+          <LinearGradient
+            colors={[...GRADIENT_PASTEL.colors]}
+            locations={[...GRADIENT_PASTEL.locations]}
+            start={ramp.start}
+            end={ramp.end}
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              height: scale(FILL_HEIGHT),
+              width: scale(fill),
+              borderRadius: scale(RADIUS),
+              boxShadow: SHADOW_V4,
+            }}
+          />
+        ) : null}
         {SEGMENTS.filter((segment) => segment.left >= fill).map((segment) => (
           <View
             key={segment.left}
             style={{
               position: 'absolute',
-              top: scale(1),
+              top: scale((FILL_HEIGHT - TRACK_HEIGHT) / 2),
               left: scale(segment.left),
               width: scale(segment.width),
-              height: scale(3),
-              borderRadius: scale(3),
-              backgroundColor: '#D3D1C6',
+              height: scale(TRACK_HEIGHT),
+              borderRadius: scale(RADIUS),
+              backgroundColor: COLOR.surface.track,
+              boxShadow: SHADOW_V4,
             }}
           />
         ))}
@@ -89,12 +108,12 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
 
       <Text
         style={{
-          fontSize: scale(7),
-          lineHeight: scale(10),
-          marginTop: scale(5),
-          color: '#4B52F6',
+          fontSize: scale(7.333),
+          lineHeight: scale(10.154),
+          marginTop: scale(5.05),
+          color: COLOR.brand.violetText,
         }}
-        className="font-pretendard-extrabold">
+        className="font-plex-semibold">
         {stepLabel}
       </Text>
     </View>

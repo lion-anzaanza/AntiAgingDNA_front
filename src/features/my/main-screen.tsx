@@ -7,68 +7,74 @@ import { MenuRow, type MenuItem } from '@/features/my/components/menu-row';
 import { ProfileCard } from '@/features/my/components/profile-card';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
-import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: 06_마이페이지 `Frame 28` (`583:969`) — the MY tab's root.
- *
- * Only two of the section's four frames are actually designed. 데이터 개인정보
- * (`583:913`) repeats this menu under a different title and 구독관리
- * (`585:1399`) is a title over an empty 184×160 box, so neither is built; the
- * rows that would open them do nothing. 웨어러블 연동 (`583:862`) is real.
+ * Figma v4: 마이페이지/메인 (`1363:3217`) — the MY tab's root.
  *
  * The five icons are one screenshot sheet in Figma, cropped per row — cut into
- * `assets/images/my/ic-*.png` the same way the 만족도 faces were.
+ * `assets/images/my/ic-*.png` the same way the 만족도 faces were. v4 crops the
+ * same sheet to the same icons, only at slightly different box sizes.
+ *
+ * Figma draws a back chip on this tab root, as the pre-v4 frame did. It is kept
+ * with the `/home` fallback it already had.
  */
-const CONTENT_INSET = 17;
-const CARD_WIDTH = 184;
-const COLUMN = {
-  paddingLeft: scale(CONTENT_INSET),
-  paddingRight: scale(220 - CONTENT_INSET - CARD_WIDTH),
-};
+const COLUMN = { left: scale(11.28), width: scale(197.436) };
+
+/** Row bands of the menu card, read off its four divider lines. */
+const ROW_HEIGHTS = [21.15, 21.16, 22.11, 21.16, 21.15];
+
+/** Same pastel stops as `Button`, but this bar is drawn at 167.3°, 25 tall. */
+const COFFEE_RAMP = cssGradientPoints(167.3328, 197.436, 25);
 
 /**
  * Figma puts the `무료` tier beside 이용약관 rather than 구독 관리, while the
  * icons stay with their labels. The sibling frame (`583:913`) shows the same
  * values against a different label order, which is what gives it away — a tier
- * belongs to the subscription row, so it is placed there.
+ * belongs to the subscription row, so it is placed there. v4 repeats the slip.
  */
 const MENU: MenuItem[] = [
   {
     label: '웨어러블 연동',
     icon: require('@/assets/images/my/ic-wearable.png'),
-    iconWidth: 12,
-    iconHeight: 15,
+    iconWidth: 11.387,
+    iconHeight: 14.423,
+    iconTop: 3.85,
     value: '애플워치',
     href: '/my/wearable',
   },
   {
     label: '구독 관리',
     icon: require('@/assets/images/my/ic-subscription.png'),
-    iconWidth: 14,
-    iconHeight: 14,
+    iconWidth: 12.714,
+    iconHeight: 13.462,
+    iconTop: 3.85,
     value: '무료',
     href: '/my/subscription',
   },
   {
     label: '데이터 개인정보',
     icon: require('@/assets/images/my/ic-privacy.png'),
-    iconWidth: 14,
-    iconHeight: 13,
+    iconWidth: 13.235,
+    iconHeight: 12.5,
+    iconTop: 4.81,
     href: '/my/privacy',
   },
   {
     label: '이용약관',
     icon: require('@/assets/images/my/ic-terms.png'),
-    iconWidth: 14,
-    iconHeight: 12,
+    iconWidth: 12.896,
+    iconHeight: 11.538,
+    iconTop: 3.85,
   },
   {
     label: '도움말',
     icon: require('@/assets/images/my/ic-help.png'),
-    iconWidth: 14,
-    iconHeight: 15,
+    iconWidth: 12.821,
+    iconHeight: 14.423,
+    iconTop: 1.92,
   },
 ];
 
@@ -103,61 +109,70 @@ export default function MyPageScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: scale(14),
-          paddingBottom: scale(24),
-        }}>
-        <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center', ...COLUMN }}>
-          <ButtonBack fallbackHref="/home" />
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: scale(33.95) }}>
+        {/*
+          * Everything down to 개발자 커피사주기 sits at Figma's own y, less the
+          * 38pt PhoneHeader mock the safe area stands in for.
+          */}
+        <View style={{ height: scale(222.58) }}>
+          <View style={{ position: 'absolute', left: scale(11.28), top: scale(12) }}>
+            <ButtonBack fallbackHref="/home" />
+          </View>
           <Text
             style={{
-              marginLeft: scale(9),
-              fontSize: scale(12),
-              lineHeight: scale(15),
-              color: '#000000',
+              position: 'absolute',
+              left: scale(34.47),
+              top: scale(9.74),
+              fontSize: scale(13.538),
+              lineHeight: scale(18.051),
+              letterSpacing: scale(-0.2708),
+              color: COLOR.text.strong,
             }}
-            className="font-pretendard-extrabold">
+            className="font-plex-bold">
             마이페이지
           </Text>
-        </View>
 
-        <View style={{ marginTop: scale(4), ...COLUMN }}>
-          <ProfileCard nickname={user?.nickname ?? ''} streakDays={user?.streakDays ?? 0} />
-        </View>
+          <View style={{ position: 'absolute', top: scale(33.15), ...COLUMN }}>
+            <ProfileCard nickname={user?.nickname ?? ''} streakDays={user?.streakDays ?? 0} />
+          </View>
 
-        <View style={{ marginTop: scale(10), ...COLUMN }}>
           <View
             style={{
-              height: scale(111),
-              borderRadius: scale(6),
-              backgroundColor: '#FFFFFF',
-              boxShadow: SHADOW,
+              position: 'absolute',
+              top: scale(81.23),
+              ...COLUMN,
+              height: scale(106.731),
+              borderRadius: scale(5.769),
+              backgroundColor: COLOR.surface.card,
+              boxShadow: SHADOW_V4,
             }}>
             {MENU.map((item, index) => (
-              <MenuRow key={item.label} {...item} first={index === 0} />
+              <MenuRow key={item.label} {...item} height={ROW_HEIGHTS[index]} first={index === 0} />
             ))}
           </View>
-        </View>
 
-        <View style={{ marginTop: scale(10), ...COLUMN }}>
-          <Pressable>
+          <Pressable style={{ position: 'absolute', top: scale(197.58), ...COLUMN }}>
             <LinearGradient
-              colors={[...GRADIENT_BRAND]}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={{
-                height: scale(26),
-                borderRadius: scale(10),
-                boxShadow: SHADOW,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
+              colors={[...GRADIENT_PASTEL.colors]}
+              locations={[...GRADIENT_PASTEL.locations]}
+              start={COFFEE_RAMP.start}
+              end={COFFEE_RAMP.end}
+              style={{ height: scale(25), borderRadius: scale(9.615), boxShadow: SHADOW_V4 }}>
+              {/* Figma's line box centres 1.3pt above the button's middle. */}
               <Text
-                style={{ fontSize: scale(10), lineHeight: scale(15), color: '#FFFFFF' }}
-                className="font-pretendard-bold">
+                style={{
+                  position: 'absolute',
+                  top: scale(3.3),
+                  left: 0,
+                  right: 0,
+                  textAlign: 'center',
+                  fontSize: scale(11.282),
+                  lineHeight: scale(15.795),
+                  letterSpacing: scale(-0.1128),
+                  color: COLOR.text.onPastel,
+                }}
+                className="font-plex-bold">
                 개발자 커피사주기
               </Text>
             </LinearGradient>
@@ -165,28 +180,26 @@ export default function MyPageScreen() {
         </View>
 
         {/*
-          * Figma draws this as one line, so the two halves are separate press
-          * targets inside it rather than two rows.
+          * Figma pushes this to the bottom with a fixed gap measured on its 480pt
+          * frame, but `scale()` converts by *width* — so on a device with a
+          * different aspect ratio the gap lands somewhere else and the screen
+          * either scrolls or leaves a hole. A flexible spacer pins it to the
+          * bottom of the viewport instead, which is what the design means, and
+          * `flexGrow: 1` on the content container is what gives it room to push
+          * against. The bottom padding is Figma's 34pt gap above the tab bar.
+          *
+          * Figma centres the line on x=113.2, 3pt right of the frame's middle;
+          * it is centred here like every other one-off centring slip.
           */}
-      {/*
-        * Figma pushes this to the bottom with a fixed gap measured on its 480pt
-        * frame, but `scale()` converts by *width* — so on a device with a
-        * different aspect ratio the gap lands somewhere else and the screen
-        * either scrolls or leaves a hole. A flexible spacer pins it to the
-        * bottom of the viewport instead, which is what the design means, and
-        * `flexGrow: 1` on the content container is what gives it room to push
-        * against.
-        */}
-      <View style={{ flex: 1, minHeight: scale(24) }} />
+        <View style={{ flex: 1, minHeight: scale(24) }} />
         <Text
           style={{
             textAlign: 'center',
-            fontSize: scale(6),
-            lineHeight: scale(18),
-            letterSpacing: scale(-0.06),
-            color: '#88877F',
+            fontSize: scale(8.462),
+            lineHeight: scale(12.41),
+            color: COLOR.text.body,
           }}
-          className="font-pretendard">
+          className="font-plex">
           <Text onPress={signOut}>로그아웃</Text>
           {' | '}
           <Text onPress={confirmDelete}>회원탈퇴</Text>

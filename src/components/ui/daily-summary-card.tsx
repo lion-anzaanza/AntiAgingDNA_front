@@ -1,17 +1,22 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
+import { Image, Text, View, type ImageSourcePropType } from 'react-native';
 
-import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
-import { GradientText } from './gradient-text';
+import { Button } from './button';
 
 /**
  * Figma: `일간_컨디션_요약` (`585:1377`) — the card that opens when a day is
  * tapped in 일지/캘린더. It summarises that day and hands off to the full
  * 상세보기 through 입력 기록 보기.
  *
- * Figma parks it directly beneath the 캘린더 frame on the canvas rather than
- * inside it, which is how it belongs to that screen.
+ * The old design parked it directly beneath the 캘린더 frame on the canvas.
+ * **v4 has no counterpart** — `04_일지` in `99_개선안_v4` holds only the four
+ * frames, nothing parked beside or under them. So the card keeps its old
+ * layout and only takes on what v4 applies everywhere: the 197.436 column,
+ * white `surface/card` at radius 9.615 with `SHADOW_V4`, IBM Plex, colour
+ * tokens instead of hex, solid `brand/violet-text` where there was gradient
+ * text, `surface/tint` tiles (the `surface/tint` strip is 캘린더's own summary
+ * colour family), and the shared `Button` for 입력 기록 보기.
  */
 const TILE_ICONS: Record<string, ImageSourcePropType> = {
   sleep: require('@/assets/images/home/ic-sleep.png'),
@@ -28,11 +33,14 @@ const FEEL_FACES: ImageSourcePropType[] = [
   require('@/assets/images/journal/feel-very-good.png'),
 ];
 
+/** Card padding: 9.03 like every v4 card row in 일지. */
+const PAD = 9.03;
+
 export type DailySummary = {
   /** e.g. `7월 19일 (금)` */
   dateLabel: string;
   score: number;
-  /** The `#F3E9FF` pill above the tiles, e.g. `컨디션 좋음`. */
+  /** The pill under the date, e.g. `컨디션 좋음`. */
   grade: string;
   sleep: string;
   water: string;
@@ -52,55 +60,57 @@ export function DailySummaryCard({ summary, onOpenDetail }: DailySummaryCardProp
   return (
     <View
       style={{
-        height: scale(150),
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
-        paddingTop: scale(8.5),
-        paddingHorizontal: scale(15),
+        borderRadius: scale(9.615),
+        backgroundColor: COLOR.surface.card,
+        boxShadow: SHADOW_V4,
+        paddingTop: scale(7),
+        paddingBottom: scale(PAD),
+        paddingHorizontal: scale(PAD),
       }}>
       <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
         <View>
           <Text
-            style={{ fontSize: scale(8), lineHeight: scale(15), color: '#00352C' }}
-            className="font-pretendard-bold">
+            style={{
+              fontSize: scale(9.59),
+              lineHeight: scale(13.538),
+              letterSpacing: scale(-0.0959),
+              color: COLOR.text.heading,
+            }}
+            className="font-plex-semibold">
             {summary.dateLabel}
           </Text>
           <View
             style={{
-              width: scale(36),
-              height: scale(10),
-              marginTop: scale(3.5),
-              borderRadius: scale(10),
-              backgroundColor: '#F3E9FF',
-              alignItems: 'center',
+              alignSelf: 'flex-start',
+              height: scale(12),
+              marginTop: scale(2.5),
+              paddingHorizontal: scale(5),
+              borderRadius: scale(6),
+              backgroundColor: COLOR.surface.tint2,
               justifyContent: 'center',
             }}>
-            <GradientText
-              colors={[...GRADIENT_BRAND]}
-              style={{ fontSize: scale(5), lineHeight: scale(10) }}
-              className="font-pretendard-medium">
+            <Text
+              style={{ fontSize: scale(6.769), lineHeight: scale(9.026), color: COLOR.brand.violetText }}
+              className="font-plex-semibold">
               {summary.grade}
-            </GradientText>
+            </Text>
           </View>
         </View>
-        <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'flex-end' }}>
-          <GradientText
-            colors={[...GRADIENT_BRAND]}
-            style={{ fontSize: scale(20), lineHeight: scale(24) }}
-            className="font-pretendard-bold">
+        <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'baseline' }}>
+          <Text
+            style={{ fontSize: scale(20), lineHeight: scale(26), color: COLOR.brand.violetText }}
+            className="font-plex-bold">
             {String(summary.score)}
-          </GradientText>
-          <GradientText
-            colors={[...GRADIENT_BRAND]}
-            style={{ fontSize: scale(8), lineHeight: scale(15) }}
-            className="font-pretendard-bold">
+          </Text>
+          <Text
+            style={{ fontSize: scale(8.462), lineHeight: scale(12.41), color: COLOR.brand.violetText }}
+            className="font-plex-semibold">
             점
-          </GradientText>
+          </Text>
         </View>
       </View>
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: scale(9) }}>
+      <View style={{ flexDirection: 'row', gap: scale(4.513), marginTop: scale(8) }}>
         <Tile icon={TILE_ICONS.sleep} label="수면" value={summary.sleep} />
         <Tile icon={TILE_ICONS.water} label="수분" value={summary.water} />
         <Tile icon={TILE_ICONS.stress} label="스트레스" value={summary.stress} />
@@ -111,36 +121,22 @@ export function DailySummaryCard({ summary, onOpenDetail }: DailySummaryCardProp
         />
       </View>
 
-      <Text
-        style={{
-          marginTop: scale(6),
-          textAlign: 'center',
-          fontSize: scale(6),
-          lineHeight: scale(8),
-          color: '#2C2C2A',
-        }}
-        className="font-pretendard">
-        {summary.comment}
-      </Text>
-
-      <Pressable onPress={onOpenDetail} style={{ marginTop: 'auto', marginBottom: scale(12) }}>
-        <LinearGradient
-          colors={[...GRADIENT_BRAND]}
-          start={{ x: 0, y: 0.5 }}
-          end={{ x: 1, y: 0.5 }}
+      {/* Server-written sentence (backlog 27) — empty until there is one. */}
+      {summary.comment === '' ? null : (
+        <Text
           style={{
-            height: scale(20),
-            borderRadius: scale(5),
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Text
-            style={{ fontSize: scale(8), lineHeight: scale(8), color: '#FFFFFF' }}
-            className="font-pretendard-semibold">
-            입력 기록 보기
-          </Text>
-        </LinearGradient>
-      </Pressable>
+            marginTop: scale(6),
+            textAlign: 'center',
+            fontSize: scale(7.333),
+            lineHeight: scale(10.154),
+            color: COLOR.text.body,
+          }}
+          className="font-plex">
+          {summary.comment}
+        </Text>
+      )}
+
+      <Button label="입력 기록 보기" onPress={onOpenDetail} style={{ marginTop: scale(9) }} />
     </View>
   );
 }
@@ -157,22 +153,25 @@ function Tile({
   return (
     <View
       style={{
-        width: scale(37),
-        height: scale(42),
-        borderRadius: scale(5),
-        backgroundColor: '#FBF4FF',
+        flex: 1,
+        height: scale(46),
+        borderRadius: scale(4.808),
+        backgroundColor: COLOR.surface.tint,
         alignItems: 'center',
-        paddingTop: scale(3),
+        paddingTop: scale(4),
       }}>
-      <Image source={icon} style={{ width: scale(16), height: scale(16) }} resizeMode="contain" />
+      <Image source={icon} style={{ width: scale(15), height: scale(15) }} resizeMode="contain" />
       <Text
-        style={{ fontSize: scale(5), lineHeight: scale(9), color: '#88877F' }}
-        className="font-pretendard">
+        style={{ fontSize: scale(6.769), lineHeight: scale(9.026), color: COLOR.text.body }}
+        className="font-plex">
         {label}
       </Text>
       <Text
-        style={{ fontSize: scale(8), lineHeight: scale(9), color: '#000000' }}
-        className="font-pretendard-extrabold">
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.85}
+        style={{ fontSize: scale(8.462), lineHeight: scale(12.41), color: COLOR.text.strong }}
+        className="font-plex-bold">
         {value}
       </Text>
     </View>

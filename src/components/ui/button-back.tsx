@@ -1,7 +1,7 @@
 import { router, type Href } from 'expo-router';
 import { Pressable, Text } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 type ButtonBackProps = {
@@ -14,7 +14,11 @@ type ButtonBackProps = {
   fallbackHref?: Href;
 };
 
-/** Figma: `ButtonBack` — a 14×13 white chip carrying a grey arrow. */
+/**
+ * Figma v4: `ButtonBack` — a 13.46×12.5 white chip, radius 2.88, carrying a
+ * Pretendard `←`. v4 draws 15 of these by hand and they disagree; this is the
+ * majority (see docs/redesign-v4-inventory.md, 결정).
+ */
 export function ButtonBack({ fallbackHref }: ButtonBackProps) {
   function handlePress() {
     if (router.canGoBack()) {
@@ -28,16 +32,16 @@ export function ButtonBack({ fallbackHref }: ButtonBackProps) {
     <Pressable
       onPress={handlePress}
       style={{
-        width: scale(14),
-        height: scale(13),
-        borderRadius: scale(3),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
+        width: scale(13.46),
+        height: scale(12.5),
+        borderRadius: scale(2.885),
+        backgroundColor: COLOR.surface.card,
+        boxShadow: SHADOW_V4,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
       <Text
-        style={{ fontSize: scale(7), lineHeight: scale(10), color: '#696969' }}
+        style={{ fontSize: scale(7.333), lineHeight: scale(10.476), color: COLOR.text.body }}
         className="font-pretendard-semibold">
         ←
       </Text>

@@ -1,19 +1,20 @@
 import { Pressable, Text } from 'react-native';
 
-import { TONE_BG, TONE_TEXT, type Tone } from '@/lib/design';
+import { COLOR, TONE_BG, TONE_TEXT, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `DNAKind` — the 30×11 chip labelling one of the five 밸런스 areas on
- * 홈. `default` is the unselected look; the other three colour themselves from
- * the shared 좋음/주의/위험 trio.
+ * Figma: `DNAKind` — v4 `DNAKind/<영역>` on 홈 (`1363:2057`…), 34.06×12.134,
+ * labelling one of the five 밸런스 areas. `default` is the unselected look
+ * (white, `text/body`); the other three colour themselves from the shared
+ * 좋음/주의/위험 trio.
  *
- * Its shadow is a 1pt hairline, not the ambient `SHADOW` every card carries.
+ * Its shadow is a 1.1pt hairline, not the ambient `SHADOW` every card carries.
  *
- * Since the 2026-08-17 re-pull these are also the **tab strip** on 나의 LifeDNA
- * 정보: pass `onPress` and the chip becomes selectable. Figma shows only the
- * selected chip in its own grade colour and leaves the rest `default`, so the
- * caller decides the tone — this component still just draws what it is told.
+ * These are also the **tab strip** on 나의 LifeDNA 정보: pass `onPress` and the
+ * chip becomes selectable. Figma shows only the selected chip in its own grade
+ * colour and leaves the rest `default`, so the caller decides the tone — this
+ * component still just draws what it is told.
  */
 type DnaKindProps = {
   label: string;
@@ -31,22 +32,24 @@ export function DnaKind({ label, tone = 'default', onPress }: DnaKindProps) {
       onPress={onPress}
       disabled={!onPress}
       style={{
-        width: scale(30),
-        height: scale(11),
-        borderRadius: scale(3),
-        backgroundColor: isDefault ? '#FFFFFF' : TONE_BG[tone],
-        boxShadow: '0px 0px 1px rgba(132, 132, 132, 0.25)',
+        width: scale(34.06),
+        height: scale(12.134),
+        borderRadius: scale(3.309),
+        backgroundColor: isDefault ? COLOR.surface.card : TONE_BG[tone],
+        boxShadow: '0px 0px 1.103px rgba(132, 132, 132, 0.25)',
         alignItems: 'center',
         justifyContent: 'center',
+        // Figma's label box sits ~0.55pt below the chip's middle.
+        paddingTop: scale(1.1),
       }}>
       <Text
         numberOfLines={1}
         style={{
-          fontSize: scale(6),
-          lineHeight: scale(9),
-          color: isDefault ? '#7A7A7A' : TONE_TEXT[tone],
+          fontSize: scale(7.333),
+          lineHeight: scale(10.154),
+          color: isDefault ? COLOR.text.body : TONE_TEXT[tone],
         }}
-        className="font-pretendard-medium">
+        className="font-plex-semibold">
         {label}
       </Text>
     </Pressable>

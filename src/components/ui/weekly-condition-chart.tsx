@@ -1,37 +1,43 @@
 import { Text, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Path, Stop } from 'react-native-svg';
 
-import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { areaPath, splinePath } from '@/lib/spline';
-import { GradientText } from './gradient-text';
 
 /**
- * Figma: `주간_컨디션_그래프` (`585:1436`) — a 184×95 card holding a seven-point
- * condition line, the same size as `주간_기록` and parked directly beneath
- * 일지/메인 on the canvas.
+ * The condition line for the recorded days among the last seven, on the page
+ * that swipes in beside `주간_기록` on 일지/메인. The pre-v4 design drew it as
+ * `주간_컨디션_그래프` (`585:1436`), a card parked beneath that frame.
  *
  * This is the only card in 일지 that needs real vector drawing, which is why
  * `react-native-svg` exists in the project. It is bundled in Expo Go, so the dev
  * loop is unaffected.
  *
- * Figma draws the line as three separate objects — a gradient area fill
- * (`Vector 1811`), a 0.5pt gradient stroke (`Line 417`, expressed as a nearly
- * flat path that is then rotated -10.92° and skewed) and seven 2pt dots. All
- * three are regenerated here from the point values instead of being traced, so
- * the card is ready for real data; the mock values below round-trip to Figma's
- * exact dot positions.
+ * The area fill, the line (Catmull-Rom through the points) and the dots are all
+ * generated from the scores rather than traced, so the card draws real data.
+ * Whatever points it is given are spread evenly across the 18.89 → 178.3 band —
+ * the span of 주간_기록's first and last day circles. With seven points they sit
+ * under those seven columns; with fewer they do not line up with any weekday
+ * (see 결정 대기 in `docs/redesign-v4-inventory.md`).
+ *
+ * **v4 has no frame for this card** — `99_개선안_v4` parks nothing beside or
+ * under 일지/메인. So it follows the card it shares a swipe slot with,
+ * `주간_기록` (`1363:2176`): the same 197.436×91.346 white card, `SHADOW_V4`,
+ * the same 9.59 SemiBold title, and the summary in the same `surface/tint`
+ * strip as 월간 보기. v4 has no gradient text or strokes, so the line, dots
+ * and summary are solid `brand/violet-text`.
  */
-const CARD_WIDTH = 184;
-const CARD_HEIGHT = 95;
+const CARD_WIDTH = 197.436;
+const CARD_HEIGHT = 91.346;
 
 /** The plot band: score 0 sits on PLOT_BOTTOM, score 100 on PLOT_TOP. */
-const PLOT_LEFT = 19;
-const PLOT_RIGHT = 168;
-const PLOT_TOP = 29;
-const PLOT_BOTTOM = 54;
+const PLOT_LEFT = 18.89;
+const PLOT_RIGHT = 178.3;
+const PLOT_TOP = 30;
+const PLOT_BOTTOM = 52;
 /** The area fill closes 5pt below the lowest possible dot. */
-const FILL_BASELINE = 59;
+const FILL_BASELINE = 57;
 const DOT_RADIUS = 1;
 /**
  * Figma floats each date 5.5–7.5pt above its dot with no discernible rule; 6.5
@@ -39,7 +45,8 @@ const DOT_RADIUS = 1;
  */
 const LABEL_LIFT = 6.5;
 
-const AREA_TOP = '#FBEDFF';
+const AREA_TOP = COLOR.surface.tint;
+const LINE = COLOR.brand.violetText;
 const STROKE_WIDTH = 0.5;
 
 export type ConditionPoint = {
@@ -51,7 +58,7 @@ export type ConditionPoint = {
 
 type WeeklyConditionChartProps = {
   points: ConditionPoint[];
-  /** The `#F3F1FE` strip along the bottom, e.g. `어제보다 수면 +40분 · 스트레스 −1`. */
+  /** The `surface/tint` strip along the bottom, e.g. `어제보다 수면 +40분 · 스트레스 −1`. */
   summary: string;
 };
 
@@ -74,19 +81,21 @@ export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartPr
       style={{
         width: scale(CARD_WIDTH),
         height: scale(CARD_HEIGHT),
-        borderRadius: scale(10),
-        backgroundColor: '#FFFFFF',
-        boxShadow: SHADOW,
+        borderRadius: scale(9.615),
+        backgroundColor: COLOR.surface.card,
+        boxShadow: SHADOW_V4,
       }}>
       <Text
         style={{
-          marginTop: scale(4.5),
-          marginLeft: scale(12),
-          fontSize: scale(8),
-          lineHeight: scale(15),
-          color: '#00352C',
+          position: 'absolute',
+          left: scale(8.7),
+          top: scale(12.31 - 13.538 / 2),
+          fontSize: scale(9.59),
+          lineHeight: scale(13.538),
+          letterSpacing: scale(-0.0959),
+          color: COLOR.text.heading,
         }}
-        className="font-pretendard-bold">
+        className="font-plex-semibold">
         최근 7일 컨디션
       </Text>
 
@@ -98,17 +107,13 @@ export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartPr
         <Defs>
           <LinearGradient id="area" x1="0" y1={PLOT_TOP} x2="0" y2={FILL_BASELINE} gradientUnits="userSpaceOnUse">
             <Stop offset="0" stopColor={AREA_TOP} />
-            <Stop offset="1" stopColor="#FFFFFF" />
-          </LinearGradient>
-          <LinearGradient id="stroke" x1={PLOT_LEFT} y1="0" x2={PLOT_RIGHT} y2="0" gradientUnits="userSpaceOnUse">
-            <Stop offset="0" stopColor={GRADIENT_BRAND[0]} />
-            <Stop offset="1" stopColor={GRADIENT_BRAND[1]} />
+            <Stop offset="1" stopColor={COLOR.surface.card} />
           </LinearGradient>
         </Defs>
         <Path d={area} fill="url(#area)" />
-        <Path d={line} stroke="url(#stroke)" strokeWidth={STROKE_WIDTH} fill="none" />
+        <Path d={line} stroke={LINE} strokeWidth={STROKE_WIDTH} fill="none" />
         {plotted.map((point) => (
-          <Circle key={point.label} cx={point.x} cy={point.y} r={DOT_RADIUS} fill="url(#stroke)" />
+          <Circle key={point.label} cx={point.x} cy={point.y} r={DOT_RADIUS} fill={LINE} />
         ))}
       </Svg>
 
@@ -123,9 +128,9 @@ export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartPr
             textAlign: 'center',
             fontSize: scale(5),
             lineHeight: scale(8),
-            color: '#88877F',
+            color: COLOR.text.muted,
           }}
-          className="font-pretendard-medium">
+          className="font-plex">
           {point.label}
         </Text>
       ))}
@@ -133,21 +138,20 @@ export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartPr
       <View
         style={{
           position: 'absolute',
-          left: scale(12),
-          top: scale(65),
-          width: scale(161),
-          height: scale(19),
-          borderRadius: scale(5),
-          backgroundColor: '#F3F1FE',
+          left: scale(9.03),
+          top: scale(63.46),
+          width: scale(179.385),
+          height: scale(18.269),
+          borderRadius: scale(4.808),
+          backgroundColor: COLOR.surface.tint,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <GradientText
-          colors={[...GRADIENT_BRAND]}
-          style={{ fontSize: scale(7), lineHeight: scale(8) }}
-          className="font-pretendard-semibold">
+        <Text
+          style={{ fontSize: scale(7.333), lineHeight: scale(10.154), color: COLOR.brand.violetText }}
+          className="font-plex-semibold">
           {summary}
-        </GradientText>
+        </Text>
       </View>
     </View>
   );

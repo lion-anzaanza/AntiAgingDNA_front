@@ -33,8 +33,10 @@ Write every dimension, font size, radius and margin as `scale(<figma value>)`.
 
 ### 2. Shadows use `boxShadow`, never `shadow-*` or `elevation`
 
-Figma puts the same soft ambient shadow on every surface:
-`0px 0px 4px rgba(169,169,169,0.25)` — exported as `SHADOW` in `src/lib/design.ts`.
+Figma puts one soft ambient shadow on its surfaces. Since the v4 redesign that
+is `0px 0px 3.846px rgba(169,169,169,0.25)` — exported as `SHADOW_V4` in
+`src/lib/design.ts`. The older 4px `SHADOW` remains only where v4 still draws it:
+홈's cards and the WHO-5 Likert cards (`likert-card`).
 
 RN 0.86 supports the CSS-style `boxShadow` string, which reproduces it exactly.
 NativeWind's `shadow-sm` maps to Android `elevation`, which draws a hard, dark,
@@ -75,15 +77,35 @@ text — easy to misread as a mystery crash. `StepHeader` takes a `backHref` for
 ### 5. Two gradients, and they are not interchangeable
 
 - `GRADIENT_SELECT` — the `ActiveButton` style, `#4356F7 → #843FF6`, first stop at
-  **18.9%** (pass `locations={GRADIENT_SELECT_STOPS}`). Used by `ButtonNextUI` and
-  selected SelectButton 1/2/3/5.
-- `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Now used **only** by a
-  selected SelectButton4.
+  **18.9%**. Filled selected SelectButton 1/2/3/5 and `ButtonNextUI` before v4;
+  in v4 neither uses it (a selected pill is flat `brand/selected`). Its last
+  user, 개선책's 담기 button, went pastel in v4 and the constant was deleted.
 
-`ButtonNextUI` used to use the brand ramp and was changed in Figma. Re-check the
-master rather than assuming.
+**v4 (2026-09-30) replaced the button ramp.** `Button` now draws
+`GRADIENT_PASTEL` (pink → lavender → periwinkle) at CSS 166.3°. Figma hands v4
+gradients over as a CSS angle, and that angle is in *pixels* — on a 197×27 button
+166° runs nearly top to bottom — so convert it with `cssGradientPoints(angle, w, h)`
+from `src/lib/gradient.ts` rather than guessing `start`/`end`. The old ramps
+go as the components that use them are redesigned; the tracker is
+`docs/redesign-v4-inventory.md`.
+- `GRADIENT_BRAND` — `#4655F6 → #9423FF`, edge to edge. Filled a selected
+  SelectButton4 before v4. Its only user now is the stroke of 개선책's 예상 성장
+  곡선 (`features/plan/components/growth-curve-card.tsx`), which v4 still draws
+  in exactly these two stops.
+
+`ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
 
 ### 6. Fonts
+
+**The v4 redesign's text face is IBM Plex Sans KR** — Regular / SemiBold / Bold,
+as `font-plex` / `font-plex-semibold` / `font-plex-bold`. Pretendard remains only
+for the glyphs v4 itself still sets in it (`←`, `→`, `✓`, `>`, `X` — Plex has
+no U+2713). The 회원가입 인트로 has no v4 frame but was moved to Plex with the
+rest, so nothing else uses it. Read the
+font off each text node; a `→` inside a Plex label is Plex. Plex comes from
+`google/fonts` on jsDelivr (`…/ofl/ibmplexsanskr/IBMPlexSansKR-<Weight>.ttf`, SIL
+OFL); a good download starts `00010000` and its name table reads
+`IBM Plex Sans KR <Weight>`.
 
 Seven Pretendard weights are loaded in `src/app/_layout.tsx` and registered in
 `tailwind.config.js`: Light / Regular / Medium / SemiBold / Bold / ExtraBold /
@@ -249,6 +271,7 @@ separates continuous motion from a one-time layout settle.
 
 Every screen was hand-placed, so the left inset and content width differ per
 frame (17/18/19 left, 180/184/186 wide, 홈 asymmetric at 18 left / 22 right).
+v4 screens moved to one 11.28 / 197.436 column, but still read each frame.
 The table is in [docs/figma-reference.md](docs/figma-reference.md), and
 `get_metadata` on the frame answers it in one call.
 
@@ -256,9 +279,9 @@ Assuming one column caused real breakage, not just a soft edge: 회원가입/2's
 수면 유형 pills are sized to fill their row, so a 186pt row in a 184pt column
 overflowed and `flexWrap` dropped the 2×2 grid to one pill per row.
 
-The same applies inside components — `SelectItem*_Card`, `SelectFeel5` and
-`InputTime_Card` are 182 wide in every instance and must carry that width rather
-than fill their parent.
+The same applies inside components — before v4, `SelectItem*_Card`,
+`SelectFeel5` and `InputTime_Card` were 182 wide in a 184 column and carried that
+width. In v4 they are 197.44, which *is* the column, so they fill their parent.
 
 ### 13. Compare against Figma by offset consensus, not by eye
 
@@ -417,6 +440,15 @@ the routes.
 
 `npx tsc --noEmit`, `npx expo lint` and `npm test` all pass. Keep them that way.
 
+- **Bug (found in the v4 final review, 2026-09-30, not fixed): 일지's back
+  chips loop.** Cold start → 홈 → 오늘 기록하기 → back → 일지 tab: 일지/메인's
+  back chip opens 오늘의 기록, whose back chip goes to 홈. The cause is
+  `features/home/components/journal-cta.tsx` doing
+  `router.push('/journal/today')`, which seeds the 일지 tab stack with 오늘의
+  기록 above nothing, and `ButtonBack` calling `router.back()`. Possible fixes:
+  navigate with the 일지 index underneath, or have tab roots `replace` to their
+  own fallback. Related to `docs/redesign-v4-inventory.md` 결정 대기 1.
+
 ### From the review of the folder restructure (2026-09-30) — not yet done
 
 A `/code-review` of #11–#13 found no regression from the move itself. These are
@@ -504,16 +536,11 @@ and each is listed so the next person does not "fix" the code back.
   icon on 112, the wordmark on 111.5, the greeting on 112, 회원가입 on 112.5 and
   아이디·비밀번호 찾기 on 110.5, while the button is dead-centre on 110. The code
   centres everything on 110; reproducing the scatter is not worth it.
-- **`SelectItem3_2` on 회원가입/1 is a 172-wide instance** whose pills are flush
-  to its right edge (inset 14 left, 0 right, gap 7) rather than the 12/12 the
-  rest of the family uses. `PillGroup` renders 12/12, so its first pill lands
-  2pt left of Figma's.
 - **회원가입/1 no longer matches Figma, on purpose.** The mock draws 성별, 직업
   and a 년/월/일 birth date; the backend will not accept any of them and stores
   only `birthYear` (backlog item 13), so the screen collects six fields and the
-  mock needs updating. `ui/date-input-row.tsx` went with them.
-- **회원가입/2's button and Likert cards break its own column** — the frame is
-  17..203 but `ButtonNextUI` sits at 22 and the `SelectItem6_Card`s at 25..207.
+  mock needs updating. `ui/date-input-row.tsx` went with them. v4 still draws
+  them (and no 아이디); the screen takes v4's look, not its field list.
 
 ### The backend is wired for auth
 
@@ -588,7 +615,8 @@ threshold to apply (backlog 10, reopened).
 
 One layout bug this shook out: 일지/캘린더's card was a fixed `height: scale(186)`,
 measured on Figma's July 2026, which fits in five week rows. August 2026 needs
-six and the 낮음/높음 legend was cut off the bottom. It is a `minHeight` now.
+six and the 낮음/높음 legend was cut off the bottom. It is a `minHeight` now —
+in v4 the floor is the 197.436 square the frame draws.
 
 **The list of what is left is in `docs/backend-backlog.md` under "프론트 연동
 현황".** That table exists because the backlog used to track only what the
@@ -649,7 +677,10 @@ Waiting on a decision — do not resolve these unilaterally:
   headings, card titles, and the labels inside every shared `SelectCard` /
   `PillGroup` / `FeelSelect`. Changing it on one screen would split 오늘의 기록
   from 상세보기, which share those components; changing it globally overrides
-  Figma. The designer has to say which.
+  Figma. The designer has to say which. As of the v4 redesign (2026-09-30) no
+  file uses `#00352C` any more — v4 binds body text to `text/body` `#6B6680` —
+  so this looks answered; the owner can close it via
+  `docs/redesign-v4-inventory.md` 결정 대기 2.
 - **The orb sheen was reported as "삭제" by the same tester**, but they were
   looking at the build where it swept a hard vertical seam across the artwork
   (rule 16). It is a soft horizontal band now. Whether to keep it at all is a
@@ -716,13 +747,15 @@ Still to port from 04_일지:
 and the reason `react-native-svg` is now a dependency (bundled in Expo Go, so
 the dev loop is unchanged).
 
-Where it goes was read off the canvas: Figma parks each floating card directly
-beneath its parent frame at the same `x`. `일간_컨디션_요약` (`585:1377`) sits
-under 캘린더 and opens when a day is tapped; `주간_컨디션_그래프` sits under
-일지/메인 at x=17, is **the same 184×95 as 주간_기록**, and so shares that slot as
-a horizontal swipe — exactly the arrangement 홈 already uses for its second orb
-card (`457:791`, parked beside the frame). That keeps every other element on the
-480pt frame in its Figma position.
+Where it goes was read off the canvas of the pre-v4 design, where Figma parks
+each floating card directly beneath its parent frame at the same `x`.
+`일간_컨디션_요약` (`585:1377`) sat under 캘린더 and opens when a day is tapped;
+`주간_컨디션_그래프` sat under 일지/메인, was the same size as 주간_기록, and so
+shares that slot as a horizontal swipe — exactly the arrangement 홈 already uses
+for its second orb card (`457:791`, parked beside the frame). That keeps every
+other element on the frame in its Figma position. **v4 draws neither card**, so
+both now take the v4 주간_기록 card's style — the graph at its exact
+197.436×91.346 — as recorded in `docs/redesign-v4-inventory.md`.
 
 Two things Figma does not answer, both left unbuilt rather than invented:
 
@@ -741,12 +774,13 @@ bezier) rather than tracing them, so it is ready for real data. Checked against
 the export: the generated curve tracks Figma's to within 1.1pt at its worst
 across every column, and the mock scores round-trip to Figma's exact dots.
 
-- `SelectButton*_History` (`#7786A8` / `#F7F8FA`) now exists on all five levels
-  and is implemented as `state="history"`.
+- `SelectButton*_History` (`#7786A8` / `#F7F8FA`) existed on all five levels
+  before v4. v4 dropped the slate: `state="history"` draws the selected colours
+  and is simply not pressable.
 
 ### 홈 — built, and what is still missing
 
-`features/home/home-screen.tsx` is 홈/메인 (`597:1466`), replacing the Expo template screen.
+`features/home/home-screen.tsx` is 홈/메인 (`597:1466`; the v4 redesign is `1363:1953` — see `docs/redesign-v4-inventory.md`), replacing the Expo template screen.
 The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 *beside* the frame rather than inside it, and it reuses the login screen's
 `dna-nice.png`.
@@ -804,8 +838,13 @@ a real `TabTrigger` now, so only MY is still an inert button.
 메인 (`559:1297`) is the tab root; 맞춤 영양제 (`559:1295`), 주간 리포트
 (`559:1294`) and 한 달 뒤 내 모습 (`523:490`) push on top. Two pieces are shared
 in `components/ui`: `PlanCard` (the icon + title + caption row, which 메인 and
-리포트 draw a point or two apart) and `AreaDeltaCard` (지난 주 대비 영역별 변화,
-identical on 리포트 and 한달뒤).
+리포트 draw a point or two apart) and `AreaDeltaCard` (지난 주 대비 영역별 변화
+on 리포트 and 한달뒤 — identical before v4; v4 moved the right column 4pt, so it
+is a prop now).
+
+**v4 (2026-09-30)** moved all four to `1363:2935` / `3003` / `3061` / `3134`;
+what changed and why is in `docs/redesign-v4-inventory.md` (화면별 결정, 개선책
+rows). Three items below are superseded by it and marked.
 
 What is drawn but does nothing:
 
@@ -821,13 +860,15 @@ Slips worth a designer's eye, resolved by picking the majority reading:
 - **한달뒤내모습 carries `BottomBar4`**, which lights MY rather than 개선책. The
   bar derives its active tab from the route, so it lights 개선책.
 - **The 오늘의 실천 progress bar does not match its own label** — the filled and
-  empty halves are 70 and 22 wide, which is 76%, beside a "70%".
+  empty halves are 70 and 22 wide, which is 76%, beside a "70%". (v4: 76.6 and
+  24.1 — still 76%.)
 - **The 예상 성장 곡선's middle point sits ~2pt below** where a straight 74→81
   scale puts it, so the drawn curve is less optimistic in the middle than the
-  numbers beside it. The linear scale is used.
+  numbers beside it. The linear scale is used. (v4: ~3.5pt, same call.)
 - **The teaser card's stated 151.2° gradient** converts, through the card's
   184×52 aspect, to a near-vertical ramp that is not what the file renders. The
-  ramp is taken from the export's own corners instead.
+  ramp is taken from the export's own corners instead. (v4: pastel, and its
+  155.8° is exactly `pastelAngle` of the card — no longer a slip.)
 
 #### 개선책 — re-pulled 2026-08-17 after a design review
 
@@ -837,16 +878,22 @@ the running app rather than from the type-checker.
 - **오늘의 실천 rows are checkboxes now.** Figma replaced the `#E9F0FF` 완료! pill
   with a 13×13 `rounded-[3px]` box at x=172 (`Rectangle 3091`–`3795`): `#F2E4FF`
   while open, `#B3B3B3` with a `#686868` `∨` once done. The pill is gone.
+  *(v4: 12.41 box at x 176, open `surface/tint-2`, done `#B3B3B3` with the same `∨`.)*
 - **The strike on a completed row is `textDecorationLine`, not a drawn View.**
   The old 0.5pt View sat at `top: '50%'` of the label box, and with `lineHeight`
   15 on a 7pt font the ink rides high in that box — so the geometric middle fell
   *below* the glyphs and it read as an underline. Font metrics get it right;
   geometry guessed from the line box does not.
+  *(v4: drawn again — v4's strike is `surface/track`, a different colour from
+  the label, which Android cannot give a text decoration. It sits where v4 puts
+  it, 0.18 below the Plex line box's centre; checked against the export.)*
 - **한달뒤내모습's hero card has no orb in Figma.** `523:490` leaves the top 57.5pt
   of the 184×110 card empty — no node, no instance — while its own teaser on
   메인 (`Frame 33`) does carry one. Read as a dropped layer, not a design, so the
   screen draws 홈's `orb-nice.png` there, centred and breathing, with a comment
   saying so. **Worth a designer's eye**; replace once the frame is fixed.
+  *(v4: fixed — v4 draws `orb-better`, squashed sideways like 홈's orb; the code
+  draws it round. 결정 대기 9 in the inventory.)*
 - **Every orb breathes.** 개선책's teaser and the forecast hero both go through
   `LivingArtwork` now rather than a plain `<Image>`, so the motion phase-1 work
   applies everywhere an orb appears, not just on 홈.

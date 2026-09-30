@@ -2,35 +2,39 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Pressable, Text, View } from 'react-native';
 
-import { SHADOW } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW } from '@/lib/design';
+import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Two 1×1 dots on the 오늘의 일지 card, each carrying a 20pt blur and a 10pt
- * spread — so what you see is a soft bloom about 40pt across, not a dot. Easy to
- * dismiss by their size and then wonder why the card looks flat.
+ * v4 `Journal banner` (`1363:1957`), 197.436×86. Everything inside is placed
+ * absolutely, as Figma does — the title's two lines, the caption and the white
+ * button each sit at their own y (AGENTS rule 14).
+ *
+ * Two 1×1 dots each carry a 20pt blur and a 10pt spread — so what you see is a
+ * soft bloom about 40pt across, not a dot. Easy to dismiss by their size and
+ * then wonder why the card looks flat.
  */
+const WIDTH = 197.436;
+const HEIGHT = 86;
 const CTA_GLOWS = [
-  { left: 156, top: 19 },
-  { left: 175, top: 78 },
+  { left: 175.17, top: 19 },
+  { left: 187.41, top: 78 },
 ];
+// Figma writes 142.29° for this box; `pastelAngle` gives the same.
+const POINTS = cssGradientPoints(pastelAngle(WIDTH, HEIGHT), WIDTH, HEIGHT);
 
 export function JournalCta() {
   return (
     <LinearGradient
-      colors={['#4252F6', '#844BF7']}
-      locations={[0.039, 0.687]}
-      start={{ x: 0, y: 1 }}
-      end={{ x: 1, y: 0 }}
+      colors={[...GRADIENT_PASTEL.colors]}
+      locations={[...GRADIENT_PASTEL.locations]}
+      start={POINTS.start}
+      end={POINTS.end}
       style={{
-        height: scale(86),
-        borderRadius: scale(10),
+        height: scale(HEIGHT),
+        borderRadius: scale(11.282),
         boxShadow: SHADOW,
-        // Against the 86pt card: 9 · title 26 · 4.5 · caption 9 · 6.5 · button
-        // 20 · 11. The gaps are load-bearing — the card looks top-heavy if the
-        // content creeps up and leaves the slack at the bottom.
-        paddingTop: scale(9),
-        paddingLeft: scale(12),
         // Keeps the two blooms below from spilling past the rounded corners.
         overflow: 'hidden',
       }}>
@@ -45,41 +49,58 @@ export function JournalCta() {
             width: scale(1),
             height: scale(1),
             borderRadius: scale(1),
-            backgroundColor: '#9463F8',
+            backgroundColor: COLOR.brand.violet,
             boxShadow: `0px 0px ${scale(20)}px ${scale(10)}px rgba(255, 255, 255, 0.25)`,
           }}
         />
       ))}
       <Text
-        style={{ fontSize: scale(10), lineHeight: scale(13), color: '#FFFFFF' }}
-        className="font-pretendard-extrabold">
+        style={{
+          position: 'absolute',
+          left: scale(8.65),
+          top: scale(22.26 - 15.795),
+          fontSize: scale(11.282),
+          lineHeight: scale(15.795),
+          letterSpacing: scale(-0.1128),
+          color: COLOR.text.onPastel,
+        }}
+        className="font-plex-bold">
         오늘 변화가 있었던 DNA,{'\n'}딱 30초만 기록해요
       </Text>
       <Text
         style={{
-          fontSize: scale(7),
-          lineHeight: scale(9),
-          marginTop: scale(4.5),
-          color: '#E7D7FF',
+          position: 'absolute',
+          left: scale(8.38),
+          top: scale(44.25 - 6.205),
+          fontSize: scale(8.462),
+          lineHeight: scale(12.41),
+          color: COLOR.text.plum,
         }}
-        className="font-pretendard-medium">
+        className="font-plex">
         기록할수록 나의 LifeDNA가 더 정교해져요
       </Text>
       <Pressable
         onPress={() => router.push('/journal/today')}
         style={{
-          width: scale(62),
+          position: 'absolute',
+          left: scale(9.03),
+          top: scale(55),
+          width: scale(67.835),
           height: scale(20),
-          marginTop: scale(6.5),
-          borderRadius: scale(7),
-          backgroundColor: '#FFFFFF',
+          borderRadius: scale(5.641),
+          backgroundColor: COLOR.surface.card,
           boxShadow: SHADOW,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
         <Text
-          style={{ fontSize: scale(7), lineHeight: scale(13), color: '#844BF7' }}
-          className="font-pretendard-black">
+          numberOfLines={1}
+          style={{
+            fontSize: scale(7.333),
+            lineHeight: scale(10.154),
+            color: COLOR.brand.violetText,
+          }}
+          className="font-plex-semibold">
           오늘 기록하기 →
         </Text>
       </Pressable>

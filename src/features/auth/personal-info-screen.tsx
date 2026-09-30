@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { StepHeader } from '@/components/ui/step-header';
 import { TextInputField } from '@/components/ui/text-input';
 import { checkAvailability, messageFor } from '@/lib/api';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { isPersonalInfoComplete, useSignUpForm } from '@/features/auth/sign-up-form';
 
@@ -16,7 +17,13 @@ import { isPersonalInfoComplete, useSignUpForm } from '@/features/auth/sign-up-f
  * `SignUpRequest` and are not used by the scoring, and only `birthYear` is
  * stored. Collecting fields we cannot send is worse than a screen that differs
  * from the mock, so they are gone and the mock needs updating.
+ *
+ * v4 (`1363:1558`) still draws them — and draws no 아이디 — so this screen
+ * takes v4's look, not its field list. The fields keep v4's 45.26pt pitch
+ * from its first field down, and 다음 keeps v4's own y rather than following
+ * the shorter list up the screen.
  */
+const FIELD_GAP = 2.145;
 
 export default function PersonalInfoScreen() {
   const { form, update } = useSignUpForm();
@@ -52,11 +59,11 @@ export default function PersonalInfoScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: scale(18),
-          paddingTop: scale(5),
+          paddingHorizontal: scale(11.28),
+          paddingTop: scale(9.42),
           paddingBottom: scale(24),
         }}
         keyboardShouldPersistTaps="handled">
@@ -67,7 +74,7 @@ export default function PersonalInfoScreen() {
           currentStep={1}
         />
 
-        <View style={{ marginTop: scale(23), gap: scale(7) }}>
+        <View style={{ marginTop: scale(9.47), gap: scale(FIELD_GAP) }}>
           <TextInputField
             label="아이디"
             placeholder="영문·숫자·_ 4자 이상"
@@ -113,7 +120,7 @@ export default function PersonalInfoScreen() {
           />
         </View>
 
-        <View style={{ marginTop: scale(27) }}>
+        <View style={{ marginTop: scale(54.7) }}>
           <Button
             label="다음 →"
             disabled={!canContinue}

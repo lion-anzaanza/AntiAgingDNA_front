@@ -4,93 +4,111 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ButtonBack } from '@/components/ui/button-back';
-import { GradientText } from '@/components/ui/gradient-text';
-import { FeatureTable } from '@/features/my/components/feature-table';
+import { FeatureTable, FEATURE_TABLE_HEIGHT } from '@/features/my/components/feature-table';
 import { PremiumBadge } from '@/features/my/components/premium-badge';
-import { SubscriptionPlanCard } from '@/features/my/components/subscription-plan-card';
-import { INK } from '@/features/my/components/subscription-tokens';
-import { GRADIENT_BRAND, SHADOW } from '@/lib/design';
+import {
+  PLAN_CARD_HEIGHT,
+  SubscriptionPlanCard,
+} from '@/features/my/components/subscription-plan-card';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: 마이페이지/구독관리 — `585:1399`. Until 2026-08-17 this frame was a
- * title over an empty box; it is now a full paywall and this is the port.
+ * Figma v4: 마이페이지/구독관리 (`1363:3269`).
  *
  * **Nothing here transacts.** There is no commerce domain in the API at all
  * (backlog 15 and 24), so the plan cards only move a local selection and the
  * CTA does nothing. Wiring it means a payment SDK, not an endpoint.
  *
- * Three slips reproduced rather than corrected — all worth a designer's eye:
+ * v4 fixed one of the older frame's slips — the second plan is titled `월간`
+ * now — and kept three, reproduced here and all worth a designer's eye:
  *
- * - **Both plan cards say `연간` and both price suffixes say `/ 년`**, so the
- *   3,900원 plan reads as a second yearly plan rather than the monthly one the
- *   CTA's fine print ("이후 월 3,900원 청구") clearly means.
+ * - **Both price suffixes still say `/ 년`**, so the 3,900원 plan reads as a
+ *   yearly price although the CTA's fine print says "이후 월 3,900원 청구".
  * - **Both plan subtitles read `올빼미 - 고민감 - 누적형`**, which is the profile
  *   type label from 마이페이지/메인 — a placeholder left in.
  * - **The 광고 row is X for 무료 플랜 and ✓ for 프리미엄**, i.e. it says the paid
  *   plan is the one with ads. Every other row uses ✓ for "included".
+ *
+ * Every element sits at Figma's own y less the 38pt PhoneHeader mock.
  */
-const CONTENT_INSET = 17;
-const CARD_WIDTH = 186;
-const COLUMN = {
-  paddingLeft: scale(CONTENT_INSET),
-  paddingRight: scale(220 - CONTENT_INSET - CARD_WIDTH),
-};
+const COLUMN = { left: scale(11.28), width: scale(197.436) };
 
 const PLANS = [
-  { key: 'yearly', title: '연간', price: '29,000원', per: '/ 년', badge: '38% 할인! 가장 인기' },
-  { key: 'monthly', title: '연간', price: '3,900원', per: '/ 년' },
+  { key: 'yearly', title: '연간', price: '29,000원', per: '/ 년', top: 93.73 },
+  { key: 'monthly', title: '월간', price: '3,900원', per: '/ 년', top: 126.42 },
 ];
+
+/** `38% 할인! 가장 인기` — a pastel pill riding over the yearly card's top edge. */
+const DEAL = { left: 134.85, top: 89.03, width: 65.327, height: 10.72 };
+const DEAL_RAMP = cssGradientPoints(pastelAngle(DEAL.width, DEAL.height), DEAL.width, DEAL.height);
+
+const CTA_RAMP = cssGradientPoints(GRADIENT_PASTEL.angle, 197.436, 27.077);
+
+const HEADLINE = {
+  fontSize: scale(11.282),
+  lineHeight: scale(15.795),
+  letterSpacing: scale(-0.1128),
+};
+
+const FINE_PRINT = {
+  fontSize: scale(6.769),
+  lineHeight: scale(9.026),
+  color: COLOR.text.muted,
+  textAlign: 'center' as const,
+};
 
 export default function SubscriptionScreen() {
   const [selected, setSelected] = useState('yearly');
 
   return (
-    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
-      <ScrollView contentContainerStyle={{ paddingTop: scale(6), paddingBottom: scale(24) }}>
-        <View style={{ height: scale(22), flexDirection: 'row', alignItems: 'center', ...COLUMN }}>
-          <ButtonBack fallbackHref="/my" />
+    <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: scale(24) }}>
+        <View style={{ height: scale(417.08) }}>
+          <View style={{ position: 'absolute', left: scale(11.28), top: scale(12) }}>
+            <ButtonBack fallbackHref="/my" />
+          </View>
           <Text
             style={{
-              marginLeft: scale(9),
-              fontSize: scale(12),
-              lineHeight: scale(15),
-              color: '#000000',
+              position: 'absolute',
+              left: scale(34.44),
+              top: scale(9.47),
+              fontSize: scale(13.538),
+              lineHeight: scale(18.051),
+              letterSpacing: scale(-0.2708),
+              color: COLOR.text.strong,
             }}
-            className="font-pretendard-extrabold">
+            className="font-plex-bold">
             구독관리
           </Text>
-        </View>
 
-        <View style={{ marginTop: scale(15), alignItems: 'center' }}>
-          <PremiumBadge />
-        </View>
+          <View style={{ position: 'absolute', top: scale(34.12), left: 0, right: 0, alignItems: 'center' }}>
+            <PremiumBadge />
+          </View>
 
-        <View style={{ marginTop: scale(12), alignItems: 'center' }}>
-          <Text
-            style={{ fontSize: scale(12), lineHeight: scale(13), color: INK, textAlign: 'center' }}
-            className="font-pretendard-bold">
-            한 달 무료 플랜으로
-          </Text>
-          <View style={{ flexDirection: 'row', marginTop: scale(1) }}>
-            <GradientText
-              colors={[...GRADIENT_BRAND]}
-              style={{ fontSize: scale(12), lineHeight: scale(13) }}
-              className="font-pretendard-bold">
-              더 깊은 나를
-            </GradientText>
+          {/*
+            * Figma centres the two lines on x 109.3 — 0.7pt left of the middle,
+            * once — so they are centred. "를" is `text/strong` and the rest
+            * `text/heading`, as drawn; the two are all but the same ink.
+            */}
+          <View style={{ position: 'absolute', top: scale(50.86), left: 0, right: 0 }}>
             <Text
-              style={{ fontSize: scale(12), lineHeight: scale(13), color: INK }}
-              className="font-pretendard-bold">
-              {' '}
-              만나보세요!
+              style={{ ...HEADLINE, color: COLOR.text.heading, textAlign: 'center' }}
+              className="font-plex-bold">
+              한 달 무료 플랜으로
+            </Text>
+            <Text style={{ ...HEADLINE, textAlign: 'center' }} className="font-plex-bold">
+              <Text style={{ color: COLOR.brand.violetText }}>더 깊은 나</Text>
+              <Text style={{ color: COLOR.text.strong }}>를</Text>
+              <Text style={{ color: COLOR.text.heading }}> 만나보세요!</Text>
             </Text>
           </View>
-        </View>
 
-        <View style={{ marginTop: scale(14), ...COLUMN }}>
-          {PLANS.map(({ key, ...plan }, index) => (
-            <View key={key} style={{ marginTop: index === 0 ? 0 : scale(4) }}>
+          {PLANS.map(({ key, top, ...plan }) => (
+            <View
+              key={key}
+              style={{ position: 'absolute', top: scale(top), height: scale(PLAN_CARD_HEIGHT), ...COLUMN }}>
               <SubscriptionPlanCard
                 {...plan}
                 selected={selected === key}
@@ -98,68 +116,94 @@ export default function SubscriptionScreen() {
               />
             </View>
           ))}
-        </View>
 
-        <View style={{ marginTop: scale(11), ...COLUMN }}>
-          <FeatureTable />
-        </View>
+          {/* Drawn after both cards: it overlaps the yearly one. */}
+          <LinearGradient
+            pointerEvents="none"
+            colors={[...GRADIENT_PASTEL.colors]}
+            locations={[...GRADIENT_PASTEL.locations]}
+            start={DEAL_RAMP.start}
+            end={DEAL_RAMP.end}
+            style={{
+              position: 'absolute',
+              left: scale(DEAL.left),
+              top: scale(DEAL.top),
+              width: scale(DEAL.width),
+              height: scale(DEAL.height),
+              borderRadius: scale(4.808),
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Text
+              style={{ fontSize: scale(6.769), lineHeight: scale(9.026), color: COLOR.text.onPastel }}
+              className="font-plex">
+              38% 할인! 가장 인기
+            </Text>
+          </LinearGradient>
 
-        <View style={{ marginTop: scale(11), paddingHorizontal: scale(18) }}>
-          <Pressable>
+          <View
+            style={{
+              position: 'absolute',
+              top: scale(165.85),
+              height: scale(FEATURE_TABLE_HEIGHT),
+              ...COLUMN,
+            }}>
+            <FeatureTable />
+          </View>
+
+          {/*
+            * The pastel ButtonNextUI box, but its label is SemiBold 9.59 rather
+            * than the shared `Button`'s Bold 11.28 (결정 대기 14), and it sits
+            * 1.17pt above the middle — so it is drawn here. It does nothing.
+            */}
+          <Pressable style={{ position: 'absolute', top: scale(383.29), ...COLUMN }}>
             <LinearGradient
-              colors={[...GRADIENT_BRAND]}
-              start={{ x: 0, y: 0.5 }}
-              end={{ x: 1, y: 0.5 }}
-              style={{
-                height: scale(34.4),
-                borderRadius: scale(10),
-                boxShadow: SHADOW,
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Text
-                style={{ fontSize: scale(9), lineHeight: scale(15), color: '#FFFFFF' }}
-                className="font-pretendard-bold">
-                한 달 무료체험 시작하기
-              </Text>
+              colors={[...GRADIENT_PASTEL.colors]}
+              locations={[...GRADIENT_PASTEL.locations]}
+              start={CTA_RAMP.start}
+              end={CTA_RAMP.end}
+              style={{ height: scale(27.077), borderRadius: scale(9.615), boxShadow: SHADOW_V4 }}>
               <Text
                 style={{
-                  fontSize: scale(6),
-                  lineHeight: scale(9),
-                  letterSpacing: scale(-0.18),
-                  color: '#FFFFFF',
+                  position: 'absolute',
+                  top: scale(12.37 - 13.538 / 2),
+                  left: 0,
+                  right: 0,
+                  textAlign: 'center',
+                  fontSize: scale(9.59),
+                  lineHeight: scale(13.538),
+                  letterSpacing: scale(-0.0959),
+                  color: COLOR.text.onPastel,
                 }}
-                className="font-pretendard-light">
-                이후 월 3,900원 청구 · 언제든 해지 가능
+                className="font-plex-semibold">
+                한 달 무료체험 시작하기
               </Text>
             </LinearGradient>
           </Pressable>
         </View>
 
-        <View style={{ marginTop: scale(11), paddingHorizontal: scale(18) }}>
-          <Text
-            style={{
-              fontSize: scale(5),
-              lineHeight: scale(8),
-              letterSpacing: scale(-0.15),
-              color: '#868686',
-            }}
-            className="font-pretendard">
-            무료 체험 후 선택한 기간마다 자동 갱신되며, 갱신 24시간 전까지 마이페이지에서 해지할 수
-            있어요. 결제는 앱스토어 계정으로 청구됩니다.
-          </Text>
-          <Text
-            style={{
-              marginTop: scale(6),
-              fontSize: scale(5),
-              lineHeight: scale(8),
-              letterSpacing: scale(-0.15),
-              color: '#868686',
-            }}
-            className="font-pretendard">
-            구매 복원 | 이용 약관 | 개인정보처리방침
-          </Text>
-        </View>
+        {/*
+          * The fine print is in normal flow, not absolute, so a wrap pushes the
+          * links down instead of drawing over them. Figma breaks the paragraph
+          * by hand after "전까지" and its second line fills the 197.4 column;
+          * Android's Plex runs ~2% wider, so in the column "다." wrapped to a
+          * third line. The paragraph gets 4pt from either screen edge, which
+          * fits at font scale 1.0; at 1.1 it wraps to three lines. (Shrinking
+          * with `adjustsFontSizeToFit` was tried: it shrank ~9% even at 1.0.)
+          */}
+        <Text style={FINE_PRINT} className="font-plex">
+          이후 월 3,900원 청구 · 언제든 해지 가능
+        </Text>
+        <Text
+          style={{ marginTop: scale(434.42 - 417.08 - 9.026), marginHorizontal: scale(4), ...FINE_PRINT }}
+          className="font-plex">
+          {'무료 체험 후 선택한 기간마다 자동 갱신되며, 갱신 24시간 전까지\n마이페이지에서 해지할 수 있어요. 결제는 앱스토어 계정으로 청구됩니다.'}
+        </Text>
+        <Text
+          style={{ marginTop: scale(456.98 - 434.42 - 2 * 9.026), ...FINE_PRINT }}
+          className="font-plex">
+          {'구매 복원   |   이용 약관   |   개인정보처리방침'}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );

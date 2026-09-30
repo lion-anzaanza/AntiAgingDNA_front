@@ -4,12 +4,12 @@ import { Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
-import { GradientText } from '@/components/ui/gradient-text';
+import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 export default function SignUpIntroScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F3F3F3' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
       <View style={{ flex: 1, paddingHorizontal: scale(18), paddingTop: scale(46) }}>
         <Image
           source={require('@/assets/images/auth/dna-icon.png')}
@@ -23,15 +23,14 @@ export default function SignUpIntroScreen() {
             justifyContent: 'center',
             marginTop: scale(2),
           }}>
-          <GradientText
-            colors={['#4B52F6', '#BC40F6']}
-            style={{ fontSize: scale(14), lineHeight: scale(15) }}
-            className="font-pretendard-extrabold">
-            LifeDNA
-          </GradientText>
           <Text
-            style={{ fontSize: scale(14), lineHeight: scale(15), color: '#000000' }}
-            className="font-pretendard-extrabold">
+            style={{ fontSize: scale(14), lineHeight: scale(15), color: COLOR.brand.violetText }}
+            className="font-plex-bold">
+            LifeDNA
+          </Text>
+          <Text
+            style={{ fontSize: scale(14), lineHeight: scale(15), color: COLOR.text.heading }}
+            className="font-plex-bold">
             {' '}
             시작해보기
           </Text>
@@ -43,9 +42,9 @@ export default function SignUpIntroScreen() {
             lineHeight: scale(10),
             marginTop: scale(6),
             textAlign: 'center',
-            color: '#5F5E5B',
+            color: COLOR.text.body,
           }}
-          className="font-pretendard">
+          className="font-plex">
           매일의 나를 모아 &lsquo;나만의 유전자&rsquo;를 만들어요
         </Text>
 
@@ -61,11 +60,11 @@ export default function SignUpIntroScreen() {
               fontSize: scale(7),
               lineHeight: scale(10),
               textAlign: 'center',
-              color: '#88877F',
+              color: COLOR.text.muted,
             }}
-            className="font-pretendard">
+            className="font-plex">
             이미 계정이 있나요?{'  '}
-            <Text style={{ color: '#8B2AFE' }} className="font-pretendard-bold">
+            <Text style={{ color: '#8B2AFE' }} className="font-plex-bold">
               로그인
             </Text>
           </Text>
