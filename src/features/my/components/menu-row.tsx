@@ -1,62 +1,56 @@
 import { router } from 'expo-router';
-import { Image, Pressable, Text, type ImageSourcePropType } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
+import { Icon, type IconName } from '@/components/ui/icon';
 import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 export type MenuItem = {
   label: string;
-  icon: ImageSourcePropType;
-  iconWidth: number;
-  iconHeight: number;
-  /** Figma places each icon absolutely, not centred — up to 1.5pt high. */
-  iconTop: number;
+  icon: IconName;
+  /**
+   * v3 draws 마이페이지/메인's menu icons thinner than the same icons elsewhere:
+   * 1.44 in their 24pt box, the watch 1.33.
+   */
+  iconStroke: number;
   value?: string;
   href?: string;
 };
 
+/** v3 rows are 48pt (27.08 at 220), split by 0.288 `border/soft` rules. */
+export const MENU_ROW_HEIGHT = 27.077;
+
 /**
- * One row of v4 마이페이지/메인's `Card/Rectangle 3822`. Figma draws two kinds
- * of trailing mark: a plain row carries a Pretendard Light 11.3 `>`, while a
- * row with a value writes `값  >` as one IBM Plex 8.5 string — both reproduced.
+ * Labels and the trailing chevron centre 1.5pt (0.85 at 220) below the row's
+ * middle in three of v3's five rows; the other two sit 1pt higher. The three win.
  */
-export function MenuRow({
-  label,
-  icon,
-  iconWidth,
-  iconHeight,
-  iconTop,
-  value,
-  href,
-  height,
-  first,
-}: MenuItem & { height: number; first: boolean }) {
+const DROP = 0.846;
+
+/**
+ * One row of v3 마이페이지/메인's `Card/Rectangle 3822`: a 24pt `Icon/*` in
+ * `icon/primary` at x 16, a Plex Regular 15 label at x 50, an optional `text/body`
+ * value, and the `Icon/Chevron-Right` at x 314 on every row.
+ */
+export function MenuRow({ label, icon, iconStroke, value, href, first }: MenuItem & { first: boolean }) {
   return (
     <Pressable
       onPress={href ? () => router.push(href as never) : undefined}
       style={{
-        height: scale(height),
+        height: scale(MENU_ROW_HEIGHT),
         justifyContent: 'center',
         borderTopWidth: first ? 0 : scale(0.288),
         borderTopColor: COLOR.border.soft,
       }}>
-      <Image
-        source={icon}
-        style={{
-          position: 'absolute',
-          left: scale(9.1),
-          top: scale(iconTop),
-          width: scale(iconWidth),
-          height: scale(iconHeight),
-        }}
-        resizeMode="contain"
-      />
+      <View style={{ position: 'absolute', left: scale(9.026), top: scale(6.769) }}>
+        <Icon name={icon} size={scale(13.538)} color={COLOR.icon.primary} strokeWidth={iconStroke} />
+      </View>
       <Text
         style={{
           position: 'absolute',
-          left: scale(29),
-          fontSize: scale(6.769),
-          lineHeight: scale(9.026),
+          left: scale(28.205),
+          transform: [{ translateY: scale(DROP) }],
+          fontSize: scale(8.462),
+          lineHeight: scale(12.41),
           color: COLOR.text.strong,
         }}
         className="font-plex">
@@ -67,31 +61,25 @@ export function MenuRow({
         <Text
           style={{
             position: 'absolute',
-            right: scale(9.5),
-            // Both value rows in Figma sit 3.2pt below their row's middle.
-            transform: [{ translateY: scale(3.2) }],
+            // 애플워치 ends at x 310 of the 350 card and 무료 at 312; split.
+            right: scale(22),
+            transform: [{ translateY: scale(0.6) }],
             fontSize: scale(8.462),
             lineHeight: scale(12.41),
             color: COLOR.text.body,
           }}
           className="font-plex">
-          {`${value}  >`}
+          {value}
         </Text>
-      ) : (
-        <Text
-          style={{
-            position: 'absolute',
-            right: scale(8),
-            transform: [{ translateY: scale(0.6) }],
-            fontSize: scale(11.282),
-            lineHeight: scale(20.308),
-            letterSpacing: scale(-0.1128),
-            color: COLOR.text.body,
-          }}
-          className="font-pretendard-light">
-          {'>'}
-        </Text>
-      )}
+      ) : null}
+      <View
+        style={{
+          position: 'absolute',
+          left: scale(177.128),
+          top: scale((MENU_ROW_HEIGHT - 11.282) / 2 + DROP),
+        }}>
+        <Icon name="chevron-right" size={scale(11.282)} color={COLOR.text.muted} />
+      </View>
     </Pressable>
   );
 }

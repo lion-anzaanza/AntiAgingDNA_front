@@ -11,7 +11,64 @@ with `get_metadata` to find its replacement.
 `get_metadata` on a **section** returns a sparse listing — you have to call
 `get_design_context` on the child nodes individually to get real specs.
 
-## Sections
+## Current design — `99_개선안_v3` (final, 2026-10-01)
+
+The owner declared section **`99_개선안_v3` (`1307:1533`)** the finished design on
+2026-10-01. It is what the code follows; everything further down this file
+describes the **older** sections and is kept for history and the measurements
+that still hold.
+
+- v3 frames are **390pt** wide. Every value goes into the code ×220/390
+  (`scale()` stays on the 220 basis) — e.g. a 40pt tile is `scale(22.564)`.
+- v3 has **no component instances**; every button, pill and card is drawn by
+  hand. Same-named nodes are compared across frames and settled by majority
+  (`docs/redesign-v4-inventory.md`, `docs/redesign-v3-delta.md`).
+- `99_개선안_v4` (`1430:1754`), `_v5` (`1430:3835`) and `_v6` (`1430:5916`) are the
+  same layout under the other modes of the `LifeDNA 색상` variable collection
+  (Blue · Dark · Yellow). v3 uses the default Pink mode. They are not targets.
+- The section the code was first ported from on 2026-09-30, the old
+  `99_개선안_v4` **`1363:1533`, is deleted** — every `1363:*` ID in older docs is
+  dead. What changed in v3 after that copy: `docs/redesign-v3-delta.md`.
+
+| Node | Sub-section |
+|---|---|
+| `1348:1533` | 01_로그인 |
+| `1348:1534` | 02_회원가입 |
+| `1348:1535` | 03_홈 |
+| `1348:1536` | 04_일지 |
+| `1348:1537` | 05_사용자_맞춤_개선책 |
+| `1348:1538` | 06_마이페이지 |
+
+## Screens
+
+Paths are under `src/features/`; the route files in `src/app` only re-export them.
+The **v3** column is the node to read; the pre-v4 column is the old 220pt frame,
+kept because the measurement notes below refer to it.
+
+| v3 | pre-v4 | Screen | Code |
+|---|---|---|---|
+| `1315:1533` | `585:1352` | 로그인/메인 | `auth/sign-in-screen.tsx` |
+| `1315:1558` | `500:121` | 회원가입/1 개인정보 | `auth/personal-info-screen.tsx` |
+| `1311:1533` | `457:828` | 회원가입/2 초기 진단 | `auth/survey-screen.tsx` |
+| `1307:1534` | `457:829` | 회원가입/3 약관 동의 | `auth/terms-screen.tsx` |
+| — | `457:738` | (hidden draft) 시작해보기 — not in v3, v3 tokens only | `auth/sign-up-intro-screen.tsx` |
+| `1312:1533` | `597:1466` | 홈/메인 | `home/home-screen.tsx` |
+| — | `457:791` | 홈 DNA 카드 (스와이프 2쪽) — not in v3, v3 tokens only | `home/components/orb-card.tsx` |
+| `1316:1533` | `480:1268` | 일지/메인 | `journal/main-screen.tsx` |
+| `1316:1610` | `480:1269` | 일지/오늘의기록(생성) | `journal/today-screen.tsx` |
+| `1316:1911` | `480:1274` | 일지/캘린더 | `journal/calendar-screen.tsx` |
+| `1316:2049` | `480:1275` | 일지/상세보기 | `journal/detail-screen.tsx` |
+| — | `585:1436` | 주간_컨디션_그래프 — not in v3, v3 tokens only | `src/components/ui/weekly-condition-chart.tsx` |
+| `1318:1533` | `559:1297` | 개선책/메인 | `plan/main-screen.tsx` |
+| `1318:1604` | `559:1295` | 개선책/맞춤영양제 | `plan/supplements-screen.tsx` |
+| `1318:1665` | `559:1294` | 개선책/주간리포트 | `plan/report-screen.tsx` |
+| `1318:1741` | `523:490` | 개선책/한달뒤내모습 | `plan/forecast-screen.tsx` |
+| `1318:1821` | `583:969` | 마이페이지 | `my/main-screen.tsx` |
+| `1318:1948` | `583:862` | 웨어러블 연동 | `my/wearable-screen.tsx` |
+| `1318:1975` | `583:913` | 데이터 개인정보 | `my/privacy-screen.tsx` |
+| `1318:1876` | `585:1399` | 구독관리 | `my/subscription-screen.tsx` |
+
+## Older sections (pre-v4, 220pt)
 
 | Node | Name |
 |---|---|
@@ -23,38 +80,9 @@ with `get_metadata` to find its replacement.
 | `153:286` | 05_사용자_맞춤_개선책 |
 | `153:288` | 06_마이페이지 |
 
-Every section is implemented, as far as Figma has drawn it — 06 has two
-undesigned frames (see the screens table). Component library lives under
-`153:290` (컴포넌트), with sub-sections 버튼 `457:700`, 입력 `480:1285`,
-만족도 `457:701`, 범용 `457:820` (BottomBar), 캘린더 `603:1852` and
-나의 LifeDNA 정보 `603:1884`.
-
-## Screens
-
-Paths are under `src/features/`; the route files in `src/app` only re-export them.
-
-| Node | Screen | Code |
-|---|---|---|
-| `585:1352` | 로그인/메인 | `auth/sign-in-screen.tsx` |
-| `500:121` | 회원가입/1 개인정보 | `auth/personal-info-screen.tsx` |
-| `457:828` | 회원가입/2 초기 진단 | `auth/survey-screen.tsx` |
-| `457:829` | 회원가입/3 약관 동의 | `auth/terms-screen.tsx` |
-| `457:738` | (hidden draft) 시작해보기 | `auth/sign-up-intro-screen.tsx` |
-| `597:1466` | 홈/메인 (v4: `1363:1953`, see `docs/redesign-v4-inventory.md`) | `home/home-screen.tsx` |
-| `457:791` | 홈 DNA 카드 (스와이프 2쪽) | `home/components/orb-card.tsx` |
-| `480:1269` | 일지/오늘의기록(생성) | `journal/today-screen.tsx` |
-| `480:1268` | 일지/메인 (v4: `1363:2135`) | `journal/main-screen.tsx` |
-| `480:1274` | 일지/캘린더 (v4: `1363:2507`) | `journal/calendar-screen.tsx` |
-| `480:1275` | 일지/상세보기 | `journal/detail-screen.tsx` |
-| `585:1436` | 주간_컨디션_그래프 (v4에 없음 — 주간_기록 카드를 따름) | `src/components/ui/weekly-condition-chart.tsx` |
-| `559:1297` | 개선책/메인 (v4: `1363:2935`) | `plan/main-screen.tsx` |
-| `559:1295` | 개선책/맞춤영양제 (v4: `1363:3003`) | `plan/supplements-screen.tsx` |
-| `559:1294` | 개선책/주간리포트 (v4: `1363:3061`) | `plan/report-screen.tsx` |
-| `523:490` | 개선책/한달뒤내모습 (v4: `1363:3134`) | `plan/forecast-screen.tsx` |
-| `583:969` | 마이페이지 (Frame 28) | `my/main-screen.tsx` |
-| `583:862` | 웨어러블 연동 (Frame 26, v4: `1363:3340`) | `my/wearable-screen.tsx` |
-| `583:913` | 데이터 개인정보 (Frame 27, v4: `1363:3364`) | `my/privacy-screen.tsx` |
-| `585:1399` | 구독관리 (Frame 25, v4: `1363:3269`) | `my/subscription-screen.tsx` |
+Component library lives under `153:290` (컴포넌트), with sub-sections 버튼
+`457:700`, 입력 `480:1285`, 만족도 `457:701`, 범용 `457:820` (BottomBar), 캘린더
+`603:1852` and 나의 LifeDNA 정보 `603:1884`. v3 does not use these masters.
 
 ## 2026-08-17 재대조에서 바뀐 것
 

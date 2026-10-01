@@ -1,20 +1,21 @@
-import { Image, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AreaDeltaCard, type AreaDeltas } from '@/components/ui/area-delta-card';
 import { ButtonBack } from '@/components/ui/button-back';
+import { Icon } from '@/components/ui/icon';
 import { PlanCard } from '@/components/ui/plan-card';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma v4: 사용자맞춤개선책/주간리포트 — `1363:3061` (was `559:1294`).
+ * Figma v3: 사용자맞춤개선책/주간리포트 — `1318:1665` (v4 `1363:3061`, first `559:1294`).
  *
  * Static like the rest of the section. The deltas, the two 인사이트 rows and the
  * 제안 row are Figma's; where they come from is a backend question — the API has
  * no weekly aggregate yet.
  *
- * Positions are v4's, frame y − 38.
+ * Positions are v3's ×220/390, frame y − 38.
  */
 const CONTENT_INSET = 11.28;
 const CARD_WIDTH = 197.436;
@@ -36,14 +37,14 @@ const INSIGHTS = [
   {
     title: '수면 7시간 → 컨디션 +6점',
     caption: '마그네슘 테아닌 외 2종',
-    icon: require('@/assets/images/plan/ic-sleep-plan.png'),
+    icon: 'moon',
   },
   {
     title: '당분 3회 → 컨디션 -8점',
     caption: '수면 리듬 +9% 스트레스 회복 +5%',
-    icon: require('@/assets/images/plan/ic-sugar.png'),
+    icon: 'nosugar',
   },
-];
+] as const;
 
 const SECTION_LINE = 15.795;
 
@@ -55,14 +56,14 @@ export default function WeeklyReportScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: scale(20) }}>
         {/* Header: the summary card starts at 27.38. */}
         <View style={{ height: scale(27.38) }}>
-          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(5.27) }}>
+          <View style={{ position: 'absolute', left: scale(9.026), top: scale(0.257) }}>
             <ButtonBack fallbackHref="/plan" />
           </View>
           <Text
             style={{
               position: 'absolute',
-              left: scale(34.44),
-              top: scale(11.81 - 18.051 / 2),
+              left: scale(35.657),
+              top: scale(11.34 - 18.051 / 2),
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.2708),
@@ -93,21 +94,17 @@ export default function WeeklyReportScreen() {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-              <Image
-                source={require('@/assets/images/plan/ic-report.png')}
-                style={{ width: scale(31.214), height: scale(28.846) }}
-                resizeMode="contain"
-              />
+              <Icon name="report" size={scale(15.795)} color={COLOR.icon.primary} />
             </View>
             {/*
-              * v4 starts the headline at 70.9 and the two-line caption at 81.96 —
+              * v3 starts the headline at 70.9 and the two-line caption at 81.96 —
               * 24 and 35 past the tile, and not on one edge. Reproduced as drawn.
               */}
             <Text
               style={{
                 position: 'absolute',
                 left: scale(70.9),
-                top: scale(13.3 - 13.538 / 2),
+                top: scale(14.07 - 13.538 / 2),
                 fontSize: scale(9.59),
                 lineHeight: scale(13.538),
                 letterSpacing: scale(-0.0959),
@@ -121,7 +118,7 @@ export default function WeeklyReportScreen() {
               style={{
                 position: 'absolute',
                 left: scale(81.96),
-                top: scale(34.51 - 9.026),
+                top: scale(25.01),
                 fontSize: scale(6.769),
                 lineHeight: scale(9.026),
                 color: COLOR.text.body,
@@ -136,12 +133,12 @@ export default function WeeklyReportScreen() {
           <AreaDeltaCard
             heading="지난 주 대비 영역별 변화"
             deltas={DELTAS}
-            rightColumn={{ chip: 111.17, label: 131.5, valueRight: 188.36 }}
+            rightColumn={{ chip: 111.17, valueRight: 188.62 }}
           />
         </View>
 
-        {/* Delta card bottom 162.0 → first insight 197.58. */}
-        <SectionHeading height={35.58} centre={25.44} left={10.71}>
+        {/* Delta card bottom 174.04 → first insight 209.99. */}
+        <SectionHeading height={35.95} centre={26.71} left={10.71}>
           이번 주 인사이트
         </SectionHeading>
         <View style={{ gap: scale(4.806), ...COLUMN }}>
@@ -150,8 +147,8 @@ export default function WeeklyReportScreen() {
           ))}
         </View>
 
-        {/* Last insight bottom 294.69 → proposal 324.5. */}
-        <SectionHeading height={29.81} centre={19.67} left={10.55}>
+        {/* Last insight bottom 307.1 → proposal 336.91. */}
+        <SectionHeading height={29.81} centre={20.57} left={10.55}>
           다음 주 제안
         </SectionHeading>
         <View style={COLUMN}>
@@ -159,7 +156,7 @@ export default function WeeklyReportScreen() {
             layout="insight"
             title="취침 30분 앞당기기"
             caption="가장 큰 효과로 나타나요"
-            icon={require('@/assets/images/plan/ic-sleep-plan.png')}
+            icon="clock"
           />
         </View>
       </ScrollView>
@@ -167,7 +164,7 @@ export default function WeeklyReportScreen() {
   );
 }
 
-/** A v4 section heading (Plex Bold 11.282, `text/heading`) in the gap above its cards. */
+/** A v3 section heading (Plex Bold 20 → 11.282, `text/heading`) in the gap above its cards. */
 function SectionHeading({
   children,
   height,

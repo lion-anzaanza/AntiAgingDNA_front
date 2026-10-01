@@ -1,7 +1,14 @@
 import { type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
-import { CARD_INSET, CARD_SURFACE, CARD_TITLE, CARD_TITLE_INSET } from '@/components/ui/select-card';
+import {
+  captionStyle,
+  CARD_INSET,
+  CARD_PAD_TOP,
+  CARD_SURFACE,
+  CARD_TITLE,
+  CARD_TITLE_INSET,
+} from '@/components/ui/select-card';
 import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
@@ -53,18 +60,13 @@ export function CardTitle({ children, marginTop = 0 }: { children: string; margi
   );
 }
 
-/** Plex Regular 6.77 note under a card title, tucked ~1pt under its line box like `SelectCard`'s. */
-export function CardCaption({ children }: { children: string }) {
+/**
+ * Plex Regular 6.77 note under a card title, tucked under its line box like
+ * `SelectCard`'s; `history` takes 상세보기's smaller, lower caption.
+ */
+export function CardCaption({ children, history = false }: { children: string; history?: boolean }) {
   return (
-    <Text
-      style={{
-        fontSize: scale(6.769),
-        lineHeight: scale(9.026),
-        marginTop: scale(-0.96),
-        marginLeft: scale(8.6),
-        color: COLOR.text.body,
-      }}
-      className="font-plex">
+    <Text style={[captionStyle(history), { marginLeft: scale(8.6) }]} className="font-plex">
       {children}
     </Text>
   );
@@ -87,19 +89,18 @@ export function FieldCaption({ children, marginTop }: { children: string; margin
   );
 }
 
-/** A white v4 card with `SelectCard`'s top and bottom padding. */
+/** A white card with `SelectCard`'s top and bottom padding. */
 export function LooseCard({ children }: { children: ReactNode }) {
   return (
-    <View style={[CARD_SURFACE, { paddingTop: scale(5.54), paddingBottom: scale(9.03) }]}>
+    <View style={[CARD_SURFACE, { paddingTop: scale(CARD_PAD_TOP), paddingBottom: scale(9.03) }]}>
       {children}
     </View>
   );
 }
 
 /**
- * One row of `journal` pills. v4 made the hand-built rows an even grid like
- * `SelectCard`'s (41.46 × 4, 87.44 × 2 — gap 4.51, inset 9.03), so the pills
- * pass `flex: 1`.
+ * One row of `journal` pills — gap 4.51, inset 9.03, like `SelectCard`'s. The
+ * pills size themselves with `pillWidth` (equal, or v3's label-following widths).
  */
 export function PillRow({ children, marginTop }: { children: ReactNode; marginTop: number }) {
   return (
@@ -116,7 +117,7 @@ export function PillRow({ children, marginTop }: { children: ReactNode; marginTo
 }
 
 /**
- * v4 `Card/Rectangle 3437` — 오늘 날씨 under 자동 기록: `surface/chip` with a
+ * v3 `Card/Rectangle 3437` — 오늘 날씨 under 자동 기록: `surface/chip` with a
  * 0.29 `border/soft` hairline and no shadow, a white "자동 기록됨" chip in the
  * corner. `value` is the line under the title.
  */
@@ -130,12 +131,12 @@ export function WeatherCard({ value }: { value: string }) {
         borderWidth: scale(0.288),
         borderColor: COLOR.border.soft,
       }}>
-      <CardTitle marginTop={5.54}>오늘 날씨</CardTitle>
+      <CardTitle marginTop={CARD_PAD_TOP}>오늘 날씨</CardTitle>
       <Text
         style={{
           position: 'absolute',
           left: scale(CARD_INSET),
-          top: scale(25.93 - 9.026 / 2),
+          top: scale(21.93),
           fontSize: scale(6.769),
           lineHeight: scale(9.026),
           color: COLOR.text.body,

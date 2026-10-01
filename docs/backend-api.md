@@ -10,64 +10,112 @@ curl -s https://antiaging-dna.anzaanza.cloud/v3/api-docs | python -m json.tool
 Human-readable version: <https://antiaging-dna.anzaanza.cloud/swagger-ui/index.html>
 
 - Base URL: `https://antiaging-dna.anzaanza.cloud`
-- OpenAPI 3.1.0, `info.version` = `v0`
-- Liveness: `GET /health` → `{"status":"ok"}` (verified reachable)
-- **What the app actually calls** (2026-08-17): the five auth endpoints
-  (`signup`, `login`, `GET`/`DELETE /api/auth/me`, the two `check-*`) and
-  `PUT /api/diaries/{date}`. Everything else in the table below is unused —
-  홈, 일지 조회 and 개선책 still draw Figma's numbers. `backend-backlog.md` has
-  the per-screen breakdown, split into *what the API can do* and *what we have
-  wired*; the second column is the one that lists our remaining work.
+- OpenAPI 3.1.0, `info.version` = `v0`, title `AntiAgingDNA API`
+- Liveness: `GET /health` → `{"status":"ok"}`
+- Last checked against the live spec: **2026-09-30**
+
+This file holds what the API *is*. What we still need from the backend is
+[backend-backlog.md](backend-backlog.md); what the screens have and have not
+wired is [frontend-status.md](frontend-status.md). The `(backlog N)` tags below
+point at the backlog's decision list, where each settled question keeps its
+number.
 
 ## Auth
 
-`bearerAuth` (HTTP bearer, JWT) is declared under `components.securitySchemes`
-but no operation declares a `security` requirement, so the spec alone does not
-say which endpoints need a token. The backend answered it directly (item 3,
-closed): **everything except `/health`, `/api/auth/signup`, `/api/auth/login`
-and the two `check-*` endpoints requires `Authorization: Bearer <JWT>`.**
+Every operation that needs a token declares `security: bearerAuth` in the spec,
+so `/v3/api-docs` answers it per operation. Open without a token: `/health`,
+`POST /api/auth/signup`, `POST /api/auth/login`, the two `check-*` endpoints and
+the docs themselves. Everything else needs `Authorization: Bearer <JWT>`
+(backlog 3).
 
-`TokenResponse` carries `accessToken`, `tokenType`, `expiresIn` and `user`.
-There is no refresh token and no logout endpoint.
+`TokenResponse` carries `accessToken`, `tokenType`, `expiresIn` (seconds; 86400
+observed) and `user`. Signup answers **201 with a token**, so a new account is
+signed in immediately — no email verification step (backlog 21).
+
+- **No refresh token, by design.** An expired token means signing in again.
+- **No logout endpoint.** The JWT is stateless; deleting it on the device is the
+  logout (backlog 14).
+- `DELETE /api/auth/me` (204) deletes the account, agreements, diagnosis,
+  diaries and scores — a hard delete, irreversible (backlog 24).
+
+## Errors
+
+RFC 9457 `application/problem+json` everywhere: `type`, `title`, `status`,
+`detail`, `instance`, plus `errors: { field: message }` on a validation failure.
+`title` is already Korean and specific, which is why `messageFor` in
+`lib/api.ts` shows it as is (backlog 4).
+
+| Case | Status |
+|---|---|
+| Login failed (no such id / wrong password — deliberately not distinguished) | 401 |
+| 아이디 already taken (`title: "아이디 중복"`) | 409 |
+| 이메일 already taken (`title: "이메일 중복"`) | 409 |
+| Field validation failed (`errors` present) | 400 |
+| Signup condition not met (under 14, future year) | 400 |
+| No diary / no diagnosis for that key | 404 |
+
+The spec itself documents only success responses, and declares their content
+type as `*/*` rather than `application/json`.
 
 ## Endpoints
 
-| Method | Path | Request | Response |
-|---|---|---|---|
-| POST | `/api/auth/signup` | `SignUpRequest` | 201 `TokenResponse` |
-| POST | `/api/auth/login` | `LoginRequest` | 200 `TokenResponse` |
-| GET | `/api/auth/me` | — | 200 `UserResponse` |
-| GET | `/api/diaries` | `?from=&to=` (date) | 200 `DiaryResponse[]` |
-| GET | `/api/diaries/{date}` | — | 200 `DiaryResponse` |
-| PUT | `/api/diaries/{date}` | `DiaryRequest` | 200 `DiaryResponse` |
-| DELETE | `/api/diaries/{date}` | — | 204 |
-| GET | `/api/scores` | `?from=&to=` (date) | 200 `DailyScoreResponse[]` |
-| GET | `/api/scores/{date}` | — | 200 `DailyScoreResponse` |
-| GET | `/api/scores/today` | — | 200 `DailyScoreResponse` |
-| GET | `/api/dna` | — | 200 `DnaInfoResponse` |
-| GET | `/health` | — | 200 `{ [k: string]: string }` |
+| Method | Path | Request | Response | App uses |
+|---|---|---|---|---|
+| POST | `/api/auth/signup` | `SignUpRequest` | 201 `TokenResponse` | ✅ |
+| POST | `/api/auth/login` | `LoginRequest` | 200 `TokenResponse` | ✅ |
+| GET | `/api/auth/me` | — | 200 `UserResponse` | ✅ |
+| DELETE | `/api/auth/me` | — | 204 | ✅ |
+| GET | `/api/auth/check-login-id` | `?loginId=` | 200 `{available}` | ✅ |
+| GET | `/api/auth/check-email` | `?email=` | 200 `{available}` | ✅ |
+| GET | `/api/diaries` | `?from=&to=` | 200 `DiaryResponse[]` | ✅ |
+| GET | `/api/diaries/{date}` | — | 200 `DiaryResponse` / 404 | ✅ |
+| PUT | `/api/diaries/{date}` | `DiaryRequest` | 200 `DiaryResponse` | ✅ |
+| DELETE | `/api/diaries/{date}` | — | 204 | — |
+| GET | `/api/scores` | `?from=&to=` | 200 `DailyScoreResponse[]` | ✅ |
+| GET | `/api/scores/items` | `?from=&to=` (≤366 days) | 200 `ItemTrendResponse[]` | — path built, not called |
+| GET | `/api/scores/{date}` | — | 200 `DailyScoreResponse` | ⛔ never (see Scores) |
+| GET | `/api/scores/today` | — | 200 `DailyScoreResponse` | ⛔ never (see Scores) |
+| GET | `/api/dna` | — | 200 `DnaInfoResponse` | — |
+| GET | `/health` | — | 200 | — |
 
-Only success responses are documented — there is no schema for 4xx/5xx, and the
-declared content type is `*/*` rather than `application/json`.
+**Ranged lists do not fill empty days** — `/api/diaries`, `/api/scores` and
+`/api/scores/items` return only the dates that have a row. A day missing from
+the array is a day with no data; compare against the requested range to find
+the gaps (backlog 23). The reverse does not hold: **a date that is present may
+still have no diary.** A score row can exist without one (rows written by the
+single-date read, backlog 31, and — even after its fix — today's row), so count
+recorded days with `dailyTotal != null`, never with the array length.
 
 ## Signup
 
 `SignUpRequest` — all required: `loginId`, `email`, `password`, `nickname`,
-`birthYear` (int ≥ 1900), `diagnosis` (`DiagnosisRequest`), `agreements`.
+`birthYear`, `diagnosis` (`DiagnosisRequest`), `agreements`.
 
-`agreements` is `{ [enum constant]: boolean }` with `minProperties: 1`; the four
-keys are `TERMS_OF_SERVICE`, `PRIVACY_SENSITIVE`, `MARKETING`, `AGE_OVER_14`
-(item 1, closed — they are in the spec's own `example` now).
+| Field | Rule in the spec |
+|---|---|
+| `loginId` | 4–32, `^[A-Za-z0-9_]+$`, case-sensitive, unique (409) — backlog 2 |
+| `password` | 8–72, `^(?=.*[A-Za-z])(?=.*\d).+$` (a letter and a digit) |
+| `nickname` | 2–16, `^[가-힣A-Za-z0-9]+$`, **duplicates allowed** — backlog 19 |
+| `email` | `format: email`, ≤255, unique (409); kept as a recovery route |
+| `birthYear` | ≥1900; the upper bound is dynamic (signup year − 14) — backlog 20 |
 
-`LoginRequest` — `loginId`, `password`, both `minLength: 1`.
+Login is by `loginId`, not email (backlog 2, 18). `LoginRequest` is `loginId` +
+`password`.
 
-**The identifier question is closed** (items 2 and 18): login is by 아이디, the
-spec has caught up, and `email` stays required as a recovery route.
+`agreements` is `{ [enum constant]: boolean }`, `minProperties: 1`, with the
+four keys `TERMS_OF_SERVICE`, `PRIVACY_SENSITIVE`, `MARKETING`, `AGE_OVER_14`.
+Send booleans only — the server stamps `agreedAt` itself. `MARKETING` is not
+required. `AGE_OVER_14` and `birthYear` are both checked, as a double check
+(backlog 1, 20).
+
+The backend collects **no gender, occupation or full birth date** and has no
+plans to (backlog 13).
 
 ## Diary — `PUT /api/diaries/{date}`
 
-Only `conditionLevel` (1–5) is required; every other field is optional, so a
-partially filled 오늘의 기록 is a legal payload.
+Only `conditionLevel` (1–5) is required; every other field is optional and
+`null` means unanswered, so a partially filled 오늘의 기록 is a legal payload.
+Omit a field the user did not answer rather than sending a default.
 
 **`PUT` replaces the entry, it does not merge into it.** Verified 2026-08-17:
 writing `{"conditionLevel": 2}` over a filled day nulls every field the second
@@ -76,19 +124,33 @@ request omitted. So a screen that saves a diary must first *load* that day —
 disabled until that read finishes. Anything else built on this endpoint has to
 do the same or it will silently destroy the day's earlier answers.
 
-`sleepStartedAt` / `sleepEndedAt` carry `pattern: "HH:mm(:ss)?"` and
-`example: "23:30"` (item 5, closed). `DiaryResponse` adds `id`, `logDate`,
-`sleepMinutes` (int64, server-derived), `createdAt`, `updatedAt`.
+`sleepStartedAt` / `sleepEndedAt` are `"HH:mm"` or `"HH:mm:ss"` with no date. A
+wake time at or before the bedtime is read as crossing midnight; there is no
+flag. `sleepMinutes` in the response is derived from the two (backlog 5).
+**The app never sends them** — there is no time picker — so `sleepMinutes` is
+always `null` (frontend-status, 29).
 
-**The app never sends those two.** `InputTime_Card` has no picker in Figma or in
-code, so 취침·기상 시각 is not collected and `sleepMinutes` comes back `null`
-every time — backlog item 29.
+### Weather
+
+`DiaryRequest` takes `lat` (−90..90), `lon` (−180..180) and
+`weatherLocationLabel` (≤64 chars, the text to display, e.g. `"서울"` — the
+server never names a place from coordinates). With both coordinates present the
+server looks the weather up **once, at save time**, and stores it; later reads
+return that stored value. A missing coordinate or a failed lookup does not block
+the save — the weather fields just come back `null`, **permanently**: a failed
+lookup is not retried, so that day stays without weather.
+
+`DiaryResponse` adds `weatherTemperature` (double), `weatherHumidity` (%, int),
+`weatherLocationLabel` and `weatherCondition`, one of `CLEAR` `MOSTLY_CLOUDY`
+`OVERCAST` `RAIN` `RAIN_SNOW` `SNOW` `SHOWER` `DRIZZLE` `DRIZZLE_SNOW_FLURRY`
+`SNOW_FLURRY`. The icon and wording for each are ours to choose.
+
+The app sends no coordinates yet (frontend-status, 12).
 
 ### Enum ↔ 일지 UI
 
-The pill order in `(tabs)/journal.tsx` matches these one-for-one unless noted.
-`src/lib/diary-request.ts` is the code that performs this mapping; the two were
-verified against each other and against the live server on 2026-08-17.
+`src/lib/diary-request.ts` performs this mapping; the two were verified against
+each other and against the live server on 2026-08-17.
 
 | Field | Enum | UI |
 |---|---|---|
@@ -100,23 +162,24 @@ verified against each other and against the live server on 2026-08-17.
 | `waterIntake` | `UNDER_2` `THREE_TO_FIVE` `SIX_TO_SEVEN` `EIGHT_OR_MORE` | 2잔 이하 · 3~5잔 · 6~7잔 · 8잔 이상 |
 | `exercised` | boolean | 네 · 아니요 |
 | `exerciseDuration` | `UNDER_15` `ABOUT_30` `ABOUT_60` `OVER_60` | 15분 이하 · 30분 · 1시간 · 1시간 이상 |
-| `exerciseType` | `WALKING` `AEROBIC` `STRENGTH` `STRENGTH_AND_AEROBIC` | 걷기 · 유산소 · 근력 · 근력+유산소 (8, 닫힘) |
-| `walkDuration` | `UNDER_30` `THIRTY_TO_60` `ONE_TO_TWO_HOURS` `OVER_2_HOURS` | 30분 이하 · 30분~1시간 · 1~2시간 · 2시간 이상 (9, 닫힘) |
+| `exerciseType` | `WALKING` `AEROBIC` `STRENGTH` `STRENGTH_AND_AEROBIC` | 걷기 · 유산소 · 근력 · 근력+유산소 (backlog 8) |
+| `walkDuration` | `UNDER_30` `THIRTY_TO_60` `ONE_TO_TWO_HOURS` `OVER_2_HOURS` | 30분 이하 · 30분~1시간 · 1~2시간 · 2시간 이상 (backlog 9) |
 | `sittingHours` | `UNDER_4` `FOUR_TO_EIGHT` `EIGHT_TO_TEN` `OVER_10` | 4시간 이하 · 4~8시간 · 8~10시간 · 10시간 이상 |
 | `screenTime` | `UNDER_2` `TWO_TO_FOUR` `FOUR_TO_SIX` `OVER_6` | 2시간 이하 · 2~4시간 · 4~6시간 · 6시간 이상 |
 | `moodRecovery` | `NONE` `BRIEF` `ENOUGH` | 안 함 · 잠깐 · 충분히 |
 | `socialContact` | `RARELY` `BRIEF` `FREQUENT` | 거의 안 만남 · 잠깐 · 여러 번·길게 |
 | `conditionLevel` | int 1–5 | FeelSelect 매우나쁨 → 매우좋음 |
 | `sleepSatisfaction` | int 1–5 | FeelSelect 수면 만족도 |
-| `stressLevel` | **int 1–10** | **Slider 0–10** ⚠ |
+| `stressLevel` | int **0–10** | Slider 0–10 |
 
-⚠ marks a real disagreement — see `backend-backlog.md`.
+`stressLevel` accepts 0 since 2026-08-17 (backlog 7), and its score is
+`100 × (10 − x) / 10`. 0 is a real answer and is sent; a slider the user never
+touched is omitted, because the control rests at 0.
 
-`stressLevel` is the one still open (item 7). The slider starts at 0, the server
-rejects 0 with a 400, and there is no "unanswered" position — so
-`diary-request.ts` treats 0 as unanswered and omits the field, which means
-**a user cannot record a stress level of 0.** Confirmed against the server on
-2026-08-17: `{"conditionLevel":2,"stressLevel":0}` → 400 입력값 오류.
+The 수분 figure on screen is the bucket's own wording (`3~5잔`), never litres or
+cups — the backend has no cup-to-mL factor and will not invent one (backlog 26).
+The 스트레스 `%` is the raw level scaled up — high means *more* stress — and is
+deliberately the opposite direction from the score formula above (backlog 26).
 
 ## Diagnosis — inside `SignUpRequest`
 
@@ -131,9 +194,9 @@ rejects 0 with a 400, and there is no "unanswered" position — so
 | `sleepDaytimeDrowsy` | boolean | 낮에 졸림이 잦아요 |
 | `sleepNightAwakening` | boolean | 자다가 자주 깨요 |
 | — | — | 해당없음 → all four false |
-| `sugarSensitivity` | `NONE` `SLIGHT` `MODERATE` `HIGH` | **0–10 슬라이더** ⚠ |
-| `caffeineSensitivity` | 〃 | **0–10 슬라이더** ⚠ |
-| `stressSensitivity` | 〃 | **0–10 슬라이더** ⚠ |
+| `sugarSensitivity` | `NONE` `SLIGHT` `MODERATE` `HIGH` | 전혀 아님 · 약간 · 보통 · 매우 (backlog 6) |
+| `caffeineSensitivity` | 〃 | 〃 |
+| `stressSensitivity` | 〃 | 〃 |
 | `exerciseLevel` | `NONE` `UNDER_150` `FROM_150_TO_300` `OVER_300` | 거의 안 함 · 주 150분 미만 · 주 150~300분 · 300분 초과 |
 | `shiftWorker` | boolean | 교대·야간근무 |
 | `frequentTraveler` | boolean | 잦은 출장·시차 |
@@ -143,46 +206,81 @@ rejects 0 with a 400, and there is no "unanswered" position — so
 | `socialContactLevel` | `RARELY` `ONE_TO_TWO_PER_WEEK` `THREE_TO_FOUR_PER_WEEK` `ALMOST_DAILY` | 거의 안 함 · 주 1~2회 · 주 3~4회 · 거의 매일 |
 | `who5Q1`–`Q5` | int 0–5 | 기분·활력 리커트 5문항 |
 
-Everything the diagnosis screen collects has a home **except the three
-sensitivity sliders**, which the API models as four levels.
-
 ## Scores
 
 `DailyScoreResponse` — `date`, `areas`, `dailyTotal`, `displayTotal`, `grade`,
-`scoringVersion`.
+`dailyGrade`, `orbState`, `scoringVersion`.
+
+| Field | Meaning |
+|---|---|
+| `dailyTotal` | That day's own score. **`null` = no diary that day** — the only reliable "no entry" test |
+| `displayTotal` | Smoothed, and includes the signup baseline. Filled even on a day with no diary (`scoringVersion: "v1.0-coldstart"` before any entry) |
+| `grade` | Grade of `displayTotal` — "the user's current level", not the day |
+| `dailyGrade` | Grade of `dailyTotal`; `null` with no diary. Added for backlog 32 |
+| `orbState` | 7 bands of `displayTotal` — see below. Added for backlog 25 |
+
+**Grades are three bands on 70/40** — 70 and up `GOOD`, 40–69 `WARN`, below 40
+`DANGER` — shared by the total, the five areas and the item scores (backlog 22).
+Pick the field by what the surface shows: 홈's orb shows the current level
+(`displayTotal` / `grade` / `orbState`), while the calendar and 지난 기록 show
+the day (`dailyTotal` / `dailyGrade`). Using `grade` for a day's colour paints
+the worst day `GOOD` — observed 2026-08-17, `dailyTotal 16.32` with `grade GOOD`.
+The app currently applies 70/40 to `dailyTotal` itself, which gives exactly
+`dailyGrade` (confirmed on the `demo` account 2026-09-30).
+
+`orbState` splits each grade into hard bands, so it can never disagree with
+`grade`: `DANGER_LOW` 0–19 · `DANGER_HIGH` 20–39 · `WARN_LOW` 40–54 ·
+`WARN_HIGH` 55–69 · `GOOD_LOW` 70–79 · `GOOD_MID` 80–89 · `GOOD_HIGH` 90–100.
+The colour for each is ours to choose.
 
 `AreaScoreResponse` — `physical` `mental` `emotion` `social` `environment` plus
-`grades` (the same five keys, `"GOOD"|"WARN"|"DANGER"|null`). This is the
-5개 영역 밸런스 row on 홈 (UI tab order, not the response's key order: 신체 · 정신 · 환경 · 감정 · 사회).
+`grades` (the same five keys). An area with no score has a `null` grade. 홈's
+5개 영역 밸런스 tabs run in UI order, not the response's key order: 신체 · 정신 ·
+환경 · 감정 · 사회.
+
+- `emotion` comes from that day's `stressLevel` alone, so it is `null` on a day
+  without one (backlog 33).
+- **`environment` is always `null`** — it has no input yet (backend's A-1), and
+  the weather is not scored.
+- `/api/dna`'s `baseline` is computed from the onboarding answers instead, so its
+  holes differ from a day's: `emotion` present, `social` and `environment` null.
 
 **Do not call `GET /api/scores/{date}` or `/today`.** Reading a single date
-**creates** that date's score row on the server, permanently and irreversibly
-(`DELETE` → 405) — verified 2026-08-17, backlog 31. The ranged form creates
-nothing, so every screen uses `?from&to`, narrowing to a one-day window when it
-needs a single day.
+**created** that date's score row on the server, permanently (`DELETE` → 405) —
+verified 2026-08-17. The backend reports a fix (store only for dates with a
+diary and for today) that has **not been confirmed deployed** (backlog 31). The
+ranged form creates nothing, so every screen uses `?from&to`, narrowing to a
+one-day window when it needs a single day.
 
-Three behaviours the screens have to account for (all verified 2026-08-17):
+Two derived values are computed on the device, with the backend's agreement
+(backlog 28): 어제보다 from a two-day range (no yesterday row → no delta), and
+the calendar's 기록 N일 · 평균 · 최고 from the month's range.
 
-- **A day with no diary still scores.** `dailyTotal` is `null` but `displayTotal`
-  and `grade` are filled from the signup diagnosis baseline
-  (`scoringVersion: "v1.0-coldstart"`), so `grade` reads `GOOD` on a day the
-  user never touched. **`dailyTotal === null` is the only reliable "no entry"
-  test**; per-day grades are derived from `dailyTotal` against 22's 70/40
-  boundaries rather than read off `grade` (backlog 32).
-- **The ranged response is not one row per day.** It carries only days that have
-  a row — real entries plus any day previously materialised by the bug above.
-  Absence means "no data", but presence does not mean "has a diary".
-- **`emotion` and `environment` are `null` even on a fully filled day**, so the
-  5개 영역 row can only ever draw 3 of 5 (backlog 33). `baseline` on `/api/dna`
-  has the opposite hole — `emotion` is present, `social` is not.
+### Item trend — `GET /api/scores/items`
 
-The orb card's 100점 is `displayTotal`; 어제보다 +4 comes from a two-day ranged
-query.
+One row per recorded day: `sleepMinutes`, `sleepScore` (0–100), `sleepGrade`,
+`waterIntake` (enum), `waterScore` (0–100), `waterGrade`. Grades on 70/40.
+Built for the 나의 LifeDNA 정보 수면 / 수분 cards. The v4 redesign
+(2026-09-30) brought 신체 back to exactly those two cards, so it can now be wired;
+nothing calls it yet (frontend-status, 11). The sleep fields are always `null` for the reason above.
+
+**No sentences, anywhere.** Every sentence the design shows — card comments,
+summaries, the orb's status chip — is the front end's to compose from these
+values. The backend decided that (its B-5) and will add values on request, but
+not wording (backlog 27).
+
+## User
+
+`UserResponse` — `id`, `loginId`, `email`, `nickname`, `birthYear`,
+`streakDays`. Also inside `TokenResponse.user`.
+
+`streakDays` counts consecutive days with a diary back from today. **Today not
+yet written does not break it** — with five days up to yesterday and nothing
+today it reads 5, and 6 once today is written (backlog 28).
 
 ## DNA info
 
-`GET /api/dna` → `DnaInfoResponse` — the diagnosis snapshot plus derived values.
-Top-level keys, confirmed against the live response 2026-08-17:
+`GET /api/dna` → `DnaInfoResponse` — the diagnosis snapshot plus derived values:
 
 ```
 completedAt  sleepType  sleepIssues  sensitivity  exerciseLevel  workStyle
@@ -191,28 +289,13 @@ baseline  sensitivityCoefficients
 ```
 
 `sleepIssues`, `sensitivity` and `workStyle` are **nested objects**, not the flat
-fields the enum table above lists — that table describes `SignUpRequest`'s shape,
-which is not the same as the response's. `baseline` is an `AreaScoreResponse` and
-`sensitivityCoefficients` is `sugar` / `caffeine` / `stress` doubles.
+fields `SignUpRequest` uses. `baseline` is an `AreaScoreResponse` and
+`sensitivityCoefficients` is `sugar` / `caffeine` / `stress` doubles. There is
+no combined type label (the MY tab's `올빼미 - 고민감 - 누적형`) — how to build
+one is an open planning question (frontend-status, 24).
 
-Note this is the *profile*, not weekly trend data. The 나의 LifeDNA 정보 cards on
-홈 — 수면 시간 / 수분 섭취량 with a week of score bars, a progress bar and a
-좋음/주의/위험 label — have no endpoint behind them.
+## Test account
 
-## What the design needs and the API does not have
-
-Recorded properly in `backend-backlog.md`; listed here so the gap is visible
-from the reference itself.
-
-- 홈 stat cards (수면 6.4시간 · 수분 1.6L · 스트레스 72%) — no aggregate endpoint,
-  and the diary stores buckets rather than volumes
-- 나의 LifeDNA 정보 weekly cards — no trend endpoint for four of the five areas;
-  신체's 수면·수분 come from `GET /api/scores/items` (backlog 11, 🟡 프론트 since v4)
-- ~~날씨 자동 기록 on 일지 — no field, no endpoint~~ Stale: `DiaryRequest` takes
-  `lat`/`lon`/`weatherLocationLabel` and `DiaryResponse` returns `weather*` fields
-  (checked against `/v3/api-docs` 2026-09-30). The app sends no location, so the
-  card draws `—` (backlog 12)
-- 05_개선책 and 06_마이페이지 — nothing at all
-- Token refresh, logout, 아이디·비밀번호 찾기, duplicate-identifier check
-- Gender and occupation, which 회원가입 STEP 1 collects
-- An 아이디 field on both signup and login (see above)
+`demo` / `Demo1234` on the production server, seeded with 14 days of diaries —
+2026-08-05 to 08-18, as a ranged read returned them on 2026-09-30. There is no staging environment — `main` on the backend
+deploys straight to production (backlog 17).

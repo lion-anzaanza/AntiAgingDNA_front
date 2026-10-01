@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Dimensions, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
 import { ButtonBack } from '@/components/ui/button-back';
 import { DiaryStatus, type DiaryStatusKind } from '@/components/ui/diary-status';
+import { Icon } from '@/components/ui/icon';
 import { WeeklyConditionChart, type ConditionPoint } from '@/components/ui/weekly-condition-chart';
 import { CARD_HEIGHT, CARD_WIDTH, WeekCard } from '@/features/journal/components/week-card';
 import {
@@ -15,18 +15,19 @@ import {
   mondayFirstIndex,
   WEEKDAYS_MON_FIRST,
 } from '@/lib/dates';
-import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
-import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
+import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { byDate, gradeFor, scoresPath, type DailyScore, type Grade } from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
- * Figma v4: 일지/메인 — `1363:2135` (was `480:1268`). The tab's root: this
- * week at a glance, the last few days, and the way in to today's entry.
+ * Figma v3: 일지/메인 — `1316:1533` (v4 `1363:2135`, first `480:1268`). The
+ * tab's root: this week at a glance, the last few days, and the way in to
+ * today's entry.
  *
- * Positions are v4's, frame y − 38 for the `PhoneHeader` mock. v4 draws a back
- * chip on this tab root; it is kept with its `/home` fallback (결정 대기 1).
+ * Positions are v3's ×220/390, then frame y − 38 for the status-bar mock (the
+ * convention every screen keeps). v3 draws a back chip on this tab root; it is
+ * kept with its `/home` fallback (v4 결정 대기 1).
  *
  * One ranged score query feeds all three sections. `dailyTotal` is what says
  * whether a day was recorded at all — the server's `grade` tracks the smoothed
@@ -53,20 +54,27 @@ const PAST_ENTRY_COUNT = 5;
 const HISTORY_DAYS = 30;
 
 const CONTENT_INSET = 11.28;
-/** v4 `1363:2160`: five rows in 129.646, dividers every 25.96. */
-const ROW_HEIGHT = 129.646 / PAST_ENTRY_COUNT;
+/** v3 `1316:1558`: five rows in 242 (136.51 at 220), dividers every ~48.5. */
+const ROW_HEIGHT = 136.513 / PAST_ENTRY_COUNT;
 /**
- * Inside a row, v4 hangs each piece off the row top by its own amount (the
- * same in all five rows to within 0.4): the date's line box 6.45 down, the
- * face 10.6, the score 8.56 — the score sits 1.8 lower than the date, the same
- * in every row, so it is reproduced rather than centred.
+ * Inside a row, v3 hangs each piece off the row top by its own amount: the
+ * date's line box 7.56 down, the score 8.57, the chevron 9.14 — the score
+ * still sits a little lower than the date, so it is reproduced, not centred.
+ *
+ * v3 stacks the five `Diary_Status` faces on a fixed 46pt pitch while the rows
+ * run ~48.5, so only the first face sits on its row and the last is 11pt high.
+ * Read as a slip: every face takes the first row's offset.
  */
-const ROW_DATE_TOP = 6.45;
-const ROW_FACE_TOP = 10.6;
-const ROW_SCORE_TOP = 8.56;
-/** Face left and score right edge, from the card's left. */
-const ROW_FACE_LEFT = 126.85;
-const ROW_SCORE_RIGHT = 175.73;
+const ROW_DATE_TOP = 7.56;
+const ROW_FACE_TOP = 8.32;
+const ROW_SCORE_TOP = 8.57;
+const ROW_CHEVRON_TOP = 9.14;
+/** Face left, score right edge and chevron left, from the card's left. */
+const ROW_FACE_LEFT = 129.67;
+const ROW_SCORE_RIGHT = 176.89;
+const ROW_CHEVRON_LEFT = 177.13;
+/** v3 fills the list with `brand/selected` at 65% rather than v4's pastel ramp. */
+const LIST_FILL = 'rgba(250, 224, 243, 0.65)';
 
 /**
  * `주간_컨디션_그래프` (`585:1436`, no v4 frame) is drawn the same 197.436×91.346
@@ -132,27 +140,19 @@ export default function JournalMainScreen() {
       score: Math.round(total),
     }));
 
-  /*
-   * The ramp's CSS angle depends on the box's aspect, and the card's height
-   * follows how many rows there are. v4's 130.63° is `pastelAngle` of the full
-   * five-row card, so the same rule gives the angle for any row count.
-   */
-  const listHeight = Math.max(1, ROW_HEIGHT * pastEntries.length);
-  const listRamp = cssGradientPoints(pastelAngle(CARD_WIDTH, listHeight), CARD_WIDTH, listHeight);
-
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: scale(34.7) }}>
-        {/* Header: everything at v4's own y (frame y − 38); the week card starts at 38.84. */}
-        <View style={{ height: scale(38.84) }}>
-          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(10.08) }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: scale(27.37) }}>
+        {/* Header: everything at v3's own y (×220/390 − 38); the week card starts at 38.92. */}
+        <View style={{ height: scale(38.92) }}>
+          <View style={{ position: 'absolute', left: scale(9.026), top: scale(5.064) }}>
             <ButtonBack fallbackHref="/(tabs)/home" />
           </View>
           <Text
             style={{
               position: 'absolute',
               left: scale(36.28),
-              top: scale(16.56 - 18.051 / 2),
+              top: scale(16.08 - 18.051 / 2),
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.2708),
@@ -162,14 +162,14 @@ export default function JournalMainScreen() {
             오늘의 일지
           </Text>
           {/*
-            * v4 ends this at x 203.81, 4.9pt short of the column, while 캘린더's
-            * caption in the same slot ends on it (208.58). Aligned to the column.
+            * v3 ends this at x 204.71, 4pt short of the column, while 캘린더's
+            * caption in the same slot ends on it. Aligned to the column.
             */}
           <Text
             style={{
               position: 'absolute',
               right: scale(CONTENT_INSET),
-              top: scale(16.82 - 12.41 / 2),
+              top: scale(16.52 - 12.41 / 2),
               fontSize: scale(8.462),
               lineHeight: scale(12.41),
               color: COLOR.text.body,
@@ -199,13 +199,13 @@ export default function JournalMainScreen() {
           )}
         </ScrollView>
 
-        {/* v4 starts the heading at 10.88; it goes on the column, as on 홈. */}
+        {/* v3 starts the heading at 10.88; it goes on the column, as on 홈. */}
         <Text
           style={{
             fontSize: scale(11.282),
             lineHeight: scale(15.795),
             letterSpacing: scale(-0.1128),
-            marginTop: scale(143.73 - (38.84 + CARD_HEIGHT)),
+            marginTop: scale(144.64 - (38.92 + CARD_HEIGHT)),
             color: COLOR.text.heading,
             ...COLUMN,
           }}
@@ -213,13 +213,10 @@ export default function JournalMainScreen() {
           지난 기록
         </Text>
 
-        <LinearGradient
-          colors={[...GRADIENT_PASTEL.colors]}
-          locations={[...GRADIENT_PASTEL.locations]}
-          start={listRamp.start}
-          end={listRamp.end}
+        <View
           style={{
-            marginTop: scale(163.92 - 143.73 - 15.795),
+            backgroundColor: LIST_FILL,
+            marginTop: scale(163.92 - 144.64 - 15.795),
             marginLeft: scale(CONTENT_INSET),
             width: scale(CARD_WIDTH),
             borderRadius: scale(9.615),
@@ -257,9 +254,13 @@ export default function JournalMainScreen() {
                   color: COLOR.text.body,
                 }}
                 className="font-plex">
-                {String(entry.score).padStart(2, '0')}점{'  '}&gt;
+                {String(entry.score).padStart(2, '0')}점
               </Text>
-              {/* v4's dividers are 179.385 lines inset 9.03, `border/soft`, 0.288 thick. */}
+              <View
+                style={{ position: 'absolute', left: scale(ROW_CHEVRON_LEFT), top: scale(ROW_CHEVRON_TOP) }}>
+                <Icon name="chevron-right" size={scale(11.282)} color={COLOR.text.muted} />
+              </View>
+              {/* v3's dividers are 179.385 lines inset 9.03, `border/soft`, 0.288 thick. */}
               <View
                 style={{
                   position: 'absolute',
@@ -272,7 +273,7 @@ export default function JournalMainScreen() {
               />
             </Pressable>
           ))}
-        </LinearGradient>
+        </View>
 
         {/*
           * Figma pushes this to the bottom with a fixed gap measured on its 480pt
@@ -281,7 +282,7 @@ export default function JournalMainScreen() {
           * either scrolls or leaves a hole. A flexible spacer pins it to the
           * bottom of the viewport instead, which is what the design means, and
           * `flexGrow: 1` on the content container is what gives it room to push
-          * against. The bottom padding is v4's 34.7 gap above the tab bar.
+          * against. The bottom padding is v3's 27.37 gap above the tab bar.
           */}
         <View style={{ flex: 1, minHeight: scale(24) }} />
         <View style={{ ...COLUMN }}>

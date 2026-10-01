@@ -1,15 +1,16 @@
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
+import { Icon } from '@/components/ui/icon';
 import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 export const BANNER_HEIGHT = 45.116;
 
 /**
- * v4 데이터개인정보 `Card/Rectangle 3709` — the `surface/tint` card that opens
- * the screen. The nickname is `#6D3CFA`, which v4 draws as a bare hex rather
- * than `brand/violet-text`; kept as drawn. The 23pt gap between the lock and
- * the text is Figma's too.
+ * v3 데이터개인정보 `Card/Rectangle 3709` — the `surface/tint` card that opens
+ * the screen. v3 swapped the shield-and-lock bitmap for a 28pt `Icon/lock` and
+ * set the body in 10px on two hand-broken lines. The nickname is `#6D3CFA`,
+ * which v3 still draws as a bare hex rather than `brand/violet-text`; kept.
  */
 export function ReassuranceBanner({ nickname }: { nickname: string }) {
   return (
@@ -21,17 +22,9 @@ export function ReassuranceBanner({ nickname }: { nickname: string }) {
         borderWidth: scale(0.288),
         borderColor: COLOR.border.soft,
       }}>
-      <Image
-        source={require('@/assets/images/my/ic-shield-lock.png')}
-        style={{
-          position: 'absolute',
-          left: scale(10.65),
-          top: scale(4.81),
-          width: scale(17.567),
-          height: scale(18.269),
-        }}
-        resizeMode="contain"
-      />
+      <View style={{ position: 'absolute', left: scale(16.923), top: scale(14.103) }}>
+        <Icon name="lock" size={scale(15.795)} color={COLOR.icon.primary} />
+      </View>
       {/*
         * Figma's nickname is two characters; a real one runs past the card.
         * Bounded left and right (not `maxWidth` — see the figma-redesign skill),
@@ -43,9 +36,9 @@ export function ReassuranceBanner({ nickname }: { nickname: string }) {
         minimumFontScale={0.7}
         style={{
           position: 'absolute',
-          left: scale(51.47),
+          left: scale(45.827),
           right: scale(4),
-          top: scale(11.23 - 13.538 / 2),
+          top: scale(5.23),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
           letterSpacing: scale(-0.0959),
@@ -57,17 +50,14 @@ export function ReassuranceBanner({ nickname }: { nickname: string }) {
       <Text
         style={{
           position: 'absolute',
-          left: scale(51.54),
-          top: scale(17.55),
-          // Figma's box is 136.6 and its first line fills it to 0.6pt; Android's
-          // Plex runs ~2% wider and broke "제3자" there, so the box is 142.
-          width: scale(142),
-          fontSize: scale(6.769),
-          lineHeight: scale(9.026),
+          left: scale(45.9),
+          top: scale(23.19),
+          fontSize: scale(5.641),
+          lineHeight: scale(7.333),
           color: COLOR.text.body,
         }}
         className="font-plex">
-        모든 기록은 암호화되어 저장되고, 동의 없이 제3자에게 제공되지 않아요.
+        {'모든 기록은 암호화되어 저장되고,\n동의 없이 제3자에게 제공되지 않아요.'}
       </Text>
     </View>
   );

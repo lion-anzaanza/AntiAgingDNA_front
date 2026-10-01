@@ -8,36 +8,34 @@ import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
-/** v4 `주간_기록` (`1363:2176`): the full 197.436 column, 91.346 tall. */
+/** v3 `주간_기록` (`1316:1574`): the full 197.436 column, 91.346 tall. */
 export const CARD_WIDTH = 197.436;
 export const CARD_HEIGHT = 91.346;
 
 /**
- * Day columns. `WeeklyConditionChart` spans the same 18.89 → 178.3.
- *
- * v4 places the seven circles by hand at centres 18.89 … 178.3 (gaps 25.9–28.2)
- * and the weekday labels on their own, mostly ~0.9 left of the circles — except
- * 월, which is at 11, 8pt off its circle. Both are laid out here on one even
- * pitch between the first and last circle, labels centred on their circle.
+ * Day columns, v3's circle centres (`Chip Row` + three loose discs, ×220/390).
+ * v3 now puts every weekday label on its circle to within 0.6 — except 월,
+ * still 6.8 left of its circle as in v4; it is centred here like the rest.
+ * The pitch is ~26.2 with a wider last gap (27.9), reproduced as drawn.
+ * `WeeklyConditionChart` spans the same first → last centre.
  */
-const DAY_FIRST_CENTER = 18.89;
-const DAY_LAST_CENTER = 178.3;
-const DAY_PITCH = (DAY_LAST_CENTER - DAY_FIRST_CENTER) / 6;
+const DAY_CENTERS = [18.72, 44.89, 71.06, 97.7, 123.67, 150.15, 178.31];
 
 /** 4 of 7 circles are 18.269 round; three are drawn 19.231 wide. */
 const CIRCLE = 18.269;
 const CIRCLE_TOP = 34.62;
-const LABEL_TOP = 29.2 - 12.41 / 2;
+const LABEL_TOP = 29.0 - 12.41 / 2;
 const CIRCLE_RAMP = cssGradientPoints(pastelAngle(CIRCLE, CIRCLE), CIRCLE, CIRCLE);
+const CIRCLE_SHADOW = '0px 0px 1.923px rgba(169, 169, 169, 0.25)';
 
 /** The `surface/tint` strip holding 월간 보기; the chart's summary strip matches it. */
-const STRIP = { left: 9.03, top: 63.46, width: 179.385, height: 18.269, radius: 4.808 };
+const STRIP = { left: 9.026, top: 63.46, width: 179.385, height: 18.269, radius: 4.513 };
 
-/** v4's 9.59 SemiBold card title in `text/heading`. */
+/** v3's 9.59 SemiBold card title in `text/heading`, line centre 13.08. */
 const CARD_TITLE_STYLE = {
   position: 'absolute' as const,
   left: scale(8.7),
-  top: scale(12.31 - 13.538 / 2),
+  top: scale(13.08 - 13.538 / 2),
   fontSize: scale(9.59),
   lineHeight: scale(13.538),
   letterSpacing: scale(-0.0959),
@@ -59,7 +57,7 @@ export function WeekCard({ recorded, todayIndex }: { recorded: boolean[]; todayI
       </Text>
 
       {WEEKDAYS_MON_FIRST.map((day, index) => {
-        const center = DAY_FIRST_CENTER + DAY_PITCH * index;
+        const center = DAY_CENTERS[index];
         return (
           <Fragment key={day}>
             <Text
@@ -116,8 +114,9 @@ export function WeekCard({ recorded, todayIndex }: { recorded: boolean[]; todayI
  * a plain `surface/chip` disc. All three are the same `LinearGradient → Text`
  * tree so a day changing state does not remount (AGENTS.md rule 3).
  *
- * The ring is v4's own `#4655F6` hex — the one colour on this card that is not
- * a token.
+ * The ring is v3's own `#4655F6` hex — the one colour on this card that is not
+ * a token. A recorded disc's shadow is v3's 3.409 blur (1.923 at 220), half the
+ * card's.
  */
 function DayCircle({ recorded, today }: { recorded: boolean; today: boolean }) {
   const ringed = today && !recorded;
@@ -133,7 +132,7 @@ function DayCircle({ recorded, today }: { recorded: boolean; today: boolean }) {
         borderRadius: scale(CIRCLE),
         borderWidth: ringed ? scale(0.962) : 0,
         borderColor: '#4655F6',
-        boxShadow: recorded ? SHADOW_V4 : 'none',
+        boxShadow: recorded ? CIRCLE_SHADOW : 'none',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',

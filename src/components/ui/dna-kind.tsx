@@ -4,7 +4,8 @@ import { COLOR, TONE_BG, TONE_TEXT, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `DNAKind` — v4 `DNAKind/<영역>` on 홈 (`1363:2057`…), 34.06×12.134,
+ * Figma: `DNAKind` — v3 `DNAKind/<영역>` on 홈 (`1312:1636`…), 34.06×20.31
+ * (v4 was 12.13 tall),
  * labelling one of the five 밸런스 areas. `default` is the unselected look
  * (white, `text/body`); the other three colour themselves from the shared
  * 좋음/주의/위험 trio.
@@ -33,14 +34,12 @@ export function DnaKind({ label, tone = 'default', onPress }: DnaKindProps) {
       disabled={!onPress}
       style={{
         width: scale(34.06),
-        height: scale(12.134),
+        height: scale(20.308),
         borderRadius: scale(3.309),
         backgroundColor: isDefault ? COLOR.surface.card : TONE_BG[tone],
         boxShadow: '0px 0px 1.103px rgba(132, 132, 132, 0.25)',
         alignItems: 'center',
         justifyContent: 'center',
-        // Figma's label box sits ~0.55pt below the chip's middle.
-        paddingTop: scale(1.1),
       }}>
       <Text
         numberOfLines={1}

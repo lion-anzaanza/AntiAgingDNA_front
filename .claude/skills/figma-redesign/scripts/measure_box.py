@@ -6,7 +6,7 @@ reports the bounding box of anything that differs from the background, in
 Figma points, for both images.
 
 usage: measure_box.py FIGMA.png DEVICE.png X0 Y0 X1 Y1 [--offset 24.8]
-       [--bg f6f3fa] [--threshold 30] [--figma-scale 4] [--frame-width 220]
+       [--bg fbf9fd] [--threshold 30] [--figma-scale 4] [--frame-width 220]
 
 X0..Y1 is the window in Figma frame points. --offset is the screen's
 compare_bands consensus: the device window is the Figma window moved up by it.
@@ -37,7 +37,7 @@ def main():
     p.add_argument("x1", type=float)
     p.add_argument("y1", type=float)
     p.add_argument("--offset", type=float, default=24.8)
-    p.add_argument("--bg", default="f6f3fa")
+    p.add_argument("--bg", default="fbf9fd")
     p.add_argument("--threshold", type=int, default=30)
     p.add_argument("--figma-scale", type=float, default=4)
     p.add_argument("--frame-width", type=float, default=220)

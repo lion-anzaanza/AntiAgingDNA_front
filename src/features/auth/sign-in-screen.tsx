@@ -98,6 +98,7 @@ export default function SignInScreen() {
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
+            labelGap={1.76}
           />
         </View>
         <View style={{ position: 'absolute', top: scale(136.6), ...COLUMN }}>
@@ -107,6 +108,7 @@ export default function SignInScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            labelGap={1.76}
           />
         </View>
 
