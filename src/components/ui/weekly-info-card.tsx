@@ -1,7 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Text, View, type ImageSourcePropType } from 'react-native';
+import { Text, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+import { Icon, type IconName } from '@/components/ui/icon';
 import { COLOR, GRADIENT_PROGRESS, TONE_TEXT, type Tone } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
@@ -43,6 +44,10 @@ const HAIRLINE = '0px 0px 1.103px rgba(148, 148, 148, 0.25)';
  */
 export type WeeklyGlyph = 'sleep' | 'water';
 
+function isGlyph(icon: IconName | WeeklyGlyph): icon is WeeklyGlyph {
+  return icon === 'sleep' || icon === 'water';
+}
+
 function Glyph({ name }: { name: WeeklyGlyph }) {
   if (name === 'sleep') {
     return (
@@ -75,8 +80,12 @@ function Glyph({ name }: { name: WeeklyGlyph }) {
 
 type WeeklyInfoCardProps = {
   title: string;
-  /** A bitmap centred in the chip, or one of v3's drawn 신체 glyphs. */
-  icon: ImageSourcePropType | WeeklyGlyph;
+  /**
+   * The area's line icon centred in the chip, or one of v3's drawn 신체 glyphs.
+   * v3 draws only 신체's cards; the other areas take the `Icon/*` glyph v3 uses
+   * for that area on 개선책, so one area never shows two icon styles.
+   */
+  icon: IconName | WeeklyGlyph;
   tone: Tone;
   level: Level;
   /** Seven days, oldest first. */
@@ -122,16 +131,11 @@ export function WeeklyInfoCard({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        {/* Bitmap stand-ins sit in v4's hidden 14.34 `IconHere` slot, centred. */}
-        {typeof icon === 'string' ? null : (
-          <Image
-            source={icon}
-            style={{ width: scale(14.34), height: scale(14.34) }}
-            resizeMode="contain"
-          />
+        {isGlyph(icon) ? null : (
+          <Icon name={icon} size={scale(13.538)} color={COLOR.icon.primary} />
         )}
       </View>
-      {typeof icon === 'string' ? <Glyph name={icon} /> : null}
+      {isGlyph(icon) ? <Glyph name={icon} /> : null}
       <Text
         numberOfLines={1}
         style={{

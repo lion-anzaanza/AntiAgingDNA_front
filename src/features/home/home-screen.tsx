@@ -4,13 +4,13 @@ import {
   ScrollView,
   Text,
   View,
-  type ImageSourcePropType,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DnaKind } from '@/components/ui/dna-kind';
+import { type IconName } from '@/components/ui/icon';
 import {
   WeeklyInfoCard,
   type Level,
@@ -86,7 +86,8 @@ const PAGE_WIDTH = Dimensions.get('window').width;
 type BalanceArea = {
   label: string;
   tone: Tone;
-  icon: ImageSourcePropType;
+  /** The same `Icon/*` glyph 개선책's 영역 cards use for this area. */
+  icon: IconName;
   /** `glyph` overrides the area's icon with one of v3's drawn ones. */
   cards: { title: string; caption: string; tone: Tone; level: Level; glyph?: WeeklyGlyph }[];
 };
@@ -98,7 +99,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '신체',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-body.png'),
+    icon: 'heart',
     cards: [
       { title: '수면 시간', caption: BODY_CAPTION, tone: 'good', level: 'high', glyph: 'sleep' },
       // v3 paints this 주의 in danger red; it stays warn (redesign-v3-delta 결정).
@@ -108,7 +109,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '정신',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-mind.png'),
+    icon: 'mind',
     cards: [
       {
         title: '스트레스 회복력',
@@ -127,7 +128,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '환경',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-environment.png'),
+    icon: 'leaf',
     cards: [
       {
         title: '날씨 영향',
@@ -146,7 +147,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '감정',
     tone: 'danger',
-    icon: require('@/assets/images/plan/area-emotion.png'),
+    icon: 'smile',
     cards: [
       {
         title: '기분 안정도',
@@ -165,7 +166,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '사회',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-social.png'),
+    icon: 'users',
     cards: [
       {
         title: '사람 만나는 주기',
