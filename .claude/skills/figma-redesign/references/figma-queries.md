@@ -3,8 +3,8 @@
 `use_figma` 전에 `figma-use` 스킬을 로드한다. 아래는 전부 읽기만 한다 — v4는
 참조용 사본이니 **고치지 않는다.** 노드를 바꾸는 코드를 섞지 않는다.
 
-> **v4(`1363:1533`)는 지워졌다.** 아래 스크립트의 `'1363:1533'`은 v3 `'1307:1533'`으로
-> 바꿔 쓴다. 결과는 390 단위다 — 코드에 넣을 때 `220/390`을 곱한다.
+> **v4(`1363:1533`)는 지워졌다.** 아래 스크립트는 v3 `'1307:1533'`을 읽는다(변수 이름
+> `v4`는 옛 이름 그대로). 결과는 390 단위다 — 코드에 넣을 때 `220/390`을 곱한다.
 
 ## v3 화면 목록 (노드 ID)
 
@@ -44,7 +44,7 @@ return out;
 
 ```js
 const NAME = /^(SelectButton\d?(_White)?)$/;
-const v4 = await figma.getNodeByIdAsync('1363:1533');
+const v4 = await figma.getNodeByIdAsync('1307:1533'); // v3 (the v4 section is gone)
 const hex = c => '#' + [c.r, c.g, c.b].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
 const frameOf = n => { let f = n; while (f.parent && f.parent.type !== 'SECTION') f = f.parent; return f.name.replace(' (v4)', ''); };
 function detail(n) {
@@ -71,7 +71,7 @@ return out;
 뒤로가기 칩은 `←` 텍스트와 그 옆 사각형이 열쇠였다:
 
 ```js
-const v4 = await figma.getNodeByIdAsync('1363:1533');
+const v4 = await figma.getNodeByIdAsync('1307:1533'); // v3 (the v4 section is gone)
 const hits = v4.findAll(n => n.type === 'TEXT' && n.characters.trim() === '←');
 return hits.map(t => {
   const box = t.parent.findOne(c => c !== t && 'cornerRadius' in c && c.width < 30);

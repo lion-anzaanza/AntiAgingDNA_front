@@ -36,7 +36,10 @@ Write every dimension, font size, radius and margin as `scale(<figma value>)`.
 Figma puts one soft ambient shadow on its surfaces. Since the v4 redesign that
 is `0px 0px 3.846px rgba(169,169,169,0.25)` — exported as `SHADOW_V4` in
 `src/lib/design.ts`. The older 4px `SHADOW` remains only where v4 still draws it:
-홈's cards and the WHO-5 Likert cards (`likert-card`).
+홈's cards and the WHO-5 Likert cards (`likert-card`). v3 (final) keeps both
+and adds soft *violet* shadows on a few new pieces — the back tile
+(`0 1.128 3.385 rgba(74,56,128,0.08)` at 220) and the tab bar's upward shadow —
+written next to the component that draws them. Take each off the node.
 
 RN 0.86 supports the CSS-style `boxShadow` string, which reproduces it exactly.
 NativeWind's `shadow-sm` maps to Android `elevation`, which draws a hard, dark,
@@ -94,14 +97,23 @@ go as the components that use them are redesigned; the tracker is
   in exactly these two stops.
 
 `ButtonNextUI` has changed ramp twice now. Re-check Figma rather than assuming.
+v3 (final, 2026-10-01) kept the pastel ramp and shadow but drew the radius 16 on
+6 of its 8 copies, so `Button` is radius 9.026 at 220 now (was 9.615).
+
+v3 also added a third ramp, **`GRADIENT_PROGRESS`** (`#F6B8DF → #C7B2F3 →
+#A8C0F2`), for every *progress* fill — 회원가입 step bar, 홈 weekly bars and page
+dots, the 0–10 slider, the calendar legend, 개선책's 실천 bar. Buttons, banners and
+chips stay `GRADIENT_PASTEL`; do not swap one for the other by eye.
 
 ### 6. Fonts
 
-**The v4 redesign's text face is IBM Plex Sans KR** — Regular / SemiBold / Bold,
+**The redesign's text face is IBM Plex Sans KR** — Regular / SemiBold / Bold,
 as `font-plex` / `font-plex-semibold` / `font-plex-bold`. Pretendard remains only
-for the glyphs v4 itself still sets in it (`←`, `→`, `✓`, `>`, `X` — Plex has
-no U+2713). The 회원가입 인트로 has no v4 frame but was moved to Plex with the
-rest, so nothing else uses it. Read the
+for the glyphs the design itself still sets in it. In v3 (final) that is 23 nodes:
+a few `→`, `✓` and `X` (Plex has no U+2713) and the 홈 moon card's `Z`s. The `←`
+of the back chip and the `>` at the end of rows are no longer glyphs — v3 drew
+them as `Icon/Arrow-Left` and `Icon/Chevron-Right` (`ui/icon.tsx`). The 회원가입
+인트로 has no v3 frame but was moved to Plex with the rest, so nothing else uses it. Read the
 font off each text node; a `→` inside a Plex label is Plex. Plex comes from
 `google/fonts` on jsDelivr (`…/ofl/ibmplexsanskr/IBMPlexSansKR-<Weight>.ttf`, SIL
 OFL); a good download starts `00010000` and its name table reads
@@ -272,7 +284,8 @@ separates continuous motion from a one-time layout settle.
 
 Every screen was hand-placed, so the left inset and content width differ per
 frame (17/18/19 left, 180/184/186 wide, 홈 asymmetric at 18 left / 22 right).
-v4 screens moved to one 11.28 / 197.436 column, but still read each frame.
+v4/v3 screens moved to one 11.28 / 197.436 column (v3: 20 / 350 of 390), but
+still read each frame.
 The table is in [docs/figma-reference.md](docs/figma-reference.md), and
 `get_metadata` on the frame answers it in one call.
 
@@ -282,7 +295,7 @@ overflowed and `flexWrap` dropped the 2×2 grid to one pill per row.
 
 The same applies inside components — before v4, `SelectItem*_Card`,
 `SelectFeel5` and `InputTime_Card` were 182 wide in a 184 column and carried that
-width. In v4 they are 197.44, which *is* the column, so they fill their parent.
+width. Since v4 they are 197.44, which *is* the column, so they fill their parent.
 
 ### 13. Compare against Figma by offset consensus, not by eye
 
@@ -410,7 +423,9 @@ root layout exists only to pin the anchor described above.
 
 ### The tab bar is the headless API, and it fights you on layout
 
-Figma's `BottomBar` is a custom design, so `(tabs)/_layout.tsx` uses
+Figma's tab bar (`BottomBar0`–`4`, called `TabBar` in v3) is a custom design —
+in v3 a 39.49 bar with `Icon/Tab-*` vectors and a `brand/selected` pill behind
+the active tab, no bitmaps — so `(tabs)/_layout.tsx` uses
 `Tabs`/`TabSlot`/`TabList`/`TabTrigger` from **`expo-router/ui`** rather than
 `NativeTabs`. Note that in 57.x `Tabs` from the root export is deprecated in
 favour of `expo-router/js-tabs`, and neither is what you want here.
@@ -449,6 +464,17 @@ the routes.
   기록 above nothing, and `ButtonBack` calling `router.back()`. Possible fixes:
   navigate with the 일지 index underneath, or have tab roots `replace` to their
   own fallback. Related to `docs/redesign-v4-inventory.md` 결정 대기 1.
+- **Bug (found in the v3 review, 2026-10-01, not fixed), same family: back from
+  a deep-linked 개선책 sub-screen lands on 홈, not 개선책.** Cold start straight
+  into `/plan/report` (or 영양제, 한달뒤) and the back chip goes to 홈 — the tab
+  history — with no error. `ButtonBack` takes `router.back()` whenever
+  `canGoBack()` is true, and at the tab level it is, so `fallbackHref="/plan"`
+  never fires. Fixing it means asking whether *the plan stack* has history (or
+  `router.dismiss` / `replace('/plan')`) — decide together with the 일지 loop
+  above, since both come from `ButtonBack` trusting the outermost history.
+- **구독관리's "38% 할인! 가장 인기" pill is too tight at font scale 1.1** — the
+  text fills it edge to edge (rule 14). Nothing is cut at 1.0. Found in the v3
+  review; the pill is a fixed width.
 
 ### From the review of the folder restructure (2026-09-30) — not yet done
 
@@ -677,16 +703,12 @@ on the owner's instruction to judge them rather than keep asking:
 
 Waiting on a decision — do not resolve these unilaterally:
 
-- **Body text is Figma's `#00352C`, a dark green, and an iOS tester read it as
-  a bug** ("전체 폰트 색상 블랙으로 수정 (현재 진한초록색으로 보임)"). It is
-  Primary 900 in the design system and appears in **20 files** — section
-  headings, card titles, and the labels inside every shared `SelectCard` /
-  `PillGroup` / `FeelSelect`. Changing it on one screen would split 오늘의 기록
-  from 상세보기, which share those components; changing it globally overrides
-  Figma. The designer has to say which. As of the v4 redesign (2026-09-30) no
-  file uses `#00352C` any more — v4 binds body text to `text/body` `#6B6680` —
-  so this looks answered; the owner can close it via
-  `docs/redesign-v4-inventory.md` 결정 대기 2.
+- ~~**Body text is Figma's `#00352C`, a dark green, and an iOS tester read it
+  as a bug**~~ ("전체 폰트 색상 블랙으로 수정 (현재 진한초록색으로 보임)").
+  **Resolved 2026-10-01** by the owner declaring `99_개선안_v3` the final design:
+  v3 binds body text to `text/body` `#6B6680` (headings `text/heading` /
+  `text/strong`), the code already uses those tokens, and nothing in `src` uses
+  `#00352C`. Kept here so the tester's report has an answer on record.
 - **The orb sheen was reported as "삭제" by the same tester**, but they were
   looking at the build where it swept a hard vertical seam across the artwork
   (rule 16). It is a soft horizontal band now. Whether to keep it at all is a
@@ -740,10 +762,9 @@ given renders `history`, every other pill stays `inactive`.
 
 Still to port from 04_일지:
 
-- **`BottomBar0`–`BottomBar4`** (`496:1958`–`496:1962`). Deliberately skipped:
-  it is the tab shell, not a leaf component, so building it means restructuring
-  `(tabs)` — and the icons need the `rawImages` treatment (rule 7) plus an
-  active/inactive pair per tab that only `BottomBar0`–`4` together supply.
+- ~~**`BottomBar0`–`BottomBar4`**~~ — built since (`ui/bottom-bar.tsx`, see
+  "The tab bar is the headless API" above); in v3 its icons are vectors, not
+  the `rawImages` pairs this item was waiting on.
 - The 미응답 state of a day with no entry. **No longer blocked** — backlog 23 is
   closed: a day with no entry answers **404**, and the ranged list simply omits
   it. It is unbuilt because 상세보기 does not read the API yet, not because the
@@ -786,7 +807,7 @@ across every column, and the mock scores round-trip to Figma's exact dots.
 
 ### 홈 — built, and what is still missing
 
-`features/home/home-screen.tsx` is 홈/메인 (`597:1466`; the v4 redesign is `1363:1953` — see `docs/redesign-v4-inventory.md`), replacing the Expo template screen.
+`features/home/home-screen.tsx` is 홈/메인 (`597:1466`; final design v3 `1312:1533` — see `docs/redesign-v3-delta.md`; the v4 copy `1363:1953` is deleted), replacing the Expo template screen.
 The orb card is a two-page swipe; page two is `457:791`, which Figma parks
 *beside* the frame rather than inside it, and it reuses the login screen's
 `dna-nice.png`.
@@ -848,7 +869,7 @@ in `components/ui`: `PlanCard` (the icon + title + caption row, which 메인 and
 on 리포트 and 한달뒤 — identical before v4; v4 moved the right column 4pt, so it
 is a prop now).
 
-**v4 (2026-09-30)** moved all four to `1363:2935` / `3003` / `3061` / `3134`;
+**v4 (2026-09-30)** moved all four to `1363:2935` / `3003` / `3061` / `3134` (deleted since; the final v3 frames are `1318:1533` / `1604` / `1665` / `1741`, changes in `docs/redesign-v3-delta.md`);
 what changed and why is in `docs/redesign-v4-inventory.md` (화면별 결정, 개선책
 rows). Three items below are superseded by it and marked.
 
