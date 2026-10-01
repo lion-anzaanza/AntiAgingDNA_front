@@ -10,6 +10,13 @@
  * touch the box's corners. The points may land outside 0..1, which is correct.
  */
 export function cssGradientPoints(angleDeg: number, width: number, height: number) {
+  // An empty box (a progress fill at 0%) has no direction to resolve, and the
+  // division below turns it into NaN — which expo-linear-gradient hands to
+  // Android's `LinearGradient`, and that throws natively and kills the app.
+  // Found when 홈's weekly card met a week with no data (2026-10-02).
+  if (!(width > 0) || !(height > 0)) {
+    return { start: { x: 0, y: 0.5 }, end: { x: 1, y: 0.5 } };
+  }
   const a = (angleDeg * Math.PI) / 180;
   const dx = Math.sin(a);
   const dy = -Math.cos(a);

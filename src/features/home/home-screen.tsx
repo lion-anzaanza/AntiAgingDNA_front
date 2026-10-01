@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { DnaKind } from '@/components/ui/dna-kind';
 import { type IconName } from '@/components/ui/icon';
 import {
+  LEVEL_FILL,
   WeeklyInfoCard,
   type Level,
   type ScoreBarValue,
@@ -31,7 +32,18 @@ import { addDays, isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { toDiaryDraft, type DiaryRow } from '@/lib/diary-request';
 import { COLOR, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
-import { byDate, diariesPath, scoresPath, type DailyScore } from '@/lib/score';
+import {
+  byDate,
+  diariesPath,
+  itemOf,
+  itemsPath,
+  itemWeek,
+  scoreBar,
+  scoresPath,
+  toneFor,
+  type DailyScore,
+  type ItemTrend,
+} from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
@@ -70,15 +82,18 @@ const PAGE_WIDTH = Dimensions.get('window').width;
  *   `default`. That is how the design shows selection — there is no separate
  *   underline or highlight.
  *
- * Every string below is Figma's mock. **There is no endpoint behind any of it**
- * — no weekly trend data (backlog 11), no server-written sentences (27), and
- * two of the five areas score `null` even on a full day (33). The score bars
- * are the same two patterns the old card used, which Figma kept.
+ * The four areas other than 신체 are Figma's mock. **No endpoint is behind
+ * them** — the item trend covers only sleep, water and stress, sentences are
+ * the front end's to compose with no rules yet (27), and two of the five areas
+ * score `null` even on a full day (33). Their score bars are the same two
+ * patterns the old card used, which Figma kept.
  *
- * **신체 follows v3 exactly** (`1312:1651`, `1312:1685`): "수면 시간" with a yellow
- * moon and Z's, "수분 섭취량" with a blue drop, and the same two-line caption on
- * both, as drawn — the owner declared v3 final, and these two cards are the
- * shape `GET /api/scores/items` returns (backlog 11).
+ * **신체 follows v3** (`1312:1651`, `1312:1685`) — "수면 시간" with a yellow moon
+ * and Z's, "수분 섭취량" with a blue drop — **and draws live data** (backlog 11):
+ * the last seven days of `GET /api/scores/items` as the bars, the latest day
+ * with a value as the progress bar and its grade as the word. The caption is
+ * left empty: v3's sentence is a mock, and which sentence fits which values is
+ * still a planning question (backlog 27).
  *
  * v3 draws no other tab. Those four keep the port's per-area cards and use the
  * 5 영역 icons the 개선책 screens already ship as a visible stand-in.
@@ -88,12 +103,12 @@ type BalanceArea = {
   tone: Tone;
   /** The same `Icon/*` glyph 개선책's 영역 cards use for this area. */
   icon: IconName;
-  /** `glyph` overrides the area's icon with one of v3's drawn ones. */
-  cards: { title: string; caption: string; tone: Tone; level: Level; glyph?: WeeklyGlyph }[];
+  cards: (
+    | { title: string; caption: string; tone: Tone; level: Level }
+    /** A live card: drawn from `/api/scores/items`, with one of v3's glyphs. */
+    | { title: string; metric: 'sleep' | 'water'; glyph: WeeklyGlyph }
+  )[];
 };
-
-/** v3's caption, pasted on both 신체 cards, broken where v3 breaks it. */
-const BODY_CAPTION = '올빼미형 - 취침이 3일째\n30분씩 빨라졌어요.';
 
 const BALANCE_AREAS: BalanceArea[] = [
   {
@@ -101,9 +116,9 @@ const BALANCE_AREAS: BalanceArea[] = [
     tone: 'good',
     icon: 'heart',
     cards: [
-      { title: '수면 시간', caption: BODY_CAPTION, tone: 'good', level: 'high', glyph: 'sleep' },
-      // v3 paints this 주의 in danger red; it stays warn (redesign-v3-delta 결정).
-      { title: '수분 섭취량', caption: BODY_CAPTION, tone: 'warn', level: 'mid', glyph: 'water' },
+      { title: '수면 시간', metric: 'sleep', glyph: 'sleep' },
+      // v3 paints its mock 주의 in danger red; WARN stays amber (redesign-v3-delta 결정).
+      { title: '수분 섭취량', metric: 'water', glyph: 'water' },
     ],
   },
   {
@@ -210,6 +225,10 @@ export default function HomeScreen() {
   const today = new Date();
   const scores = useApiQuery<DailyScore[]>(scoresPath(addDays(today, -1), today));
   const diaries = useApiQuery<DiaryRow[]>(diariesPath(today, today));
+  // A week of per-metric scores and grades: the stat badges read today's row,
+  // 신체's cards the whole window (backlog 10, 11).
+  const items = useApiQuery<ItemTrend[]>(itemsPath(addDays(today, -6), today));
+  const todayItem = byDate(items.data, (row) => row.date).get(isoDate(today));
   const scoreByDate = byDate(scores.data, (row) => row.date);
   const displayOf = (date: Date) => scoreByDate.get(isoDate(date))?.displayTotal ?? null;
 
@@ -225,18 +244,21 @@ export default function HomeScreen() {
 
   const entry = diaries.data?.[0];
   const draft = entry ? toDiaryDraft(entry) : null;
-  const stats = STATS.map((stat) => {
-    if (stat.label === '수분') return { ...stat, value: draft?.water ?? NO_VALUE };
-    if (stat.label === '스트레스') {
+  const stats = STATS.map((base) => {
+    const stat = { ...base, grade: itemOf(todayItem, base.metric)?.grade ?? null };
+    if (stat.metric === 'water') return { ...stat, value: draft?.water ?? NO_VALUE };
+    if (stat.metric === 'stress') {
       // 원시값 비례 `(x-1)/9×100` — 화면의 `%`가 "스트레스가 높다"는 뜻이라는
       // 것까지 확인된 방향입니다 (backlog 26).
       const level = entry?.stressLevel;
       const percent = level == null ? null : Math.round(((level - 1) / 9) * 100);
       return { ...stat, value: percent === null ? NO_VALUE : `${percent}%` };
     }
-    // 수면: `sleepMinutes` is always null — 취침·기상 시각을 받을 UI가 없습니다
-    // (backlog 29), so this card cannot be filled at all.
-    return { ...stat, value: NO_VALUE };
+    // 수면 from `/api/scores/items`, in Figma's `6.4시간` form. Null for any day
+    // entered in the app — 취침·기상 시각을 받을 UI가 없습니다 (backlog 29) — so
+    // real users still see `—` until 29 is designed.
+    const minutes = todayItem?.sleepMinutes;
+    return { ...stat, value: minutes == null ? NO_VALUE : `${(minutes / 60).toFixed(1)}시간` };
   });
 
   function handlePageScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -361,18 +383,32 @@ export default function HomeScreen() {
                 />
               ))}
             </View>
-            {BALANCE_AREAS[areaIndex].cards.map((card, index) => (
-              <View key={card.title} style={{ marginTop: scale(61.13 - 51.198) }}>
-                <WeeklyInfoCard
-                  title={card.title}
-                  icon={card.glyph ?? BALANCE_AREAS[areaIndex].icon}
-                  tone={card.tone}
-                  level={card.level}
-                  scores={index === 0 ? FIRST_CARD_SCORES : SECOND_CARD_SCORES}
-                  caption={card.caption}
-                />
-              </View>
-            ))}
+            {BALANCE_AREAS[areaIndex].cards.map((card, index) => {
+              let props;
+              if ('metric' in card) {
+                const week = itemWeek(items.data, today, card.metric);
+                props = {
+                  icon: card.glyph,
+                  tone: toneFor(week.latest?.grade),
+                  fill: (week.latest?.score ?? 0) / 100,
+                  scores: week.scores.map(scoreBar),
+                  caption: '',
+                };
+              } else {
+                props = {
+                  icon: BALANCE_AREAS[areaIndex].icon,
+                  tone: card.tone,
+                  fill: LEVEL_FILL[card.level],
+                  scores: index === 0 ? FIRST_CARD_SCORES : SECOND_CARD_SCORES,
+                  caption: card.caption,
+                };
+              }
+              return (
+                <View key={card.title} style={{ marginTop: scale(61.13 - 51.198) }}>
+                  <WeeklyInfoCard title={card.title} {...props} />
+                </View>
+              );
+            })}
           </View>
         </View>
       </ScrollView>

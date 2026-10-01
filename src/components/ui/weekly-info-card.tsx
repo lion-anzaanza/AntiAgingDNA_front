@@ -21,9 +21,10 @@ import { scale } from '@/lib/scale';
  * `text/on-pastel` (v4 had the pastel ramp on both).
  */
 const WORD: Record<Tone, string> = { good: '좋음', warn: '주의', danger: '위험' };
-const PROGRESS_FILL: Record<Level, number> = { low: 0.2606, mid: 0.5211, high: 0.7817 };
 
 export type Level = 'low' | 'mid' | 'high';
+/** Figma's `_ProgressBar` Low / Mid / High, as a share of the track. */
+export const LEVEL_FILL: Record<Level, number> = { low: 0.2606, mid: 0.5211, high: 0.7817 };
 /** A day's score, 1–7. Figma draws exactly seven fill heights. */
 export type ScoreBarValue = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
@@ -86,10 +87,12 @@ type WeeklyInfoCardProps = {
    * for that area on 개선책, so one area never shows two icon styles.
    */
   icon: IconName | WeeklyGlyph;
-  tone: Tone;
-  level: Level;
-  /** Seven days, oldest first. */
-  scores: ScoreBarValue[];
+  /** `null` when there is nothing to grade — the word is left out. */
+  tone: Tone | null;
+  /** Share of the progress track to fill, 0–1 (`LEVEL_FILL` for Figma's three). */
+  fill: number;
+  /** Seven days, oldest first. `null` is a day with no value and draws no bar. */
+  scores: (ScoreBarValue | null)[];
   caption: string;
 };
 
@@ -105,11 +108,11 @@ export function WeeklyInfoCard({
   title,
   icon,
   tone,
-  level,
+  fill,
   scores,
   caption,
 }: WeeklyInfoCardProps) {
-  const fillWidth = PROGRESS_WIDTH * PROGRESS_FILL[level];
+  const fillWidth = PROGRESS_WIDTH * Math.min(1, Math.max(0, fill));
 
   return (
     <View
@@ -161,10 +164,10 @@ export function WeeklyInfoCard({
           textAlign: 'center',
           fontSize: scale(7.333),
           lineHeight: scale(10.154),
-          color: TONE_TEXT[tone],
+          color: tone ? TONE_TEXT[tone] : COLOR.text.muted,
         }}
         className="font-plex-semibold">
-        {WORD[tone]}
+        {tone ? WORD[tone] : ''}
       </Text>
 
       <View
@@ -191,6 +194,7 @@ export function WeeklyInfoCard({
       </View>
 
       {scores.map((score, index) => {
+        if (score === null) return null;
         // Figma steps the fill in eighths, starting at two.
         const height = (BAR_HEIGHT * (score + 1)) / 8;
         return (

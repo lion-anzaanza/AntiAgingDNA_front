@@ -72,7 +72,7 @@ type as `*/*` rather than `application/json`.
 | PUT | `/api/diaries/{date}` | `DiaryRequest` | 200 `DiaryResponse` | ✅ |
 | DELETE | `/api/diaries/{date}` | — | 204 | — |
 | GET | `/api/scores` | `?from=&to=` | 200 `DailyScoreResponse[]` | ✅ |
-| GET | `/api/scores/items` | `?from=&to=` (≤366 days) | 200 `ItemTrendResponse[]` | — path built, not called |
+| GET | `/api/scores/items` | `?from=&to=` (≤366 days) | 200 `ItemTrendResponse[]` | ✅ 홈 (7-day window) |
 | GET | `/api/scores/{date}` | — | 200 `DailyScoreResponse` | — safe since the fix (see Scores) |
 | GET | `/api/scores/today` | — | 200 `DailyScoreResponse` | — |
 | GET | `/api/dna` | — | 200 `DnaInfoResponse` | — |
@@ -269,7 +269,7 @@ stress is a low score and `stressGrade` `DANGER` (verified on `demo`: level 7 �
 (backlog 26), so map the badge from the grade, not from the `%`.
 Built for the 나의 LifeDNA 정보 수면 / 수분 cards. The v4 redesign
 (2026-09-30) brought 신체 back to exactly those two cards, so it can now be wired;
-nothing calls it yet (frontend-status, 11). The sleep fields are `null` for every day entered through the app, for the reason above; the `demo` seed carries bedtimes, so it shows `sleepMinutes` where real users will not.
+홈 reads a seven-day window of it since 2026-10-02 — the stat-card badges from today's row, 신체's two cards from the whole week. The sleep fields are `null` for every day entered through the app, for the reason above; the `demo` seed carries bedtimes, so it shows `sleepMinutes` where real users will not.
 
 **No sentences, anywhere.** Every sentence the design shows — card comments,
 summaries, the orb's status chip — is the front end's to compose from these

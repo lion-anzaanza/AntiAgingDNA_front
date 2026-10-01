@@ -1,7 +1,19 @@
 import { describe, expect, it } from '@jest/globals';
 
 import { fromIsoDate } from './dates';
-import { byDate, dayLevelFor, diariesPath, gradeFor, scoresPath, type DailyScore } from './score';
+import {
+  byDate,
+  dayLevelFor,
+  diariesPath,
+  gradeFor,
+  itemsPath,
+  itemWeek,
+  scoreBar,
+  scoresPath,
+  toneFor,
+  type DailyScore,
+  type ItemTrend,
+} from './score';
 
 /**
  * Two server behaviours are baked into this module and both have bitten us, so
@@ -114,5 +126,84 @@ describe('presence in a ranged response does not mean the day was recorded', () 
     expect(empty.grade).toBe('GOOD');
     expect(recorded.grade).toBe('GOOD');
     expect(gradeFor(recorded.dailyTotal)).toBe('DANGER');
+  });
+});
+
+/** A row as `/api/scores/items` returns it; only the named fields are set. */
+function item(date: string, fields: Partial<ItemTrend>): ItemTrend {
+  return {
+    date,
+    sleepMinutes: null,
+    sleepScore: null,
+    sleepGrade: null,
+    waterIntake: null,
+    waterScore: null,
+    waterGrade: null,
+    stressLevel: null,
+    stressScore: null,
+    stressGrade: null,
+    ...fields,
+  };
+}
+
+describe('itemsPath', () => {
+  it('builds a range, like every other score path', () => {
+    expect(itemsPath(fromIsoDate('2026-09-26'), fromIsoDate('2026-10-02'))).toBe(
+      '/api/scores/items?from=2026-09-26&to=2026-10-02',
+    );
+  });
+});
+
+describe('itemWeek', () => {
+  const end = fromIsoDate('2026-10-02');
+
+  it('lays out the seven days ending on `end`, oldest first, with gaps as null', () => {
+    const rows = [
+      item('2026-09-26', { waterScore: 60, waterGrade: 'WARN' }),
+      item('2026-09-29', { waterScore: 100, waterGrade: 'GOOD' }),
+      // Outside the window — must not leak in.
+      item('2026-09-25', { waterScore: 10, waterGrade: 'DANGER' }),
+    ];
+    expect(itemWeek(rows, end, 'water').scores).toEqual([60, null, null, 100, null, null, null]);
+  });
+
+  it('grades on the most recent day that has a value, not on today', () => {
+    const rows = [
+      item('2026-09-30', { stressScore: 30, stressGrade: 'DANGER' }),
+      item('2026-10-01', { stressScore: 70, stressGrade: 'GOOD' }),
+      // Today has a row, but no stress answer.
+      item('2026-10-02', { waterScore: 85, waterGrade: 'GOOD' }),
+    ];
+    expect(itemWeek(rows, end, 'stress').latest).toEqual({ score: 70, grade: 'GOOD' });
+  });
+
+  it('keeps a metric to its own fields', () => {
+    const rows = [item('2026-10-02', { waterScore: 85, waterGrade: 'GOOD' })];
+    expect(itemWeek(rows, end, 'sleep')).toEqual({ scores: Array(7).fill(null), latest: null });
+  });
+
+  it('treats a missing response as an empty week', () => {
+    expect(itemWeek(undefined, end, 'water').latest).toBeNull();
+  });
+});
+
+describe('scoreBar', () => {
+  it('maps 0–100 onto the seven bar heights Figma draws', () => {
+    expect([0, 1, 14, 15, 50, 85, 86, 100].map(scoreBar)).toEqual([1, 1, 1, 2, 4, 6, 7, 7]);
+  });
+
+  it('draws no bar on a day with no value', () => {
+    expect(scoreBar(null)).toBeNull();
+  });
+});
+
+describe('toneFor', () => {
+  it('follows the grade, and has no tone without one', () => {
+    expect(['GOOD', 'WARN', 'DANGER', null].map((grade) => toneFor(grade as never))).toEqual([
+      'good',
+      'warn',
+      'danger',
+      null,
+    ]);
   });
 });
