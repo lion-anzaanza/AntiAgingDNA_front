@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Text, View, type ImageSourcePropType } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 import { COLOR, GRADIENT_PROGRESS, TONE_TEXT, type Tone } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
@@ -34,9 +35,48 @@ const BAR_PITCH = 4.538;
 /** v4's hairline on the icon chip, progress bar and score bars. */
 const HAIRLINE = '0px 0px 1.103px rgba(148, 148, 148, 0.25)';
 
+/**
+ * v3's two drawn icons for 신체's cards, as Figma exports them. They sit on the
+ * card, not centred in the chip: the moon (`Group 1175`, a yellow disc cut by a
+ * white one, plus three `#FFDD00` Z's) and the drop (`Ellipse 24`). Boxes are
+ * card-relative, ×220/390.
+ */
+export type WeeklyGlyph = 'sleep' | 'water';
+
+function Glyph({ name }: { name: WeeklyGlyph }) {
+  if (name === 'sleep') {
+    return (
+      <Svg
+        width={scale(15.231)}
+        height={scale(14.667)}
+        viewBox="0 0 27 26"
+        style={{ position: 'absolute', left: scale(12.708), top: scale(9.693) }}>
+        <Circle cx={10.035} cy={15.8046} r={10.035} fill="#FFDD00" />
+        <Circle cx={16.7284} cy={10.4525} r={10.035} fill="#FFFFFF" />
+        <Path d="M9.956 12.562V11.9547L11.9326 9.29639H9.96173V8.41409H13.319V9.02139L11.3425 11.6797H13.3133V12.562H9.956Z" fill="#FFDD00" />
+        <Path d="M21.4331 13H14.6341V11.466L19.3271 5.447H14.8681V3.926H21.3031V5.46L16.5971 11.479H21.4331V13Z" fill="#FFDD00" />
+        <Path d="M14.0478 17.0522V16.2425L16.6833 12.6981H14.0555V11.5217H18.5319V12.3314L15.8965 15.8759H18.5242V17.0522H14.0478Z" fill="#FFDD00" />
+      </Svg>
+    );
+  }
+  return (
+    <Svg
+      width={scale(6.769)}
+      height={scale(11.282)}
+      viewBox="0 0 12 20"
+      style={{ position: 'absolute', left: scale(15.992), top: scale(12.134) }}>
+      <Path
+        d="M11.7333 14.0399C11.7333 17.5499 9.10674 19.5556 5.86667 19.5556C2.6266 19.5556 0 17.5499 0 14.0399C2.13333 4.0114 5.33333 0 5.86667 0C6.4 0 9.6 4.0114 11.7333 14.0399Z"
+        fill="#9CD6FF"
+      />
+    </Svg>
+  );
+}
+
 type WeeklyInfoCardProps = {
   title: string;
-  icon: ImageSourcePropType;
+  /** A bitmap centred in the chip, or one of v3's drawn 신체 glyphs. */
+  icon: ImageSourcePropType | WeeklyGlyph;
   tone: Tone;
   level: Level;
   /** Seven days, oldest first. */
@@ -82,13 +122,16 @@ export function WeeklyInfoCard({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        {/* v4's slot is the hidden 14.34 `IconHere` placeholder, centred. */}
-        <Image
-          source={icon}
-          style={{ width: scale(14.34), height: scale(14.34) }}
-          resizeMode="contain"
-        />
+        {/* Bitmap stand-ins sit in v4's hidden 14.34 `IconHere` slot, centred. */}
+        {typeof icon === 'string' ? null : (
+          <Image
+            source={icon}
+            style={{ width: scale(14.34), height: scale(14.34) }}
+            resizeMode="contain"
+          />
+        )}
       </View>
+      {typeof icon === 'string' ? <Glyph name={icon} /> : null}
       <Text
         numberOfLines={1}
         style={{

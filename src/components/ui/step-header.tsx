@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { type Href } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { COLOR, GRADIENT_PASTEL, GRADIENT_PROGRESS, SHADOW_V4 } from '@/lib/design';
+import { COLOR, GRADIENT_PROGRESS, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 import { ButtonBack } from './button-back';
@@ -82,7 +82,7 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
         {ramp ? (
           <LinearGradient
             colors={[...GRADIENT_PROGRESS.colors]}
-            locations={[...GRADIENT_PASTEL.locations]}
+            locations={[...GRADIENT_PROGRESS.locations]}
             start={ramp.start}
             end={ramp.end}
             style={{
