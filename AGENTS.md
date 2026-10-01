@@ -225,6 +225,22 @@ Two related notes:
   dead on a device or emulator, check `adb shell settings get global
   animator_duration_scale` before suspecting the code.
 
+### 17. Two Android drawing traps around data that arrives late
+
+Both showed up only on the emulator, only once real data replaced Figma's mock
+(2026-10-02, wiring 홈's badges and 신체 cards).
+
+- **A gradient over an empty box kills the app.** `cssGradientPoints` divides
+  by the box's width, so a 0% progress fill handed `LinearGradient` NaN
+  coordinates and Android's native `LinearGradient` threw — a full crash, not
+  a red screen. It now returns a plain horizontal ramp for an empty box
+  (`gradient.test.ts` pins it). Any data-driven width can be 0; a new user's
+  first week is one.
+- **A background that starts `transparent` loses its border radius** when a
+  colour arrives on a later render: 홈's badges, hidden until the request
+  answered, came back as square chips. The tab bar's pill hit the same bug.
+  Keep a real colour from the first render and toggle `opacity` instead.
+
 ### 15. An absolutely positioned child is inset from the *border* box
 
 `position: 'absolute'` with `right: 0` does **not** stop at the parent's padding

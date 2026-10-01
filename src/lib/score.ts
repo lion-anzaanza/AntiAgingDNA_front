@@ -1,4 +1,5 @@
-import { isoDate } from '@/lib/dates';
+import { addDays, isoDate } from '@/lib/dates';
+import type { Tone } from '@/lib/design';
 
 /**
  * Reading `/api/scores`. The counterpart to `diary-request.ts`, which handles
@@ -58,13 +59,18 @@ export type DailyScore = {
 };
 
 /**
- * `GET /api/scores/items?from&to` — one row per recorded day with the sleep and
- * water atoms behind 나의 LifeDNA 정보's weekly cards (deployed 2026-08-18).
+ * `GET /api/scores/items?from&to` — one row per recorded day with the sleep,
+ * water and stress atoms behind 홈's stat-card badges and 신체's weekly cards
+ * (sleep and water deployed 2026-08-18, stress verified 2026-10-02, backlog 10).
  *
- * `sleepMinutes`, `sleepScore` and `sleepGrade` are always null in practice:
- * they derive from 취침·기상 시각, which no screen can collect (backlog 29).
- * There is no stress equivalent at all, so 홈's third badge stays unresolved
- * (backlog 10).
+ * Unlike the daily `grade` (see (2) above), these grades are per item and per
+ * day, so they are read as-is. All three use 22's 70/40 boundaries.
+ *
+ * - `stressScore` points the wellbeing way, `100 × (10 − stressLevel) / 10`:
+ *   high stress is a low score and `stressGrade` `DANGER`.
+ * - `sleepMinutes` / `sleepScore` / `sleepGrade` are null for every day entered
+ *   in the app — they derive from 취침·기상 시각, which no screen collects
+ *   (backlog 29). The `demo` seed carries bedtimes, so it does show them.
  */
 export type ItemTrend = {
   date: string;
@@ -74,7 +80,61 @@ export type ItemTrend = {
   waterIntake: string | null;
   waterScore: number | null;
   waterGrade: Grade | null;
+  stressLevel: number | null;
+  stressScore: number | null;
+  stressGrade: Grade | null;
 };
+
+export type ItemMetric = 'sleep' | 'water' | 'stress';
+
+const ITEM_FIELDS = {
+  sleep: { score: 'sleepScore', grade: 'sleepGrade' },
+  water: { score: 'waterScore', grade: 'waterGrade' },
+  stress: { score: 'stressScore', grade: 'stressGrade' },
+} as const;
+
+/** One metric for one day, or `null` on a day with no row or no value. */
+export function itemOf(
+  row: ItemTrend | undefined,
+  metric: ItemMetric,
+): { score: number; grade: Grade | null } | null {
+  const fields = ITEM_FIELDS[metric];
+  const score = row?.[fields.score];
+  if (row === undefined || score === null || score === undefined) return null;
+  return { score, grade: row[fields.grade] };
+}
+
+/**
+ * The seven days ending on `end` (oldest first) for one metric, plus the most
+ * recent day in that window that has a value. A weekly card draws the seven as
+ * bars and grades itself on `latest`.
+ */
+export function itemWeek(rows: ItemTrend[] | undefined, end: Date, metric: ItemMetric) {
+  const byDay = byDate(rows, (row) => row.date);
+  const days = Array.from({ length: 7 }, (_, index) =>
+    itemOf(byDay.get(isoDate(addDays(end, index - 6))), metric),
+  );
+  const latest = [...days].reverse().find((day) => day !== null) ?? null;
+  return { scores: days.map((day) => day?.score ?? null), latest };
+}
+
+/**
+ * A 0–100 score as one of the weekly card's seven bar heights. Figma draws
+ * exactly seven, so this is a straight quantisation — no threshold is being
+ * chosen. `null` (no value that day) draws no bar.
+ */
+export function scoreBar(score: number | null): 1 | 2 | 3 | 4 | 5 | 6 | 7 | null {
+  if (score === null) return null;
+  return Math.min(7, Math.max(1, Math.ceil((score / 100) * 7))) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+}
+
+/** A grade's colour family — GOOD green, WARN amber, DANGER red. */
+export function toneFor(grade: Grade | null | undefined): Tone | null {
+  if (grade === 'GOOD') return 'good';
+  if (grade === 'WARN') return 'warn';
+  if (grade === 'DANGER') return 'danger';
+  return null;
+}
 
 export function itemsPath(from: Date, to: Date): string {
   return `/api/scores/items?from=${isoDate(from)}&to=${isoDate(to)}`;

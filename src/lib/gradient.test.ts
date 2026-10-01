@@ -2,6 +2,20 @@ import { describe, expect, it } from '@jest/globals';
 
 import { cssGradientPoints, pastelAngle } from './gradient';
 
+describe('cssGradientPoints on an empty box', () => {
+  // A 0-wide fill reached Android's LinearGradient as NaN and crashed the app.
+  it.each([
+    [0, 3.3],
+    [161, 0],
+    [0, 0],
+  ])('returns finite points for %p × %p', (width, height) => {
+    const { start, end } = cssGradientPoints(pastelAngle(width, height), width, height);
+    for (const value of [start.x, start.y, end.x, end.y]) {
+      expect(Number.isFinite(value)).toBe(true);
+    }
+  });
+});
+
 describe('cssGradientPoints', () => {
   it('runs 90deg edge to edge, left to right', () => {
     const { start, end } = cssGradientPoints(90, 200, 30);

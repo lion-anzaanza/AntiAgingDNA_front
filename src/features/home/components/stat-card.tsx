@@ -1,8 +1,9 @@
 import { Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-import { COLOR, SHADOW } from '@/lib/design';
+import { COLOR, SHADOW, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
+import { toneFor, type Grade } from '@/lib/score';
 
 /**
  * v3's three metric icons (`icon-moon`, `icon-drop`, `icon-flame`): 28pt line
@@ -32,65 +33,61 @@ const ICONS = {
 const ICON_SIZE = 15.795;
 
 /**
- * The three metric cards. `value` is replaced with the day's real answer in
- * `HomeScreen`; **`badge` is not.**
+ * The three metric cards. `HomeScreen` fills `value` from the day's diary and
+ * the badge from `/api/scores/items` — each metric has its own per-day grade
+ * there (backlog 10, verified 2026-10-02).
  *
- * Item 22 deployed a grade for the *total* and for the five 영역 scores, and
- * neither is a grade for 수면·수분·스트레스 — there is no rule saying which
- * stress percentage is 높음 or which cup range is 좋아요. Inventing those
- * thresholds is the same mistake as inventing a cup→litre factor, so the badges
- * stay Figma's until backlog 10 answers it.
+ * Figma draws one state per card: 수면 `조금 부족` (amber), 수분 `좋아요`
+ * (green), 스트레스 `높음` (red). The other six words were chosen by the owner
+ * on 2026-10-02 so those three survive — worth a designer's eye
+ * (`docs/redesign-v3-delta.md`). Stress grades the wellbeing way, so its
+ * `DANGER` is *high* stress, which is why its words run 낮음 → 높음.
  */
-export const STATS: {
-  label: string;
-  value: string;
-  badge: string;
-  bg: string;
-  fg: string;
-  icon: keyof typeof ICONS;
-}[] = [
-  {
-    label: '수면',
-    value: '6.4시간',
-    badge: '조금 부족',
-    bg: '#FBF2E1',
-    fg: '#C57100',
-    icon: 'sleep',
-  },
-  {
-    label: '수분',
-    /*
-     * The band, not a litre figure. `waterIntake` is a cup range on the wire
-     * (`THREE_TO_FIVE`), and there is no cup→mL factor anywhere in the data —
-     * inventing one to print `1.6L` would be exactly the kind of made-up
-     * constant this project refuses elsewhere. Backlog item 26; the backend
-     * settled it this way on 2026-08-17.
-     */
-    value: '3~5잔',
-    badge: '좋아요',
-    bg: '#E6F4EE',
-    fg: '#3A775D',
-    icon: 'water',
-  },
-  {
-    label: '스트레스',
-    value: '72%',
-    badge: '높음',
-    bg: '#F9E9E8',
-    fg: '#F53942',
-    icon: 'stress',
-  },
+export type StatMetric = 'sleep' | 'water' | 'stress';
+
+export const BADGE_WORDS: Record<StatMetric, Record<Grade, string>> = {
+  sleep: { GOOD: '충분해요', WARN: '조금 부족', DANGER: '부족해요' },
+  water: { GOOD: '좋아요', WARN: '조금 부족', DANGER: '부족해요' },
+  stress: { GOOD: '낮음', WARN: '보통', DANGER: '높음' },
+};
+
+/** v3's three badge fills and text colours, one per tone. */
+const BADGE_COLORS: Record<Tone, { bg: string; fg: string }> = {
+  good: { bg: '#E6F4EE', fg: '#3A775D' },
+  warn: { bg: '#FBF2E1', fg: '#C57100' },
+  danger: { bg: '#F9E9E8', fg: '#F53942' },
+};
+
+export const STATS: { label: string; metric: StatMetric }[] = [
+  { label: '수면', metric: 'sleep' },
+  /*
+   * 수분's value is the band, not a litre figure. `waterIntake` is a cup range
+   * on the wire (`THREE_TO_FIVE`), and there is no cup→mL factor anywhere in
+   * the data — inventing one to print `1.6L` would be exactly the kind of
+   * made-up constant this project refuses elsewhere (backlog 26).
+   */
+  { label: '수분', metric: 'water' },
+  { label: '스트레스', metric: 'stress' },
 ];
 
-type StatCardProps = (typeof STATS)[number];
+type StatCardProps = {
+  label: string;
+  metric: StatMetric;
+  value: string;
+  /** The day's grade for this metric, or `null` when the server has none. */
+  grade: Grade | null;
+};
 
 /**
  * v3 `Group 1316`–`1318` (`1312:1546`…): 61.3×78. The icon is placed
  * absolutely; the value, label and badge follow in a centred column at v3's
  * line-box tops (24.74 / 40.58 / 57).
  */
-export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
-  const glyph = ICONS[icon];
+export function StatCard({ label, metric, value, grade }: StatCardProps) {
+  const glyph = ICONS[metric];
+  const tone = toneFor(grade);
+  // No grade, no badge — but the same element stays put (AGENTS.md #3).
+  const badge = tone && grade ? { text: BADGE_WORDS[metric][grade], ...BADGE_COLORS[tone] } : null;
   return (
     <View
       style={{
@@ -143,15 +140,20 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
           height: scale(12),
           marginTop: scale(57 - 40.58 - 12.41),
           borderRadius: scale(10),
-          backgroundColor: bg,
+          // Never `transparent` → colour: on Android a view whose background
+          // first renders transparent loses its border radius once a colour
+          // arrives (the same bug the tab bar's pill hit). Keep a colour and
+          // hide the empty badge with opacity instead.
+          backgroundColor: badge?.bg ?? BADGE_COLORS.good.bg,
+          opacity: badge ? 1 : 0,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
         <Text
           numberOfLines={1}
-          style={{ fontSize: scale(6.769), lineHeight: scale(10.154), color: fg }}
+          style={{ fontSize: scale(6.769), lineHeight: scale(10.154), color: badge?.fg }}
           className="font-plex-semibold">
-          {badge}
+          {badge?.text ?? ''}
         </Text>
       </View>
     </View>
