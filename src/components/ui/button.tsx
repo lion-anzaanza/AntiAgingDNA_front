@@ -15,16 +15,18 @@ type ButtonProps = Omit<PressableProps, 'style'> & {
 const RAMP = cssGradientPoints(GRADIENT_PASTEL.angle, 197.436, 27.077);
 
 /**
- * Figma v4: ButtonNextUI — 197.4×27.1, radius 9.6, pastel ramp, Bold 11.3 in
+ * Figma v4: ButtonNextUI — 197.4×27.1, pastel ramp, Bold 11.3 in
  * `text/on-pastel`. v4 draws it two ways (로그인·회원가입/1: SemiBold 9.6;
- * 회원가입/2·3·일지/메인: Bold 11.3, two of them at radius 7.9); each property
- * takes its own 3-to-2 majority.
+ * 회원가입/2·3·일지/메인: Bold 11.3); each property takes its own majority.
+ *
+ * v3 (final): radius 16 on 6 of its 8 copies (12 on 회원가입/2·3) — 9.026 at
+ * 220. Ramp and shadow are unchanged; the text weight is still a 3-to-3 tie.
  */
 export function Button({ label, style, ...pressableProps }: ButtonProps) {
   return (
     <Pressable
       {...pressableProps}
-      style={[{ height: scale(27.077), borderRadius: scale(9.615), boxShadow: SHADOW_V4 }, style]}>
+      style={[{ height: scale(27.077), borderRadius: scale(9.026), boxShadow: SHADOW_V4 }, style]}>
       <LinearGradient
         colors={[...GRADIENT_PASTEL.colors]}
         locations={[...GRADIENT_PASTEL.locations]}
@@ -34,7 +36,7 @@ export function Button({ label, style, ...pressableProps }: ButtonProps) {
           flex: 1,
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: scale(9.615),
+          borderRadius: scale(9.026),
         }}>
         <Text
           style={{
