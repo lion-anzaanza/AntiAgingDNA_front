@@ -953,13 +953,11 @@ emulator.
 first and have since been designed and built (`features/my/privacy-screen.tsx`,
 `subscription-screen.tsx`); the menu rows open them.
 
-The five menu icons are a single screenshot sheet cropped per row (rule 7's
-"one bitmap can back several nodes"), cut into `assets/images/my/ic-*.png`.
-
-One slip corrected rather than reproduced: Figma puts the `무료` tier beside
-이용약관 while the icons stay with their labels. The sibling frame shows the same
-values against a different label order, which is what gives it away — a tier
-belongs to 구독 관리, so it sits there.
+The menu and setting icons used to be a screenshot sheet cropped per row
+(`assets/images/my/ic-*.png`). v3 drew them as `Icon/*` vectors, so every MY
+row now renders `ui/icon.tsx` and the cropped bitmaps are gone; only `watch.png`
+remains, and v3's watch fill is byte-identical to it. v3 also placed `무료` on
+구독 관리 itself, which settles the older frame's slip.
 
 로그아웃 and 회원탈퇴 are wired to the session. Nothing is behind 연동하기 or
 개발자 커피사주기: pairing a watch needs a native module, and the API has neither

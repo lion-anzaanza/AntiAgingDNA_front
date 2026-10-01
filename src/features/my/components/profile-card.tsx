@@ -1,9 +1,14 @@
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
+import { Icon } from '@/components/ui/icon';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
-/** Figma v4 마이페이지/메인 `Card/Rectangle 3709` — 197.4×38.5. */
+/**
+ * Figma v3 마이페이지/메인 `Card/Rectangle 3709` — 350×68 (197.4×38.5 at 220).
+ * v3 swapped the avatar bitmap for a 44pt `surface/tint-2` circle carrying the
+ * 24pt `Icon/user`, and moved the name and type label in to x 72.
+ */
 export function ProfileCard({ nickname, streakDays }: { nickname: string; streakDays: number }) {
   return (
     <View
@@ -16,34 +21,25 @@ export function ProfileCard({ nickname, streakDays }: { nickname: string; streak
       <View
         style={{
           position: 'absolute',
-          left: scale(9.01),
-          top: scale(7.69),
-          width: scale(23.077),
-          height: scale(23.077),
-          borderRadius: scale(11.538),
+          left: scale(9.026),
+          top: scale(6.769),
+          width: scale(24.821),
+          height: scale(24.821),
+          borderRadius: scale(12.41),
           backgroundColor: COLOR.surface.tint2,
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
-        {/* Figma sits the figure 1pt above the circle's centre; kept as drawn. */}
-        <Image
-          source={require('@/assets/images/my/avatar.png')}
-          style={{
-            position: 'absolute',
-            left: scale(5.75),
-            top: scale(3.85),
-            width: scale(11.151),
-            height: scale(13.462),
-          }}
-          resizeMode="contain"
-        />
+        <Icon name="user" size={scale(13.538)} color={COLOR.icon.primary} />
       </View>
 
       <Text
         style={{
           position: 'absolute',
-          left: scale(45.41),
-          top: scale(7.07),
+          left: scale(40.615),
+          top: scale(7.847),
           // Stops short of the streak chip's leftmost edge (197.4 − 10.8 − 43.9).
-          maxWidth: scale(92),
+          maxWidth: scale(96),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
           letterSpacing: scale(-0.0959),
@@ -56,8 +52,8 @@ export function ProfileCard({ nickname, streakDays }: { nickname: string; streak
       <Text
         style={{
           position: 'absolute',
-          left: scale(45.48),
-          top: scale(18.99),
+          left: scale(40.615),
+          top: scale(23.449),
           fontSize: scale(6.769),
           lineHeight: scale(9.026),
           color: COLOR.brand.violetText,
@@ -74,7 +70,7 @@ export function ProfileCard({ nickname, streakDays }: { nickname: string; streak
       <View
         style={{
           position: 'absolute',
-          right: scale(10.79),
+          right: scale(10.797),
           top: scale(5.77),
           minWidth: scale(43.933),
           height: scale(10.577),
@@ -84,11 +80,10 @@ export function ProfileCard({ nickname, streakDays }: { nickname: string; streak
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+        {/* v3 shrank the label from 13 to 9px (5.08 at 220). */}
         <Text
           style={{
-            // Figma's line box sits 0.5pt below the chip's middle.
-            transform: [{ translateY: scale(0.47) }],
-            fontSize: scale(7.333),
+            fontSize: scale(5.077),
             lineHeight: scale(10.154),
             color: COLOR.brand.violetText,
           }}

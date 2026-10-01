@@ -3,25 +3,26 @@ import { Pressable, Text } from 'react-native';
 import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
-/** Both cards carry this in Figma — it is the 마이페이지 profile label, not a plan. */
-const PLAN_SUBTITLE = '올빼미 - 고민감 - 누적형';
-
 export const PLAN_CARD_HEIGHT = 28.846;
 
 /**
- * v4 구독관리 `Card/Rectangle 3823` / `3824`. v4 dropped the radio: the chosen
- * plan is a `surface/tint` card with a 0.385 `brand/violet` border, the other a
- * white card with a 0.288 `border/soft` one. Everything inside sits where Figma
- * puts it; the two cards agree to 0.15pt, so they share one set of positions.
+ * v3 구독관리 `Card/Rectangle 3823` / `3824`. The chosen plan is a
+ * `surface/tint` card with a 0.385 `brand/violet` border, the other a white
+ * card with a 0.288 `border/soft` one. v3 gave each plan its own 10px subtitle
+ * (v4 repeated the profile type label on both) and moved the title and price
+ * about 0.8 lower. The two cards agree to 0.3pt, so they share one set of
+ * positions.
  */
 export function SubscriptionPlanCard({
   title,
+  subtitle,
   price,
   per,
   selected,
   onPress,
 }: {
   title: string;
+  subtitle: string;
   price: string;
   per: string;
   selected: boolean;
@@ -44,7 +45,7 @@ export function SubscriptionPlanCard({
         style={{
           position: 'absolute',
           left: scale(8.6),
-          top: scale(9.66 - 13.538 / 2),
+          top: scale(10.42 - 13.538 / 2),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
           letterSpacing: scale(-0.0959),
@@ -56,21 +57,21 @@ export function SubscriptionPlanCard({
       <Text
         style={{
           position: 'absolute',
-          left: scale(8.77),
-          top: scale(19.26 - 9.026 / 2),
-          fontSize: scale(6.769),
+          left: scale(9.77),
+          top: scale(21.46 - 9.026 / 2),
+          fontSize: scale(5.641),
           lineHeight: scale(9.026),
           color: COLOR.text.body,
         }}
         className="font-plex">
-        {PLAN_SUBTITLE}
+        {subtitle}
       </Text>
-      {/* Right-aligned to x 170.4 of the 197.4 card. */}
+      {/* Right-aligned to x 170.4–170.9 of the 197.4 card. */}
       <Text
         style={{
           position: 'absolute',
-          right: scale(197.436 - 170.44),
-          top: scale(13.89 - 13.538 / 2),
+          right: scale(197.436 - 170.67),
+          top: scale(14.66 - 13.538 / 2),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
           letterSpacing: scale(-0.0959),
@@ -83,7 +84,7 @@ export function SubscriptionPlanCard({
         style={{
           position: 'absolute',
           left: scale(178.9),
-          top: scale(16.09 - 9.026 / 2),
+          top: scale(16.61 - 9.026 / 2),
           fontSize: scale(6.769),
           lineHeight: scale(9.026),
           color: COLOR.text.body,
