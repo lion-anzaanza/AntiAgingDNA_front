@@ -7,7 +7,7 @@ import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * v4 `Journal banner` (`1363:1957`), 197.436×86. Everything inside is placed
+ * v3 `Journal banner` (`1312:1713`), 197.436×86. Everything inside is placed
  * absolutely, as Figma does — the title's two lines, the caption and the white
  * button each sit at their own y (AGENTS rule 14).
  *
@@ -58,7 +58,7 @@ export function JournalCta() {
         style={{
           position: 'absolute',
           left: scale(8.65),
-          top: scale(22.26 - 15.795),
+          top: scale(7.265),
           fontSize: scale(11.282),
           lineHeight: scale(15.795),
           letterSpacing: scale(-0.1128),
@@ -71,8 +71,9 @@ export function JournalCta() {
         style={{
           position: 'absolute',
           left: scale(8.38),
-          top: scale(44.25 - 6.205),
-          fontSize: scale(8.462),
+          top: scale(39.44),
+          // v3 set the caption down from 15 to 13 (Figma), keeping the 22 line.
+          fontSize: scale(7.333),
           lineHeight: scale(12.41),
           color: COLOR.text.plum,
         }}
@@ -87,9 +88,10 @@ export function JournalCta() {
           top: scale(55),
           width: scale(67.835),
           height: scale(20),
-          borderRadius: scale(5.641),
+          // v3 `Chip` (`1401:1972`): radius/sm 8 and a lighter 3.5px drop shadow.
+          borderRadius: scale(4.513),
           backgroundColor: COLOR.surface.card,
-          boxShadow: SHADOW,
+          boxShadow: '0px 0px 2px rgba(169, 169, 169, 0.25)',
           alignItems: 'center',
           justifyContent: 'center',
         }}>

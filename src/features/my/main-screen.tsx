@@ -3,7 +3,7 @@ import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ButtonBack } from '@/components/ui/button-back';
-import { MenuRow, type MenuItem } from '@/features/my/components/menu-row';
+import { MENU_ROW_HEIGHT, MenuRow, type MenuItem } from '@/features/my/components/menu-row';
 import { ProfileCard } from '@/features/my/components/profile-card';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -12,70 +12,34 @@ import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma v4: 마이페이지/메인 (`1363:3217`) — the MY tab's root.
+ * Figma v3: 마이페이지/메인 (`1318:1821`) — the MY tab's root.
  *
- * The five icons are one screenshot sheet in Figma, cropped per row — cut into
- * `assets/images/my/ic-*.png` the same way the 만족도 faces were. v4 crops the
- * same sheet to the same icons, only at slightly different box sizes.
+ * v3 redrew the menu with `Icon/*` line icons and a `Icon/Chevron-Right` on every
+ * row, in 48pt rows (27.08 at 220), and moved 개발자 커피사주기 well below the
+ * card. The menu icons are drawn thinner here than anywhere else in v3 (1.44, the
+ * watch 1.33) and kept so.
  *
  * Figma draws a back chip on this tab root, as the pre-v4 frame did. It is kept
  * with the `/home` fallback it already had.
  */
-const COLUMN = { left: scale(11.28), width: scale(197.436) };
-
-/** Row bands of the menu card, read off its four divider lines. */
-const ROW_HEIGHTS = [21.15, 21.16, 22.11, 21.16, 21.15];
+const COLUMN = { left: scale(11.282), width: scale(197.436) };
 
 /** Same pastel stops as `Button`, but this bar is drawn at 167.3°, 25 tall. */
 const COFFEE_RAMP = cssGradientPoints(167.3328, 197.436, 25);
 
+/** v3's `drop-shadow(0 0 3.409px …)` on the pastel buttons, at 220. */
+const BUTTON_SHADOW = '0px 0px 1.923px rgba(169, 169, 169, 0.25)';
+
 /**
- * Figma puts the `무료` tier beside 이용약관 rather than 구독 관리, while the
- * icons stay with their labels. The sibling frame (`583:913`) shows the same
- * values against a different label order, which is what gives it away — a tier
- * belongs to the subscription row, so it is placed there. v4 repeats the slip.
+ * Figma puts the `무료` tier beside 이용약관 rather than 구독 관리 in the oldest
+ * frame; v3 finally draws it on 구독 관리, and 애플워치 on 웨어러블 연동.
  */
 const MENU: MenuItem[] = [
-  {
-    label: '웨어러블 연동',
-    icon: require('@/assets/images/my/ic-wearable.png'),
-    iconWidth: 11.387,
-    iconHeight: 14.423,
-    iconTop: 3.85,
-    value: '애플워치',
-    href: '/my/wearable',
-  },
-  {
-    label: '구독 관리',
-    icon: require('@/assets/images/my/ic-subscription.png'),
-    iconWidth: 12.714,
-    iconHeight: 13.462,
-    iconTop: 3.85,
-    value: '무료',
-    href: '/my/subscription',
-  },
-  {
-    label: '데이터 개인정보',
-    icon: require('@/assets/images/my/ic-privacy.png'),
-    iconWidth: 13.235,
-    iconHeight: 12.5,
-    iconTop: 4.81,
-    href: '/my/privacy',
-  },
-  {
-    label: '이용약관',
-    icon: require('@/assets/images/my/ic-terms.png'),
-    iconWidth: 12.896,
-    iconHeight: 11.538,
-    iconTop: 3.85,
-  },
-  {
-    label: '도움말',
-    icon: require('@/assets/images/my/ic-help.png'),
-    iconWidth: 12.821,
-    iconHeight: 14.423,
-    iconTop: 1.92,
-  },
+  { label: '웨어러블 연동', icon: 'watch', iconStroke: 1.333, value: '애플워치', href: '/my/wearable' },
+  { label: '구독 관리', icon: 'crown', iconStroke: 1.44, value: '무료', href: '/my/subscription' },
+  { label: '데이터 개인정보', icon: 'shield', iconStroke: 1.44, href: '/my/privacy' },
+  { label: '이용약관', icon: 'doc', iconStroke: 1.44 },
+  { label: '도움말', icon: 'question', iconStroke: 1.44 },
 ];
 
 export default function MyPageScreen() {
@@ -110,20 +74,20 @@ export default function MyPageScreen() {
 
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: scale(33.95) }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: scale(30.86) }}>
         {/*
           * Everything down to 개발자 커피사주기 sits at Figma's own y, less the
           * 38pt PhoneHeader mock the safe area stands in for.
           */}
-        <View style={{ height: scale(222.58) }}>
-          <View style={{ position: 'absolute', left: scale(11.28), top: scale(12) }}>
+        <View style={{ height: scale(293.65) }}>
+          <View style={{ position: 'absolute', left: scale(9.026), top: scale(6.99) }}>
             <ButtonBack fallbackHref="/home" />
           </View>
           <Text
             style={{
               position: 'absolute',
-              left: scale(34.47),
-              top: scale(9.74),
+              left: scale(35.4),
+              top: scale(9.27),
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.2708),
@@ -133,7 +97,7 @@ export default function MyPageScreen() {
             마이페이지
           </Text>
 
-          <View style={{ position: 'absolute', top: scale(33.15), ...COLUMN }}>
+          <View style={{ position: 'absolute', top: scale(33.157), ...COLUMN }}>
             <ProfileCard nickname={user?.nickname ?? ''} streakDays={user?.streakDays ?? 0} />
           </View>
 
@@ -142,31 +106,31 @@ export default function MyPageScreen() {
               position: 'absolute',
               top: scale(81.23),
               ...COLUMN,
-              height: scale(106.731),
+              height: scale(MENU_ROW_HEIGHT * MENU.length),
               borderRadius: scale(5.769),
               backgroundColor: COLOR.surface.card,
               boxShadow: SHADOW_V4,
             }}>
             {MENU.map((item, index) => (
-              <MenuRow key={item.label} {...item} height={ROW_HEIGHTS[index]} first={index === 0} />
+              <MenuRow key={item.label} {...item} first={index === 0} />
             ))}
           </View>
 
-          <Pressable style={{ position: 'absolute', top: scale(197.58), ...COLUMN }}>
+          <Pressable style={{ position: 'absolute', top: scale(268.65), ...COLUMN }}>
             <LinearGradient
               colors={[...GRADIENT_PASTEL.colors]}
               locations={[...GRADIENT_PASTEL.locations]}
               start={COFFEE_RAMP.start}
               end={COFFEE_RAMP.end}
-              style={{ height: scale(25), borderRadius: scale(9.615), boxShadow: SHADOW_V4 }}>
-              {/* Figma's line box centres 1.3pt above the button's middle. */}
+              style={{
+                height: scale(25),
+                borderRadius: scale(9.026),
+                boxShadow: BUTTON_SHADOW,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
               <Text
                 style={{
-                  position: 'absolute',
-                  top: scale(3.3),
-                  left: 0,
-                  right: 0,
-                  textAlign: 'center',
                   fontSize: scale(11.282),
                   lineHeight: scale(15.795),
                   letterSpacing: scale(-0.1128),
@@ -186,9 +150,9 @@ export default function MyPageScreen() {
           * either scrolls or leaves a hole. A flexible spacer pins it to the
           * bottom of the viewport instead, which is what the design means, and
           * `flexGrow: 1` on the content container is what gives it room to push
-          * against. The bottom padding is Figma's 34pt gap above the tab bar.
+          * against. The bottom padding is v3's 54.7pt gap above the tab bar.
           *
-          * Figma centres the line on x=113.2, 3pt right of the frame's middle;
+          * Figma centres the line on x=201.7 of 390, 3.6pt right of the frame's middle;
           * it is centred here like every other one-off centring slip.
           */}
         <View style={{ flex: 1, minHeight: scale(24) }} />

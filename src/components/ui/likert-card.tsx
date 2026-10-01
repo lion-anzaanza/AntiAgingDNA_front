@@ -17,8 +17,9 @@ type LikertCardProps = {
 };
 
 /**
- * Figma: `SelectItem6_Card` on 회원가입/2 — a 47pt white card with the
- * statement hugging its top edge and six `likert` pills below.
+ * Figma v3: `SelectItem6_Card` on 회원가입/2 — a 55.56pt white card with the
+ * statement near its top edge and six 22.56-tall `likert` pills below, 3.95
+ * apart.
  *
  * All five v4 instances keep the pre-v4 radius 10 and 4px shadow rather than
  * the 9.615 / 3.846 the rest of the family was rescaled to; reproduced as drawn.
@@ -30,7 +31,7 @@ export function LikertCard({ statement, value, onChange, history = false }: Like
         borderRadius: scale(10),
         backgroundColor: COLOR.surface.card,
         boxShadow: SHADOW,
-        paddingTop: scale(2.56),
+        paddingTop: scale(3.33),
         paddingBottom: scale(9),
       }}>
       <Text style={[CARD_TITLE, { marginLeft: scale(8.65) }]} className="font-plex-semibold">
@@ -39,9 +40,9 @@ export function LikertCard({ statement, value, onChange, history = false }: Like
       <View
         style={{
           flexDirection: 'row',
-          gap: scale(4),
+          gap: scale(3.949),
           paddingHorizontal: scale(CARD_INSET),
-          marginTop: scale(7.9),
+          marginTop: scale(7.108),
         }}>
         {SCALE_VALUES.map((n) => (
           <SelectButton

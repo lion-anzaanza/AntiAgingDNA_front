@@ -3,8 +3,8 @@ import { Text, View } from 'react-native';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
-/** The one v4 colour in this card that is not a token: 매일 기록's two green ticks. */
-const BOTH_TICK = '#0B9456';
+/** The one v3 colour in this card that is not a token: 매일 기록's two green ticks. */
+const BOTH_TICK = '#097E49';
 
 /** Table rows, top to bottom. `free`/`premium` are the two answer columns. */
 const FEATURES: { label: string; free: string; premium: string; bothTick?: boolean }[] = [
@@ -20,7 +20,7 @@ const FEATURES: { label: string; free: string; premium: string; bothTick?: boole
 ];
 
 /**
- * Row bands of v4 `Card/Rectangle 3827`, read off its dividers (23.08 → 46.15 →
+ * Row bands of v3 `Card/Rectangle 3827` (unchanged since v4), read off its dividers (23.08 → 46.15 →
  * … → 161.54 → 183.65). The seventh is a point shorter, as Figma draws it.
  */
 const HEADER_HEIGHT = 23.077;
@@ -28,15 +28,16 @@ const ROW_HEIGHTS = [23.07, 23.08, 23.08, 23.08, 23.07, 23.08, 22.11, 23.08];
 export const FEATURE_TABLE_HEIGHT = 206.731;
 
 /**
- * Column centres. Figma centres its Pretendard marks (✓ / X) on one axis and
- * its Plex words on another, a point or four to the left — each kind keeps its
- * own, since every mark in a column agrees with the others to 0.2pt.
+ * Column centres (v3 ×220/390). Figma centres its Pretendard marks (✓ / X) on
+ * one axis and its Plex words on another, a point or four to the left — each
+ * kind keeps its own, since every mark in a column agrees with the others.
  */
-const FREE_MARK = 128.55;
-const PREMIUM_MARK = 179.36;
-const FREE_WORD = 126.6;
-const HEAD_PREMIUM = 174.78;
-const BODY_PREMIUM_WORD = 178.32;
+const FREE_MARK = 128.82;
+const PREMIUM_MARK = 179.59;
+const FREE_WORD = 127.88;
+const HEAD_FREE = 126.37;
+const HEAD_PREMIUM = 174.54;
+const BODY_PREMIUM_WORD = 179.2;
 const CELL = 60;
 
 export function FeatureTable() {
@@ -50,8 +51,8 @@ export function FeatureTable() {
         overflow: 'hidden',
       }}>
       <View style={{ height: scale(HEADER_HEIGHT), backgroundColor: COLOR.surface.tint }}>
-        <Cell text="기능" left={8.58} color={COLOR.text.body} head />
-        <Cell text="무료 플랜" centre={FREE_WORD} color={COLOR.text.body} head />
+        <Cell text="기능" left={9.026} color={COLOR.text.body} head />
+        <Cell text="무료 플랜" centre={HEAD_FREE} color={COLOR.text.body} head />
         <Cell text="프리미엄" centre={HEAD_PREMIUM} color={COLOR.brand.violetText} head />
       </View>
 
@@ -65,7 +66,7 @@ export function FeatureTable() {
               borderTopWidth: scale(0.288),
               borderTopColor: COLOR.border.soft,
             }}>
-            <Cell text={feature.label} left={8.77} color={COLOR.text.strong} />
+            <Cell text={feature.label} left={9.026} color={COLOR.text.strong} />
             <Cell
               text={feature.free}
               centre={isMark(feature.free) ? FREE_MARK : FREE_WORD}
@@ -135,8 +136,8 @@ function Cell({
           fontSize: scale(label ? 6.769 : 7.333),
           lineHeight: scale(lineHeight),
           letterSpacing: mark ? scale(-0.22) : 0,
-          // All three header words sit 1.5pt below the band's middle in Figma.
-          transform: [{ translateY: head ? scale(1.5) : 0 }],
+          // All three header words sit 1.06pt below the band's middle in v3.
+          transform: [{ translateY: head ? scale(1.06) : 0 }],
           color,
         }}
         className={className}>

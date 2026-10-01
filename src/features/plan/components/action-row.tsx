@@ -8,32 +8,32 @@ import { scale } from '@/lib/scale';
  * One 오늘의 실천 row: open, or done — which greys the label, strikes it and
  * puts a check in its box. Local state only (see main-screen.tsx).
  *
- * v4 (`1363:2971`): open rows are `text/plum` beside a `surface/tint-2` box;
- * the done row is `text/body` beside a `#B3B3B3` box with a `#686868` `∨`
- * (`Group 1379`), and carries a 0.564pt `surface/track` strike.
+ * v3 (`1318:1601`): open rows are `text/plum` beside a 24pt `surface/chip` box
+ * with a 1.5 `border/soft` edge; the done row is Gray 400 `#88877F`, struck in
+ * Gray 600 `#5F5E5B`, beside a borderless `brand/selected` box carrying an
+ * `on-pastel` `∨` (`Group 1379`). v4's grey box and grey check are gone.
  */
 export type Action = { label: string; done: boolean };
 
-/** Box tops step 21.435 down the card (9.59, 31.03, … 116.77). */
-export const ROW_PITCH = 21.435;
-const CHECKBOX_SIZE = 12.41;
-/** Box at x 176 in a 197.436 card. */
-const CHECKBOX_RIGHT = 197.436 - 176 - CHECKBOX_SIZE;
-const CHECKBOX_DONE = '#B3B3B3';
-const CHECK_STROKE = '#686868';
+/** v3 steps the boxes 48 apart (27.077 at 220). */
+const ROW_PITCH = 27.077;
+/** 24pt box with a 1.5 border, 8 radius, at x 311 of a 350 card. */
+const CHECKBOX_SIZE = 13.538;
+const CHECKBOX_RIGHT = 197.436 - 175.436 - CHECKBOX_SIZE;
+const LABEL_DONE = '#88877F';
+const STRIKE = '#5F5E5B';
 const LABEL_LEFT = 8.7;
 const LABEL_LINE = 12.41;
-/** v4 centres each label 6.3 below its box top — 0.1 below the box's own centre. */
-const LABEL_TOP = 6.3 - LABEL_LINE / 2;
+/** v3 centres each label on its box. */
+const LABEL_TOP = (CHECKBOX_SIZE - LABEL_LINE) / 2;
 /**
- * The strike is drawn, not `textDecorationLine`: v4 draws it in `surface/track`,
- * a different colour from the label, and Android cannot colour a text
- * decoration. v4 puts it 0.18 below the label's line-box centre, from 0.33 in
- * to the end of the text — so it hangs off a box that is as wide as the text.
- * (The old 7pt Pretendard strike failed at the line box's middle because its
- * 15pt line box put the ink high; Plex at 12.41 sits centred, as v4 shows.)
+ * The strike is drawn, not `textDecorationLine`: v3 draws it in Gray 600, a
+ * different colour from the label, and Android cannot colour a text decoration.
+ * v3 puts its 1pt line on the label's line-box centre, from 0.57 in to the end
+ * of the text — so it hangs off a box that is as wide as the text.
  */
-const STRIKE_TOP = LABEL_LINE / 2 + 0.18 - 0.282;
+const STRIKE_HEIGHT = 0.564;
+const STRIKE_TOP = LABEL_LINE / 2 - STRIKE_HEIGHT / 2;
 
 export function ActionRow({ action, onComplete }: { action: Action; onComplete: () => void }) {
   return (
@@ -50,7 +50,7 @@ export function ActionRow({ action, onComplete }: { action: Action; onComplete: 
           style={{
             fontSize: scale(8.462),
             lineHeight: scale(LABEL_LINE),
-            color: action.done ? COLOR.text.body : COLOR.text.plum,
+            color: action.done ? LABEL_DONE : COLOR.text.plum,
           }}
           className="font-plex">
           {action.label}
@@ -58,11 +58,11 @@ export function ActionRow({ action, onComplete }: { action: Action; onComplete: 
         <View
           style={{
             position: 'absolute',
-            left: scale(0.33),
+            left: scale(0.32),
             right: 0,
             top: scale(STRIKE_TOP),
-            height: scale(0.564),
-            backgroundColor: COLOR.surface.track,
+            height: scale(STRIKE_HEIGHT),
+            backgroundColor: STRIKE,
             boxShadow: SHADOW_V4,
             opacity: action.done ? 1 : 0,
           }}
@@ -79,27 +79,26 @@ export function ActionRow({ action, onComplete }: { action: Action; onComplete: 
           top: 0,
           width: scale(CHECKBOX_SIZE),
           height: scale(CHECKBOX_SIZE),
-          borderRadius: scale(2.885),
-          backgroundColor: action.done ? CHECKBOX_DONE : COLOR.surface.tint2,
+          borderRadius: scale(4.513),
+          // Same width in both states so the box never changes size; the done
+          // box only hides its edge.
+          borderWidth: scale(0.846),
+          borderColor: action.done ? 'transparent' : COLOR.border.soft,
+          backgroundColor: action.done ? COLOR.brand.selected : COLOR.surface.chip,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
         {/* Same tree in both states (rule 3) — the check is hidden, not unmounted. */}
+        {/* Figma's export box: the 7.39 × 5.54 check plus half a stroke on every side for the round caps. */}
         <Svg
           width={scale(5.129)}
           height={scale(4.087)}
-          viewBox="0 0 5.12851 4.08664"
+          viewBox="-0.852 -0.852 9.092 7.245"
           style={{ opacity: action.done ? 1 : 0 }}>
           <Path
-            d="M0.48082 0.48082L2.56415 3.60582"
-            stroke={CHECK_STROKE}
-            strokeWidth={0.961538}
-            strokeLinecap="round"
-          />
-          <Path
-            d="M4.64769 0.48082L2.56435 3.60582"
-            stroke={CHECK_STROKE}
-            strokeWidth={0.961538}
+            d="M0 0L3.693 5.54M7.387 0L3.694 5.54"
+            stroke={COLOR.text.onPastel}
+            strokeWidth={1.70455}
             strokeLinecap="round"
           />
         </Svg>

@@ -8,12 +8,12 @@ import {
   TwinkleDot,
   type ArtworkFrame,
 } from '@/components/ui/living-artwork';
-import { COLOR, GRADIENT_PASTEL, SHADOW } from '@/lib/design';
+import { COLOR, GRADIENT_PROGRESS, SHADOW } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { MOTION } from '@/lib/motion';
 import { scale } from '@/lib/scale';
 
-/** v4 `오브 카드` (`1363:2005`) — the full 197.436 content column. */
+/** v3 `오브 카드` (`1312:1584`) — the full 197.436 content column. */
 export const CARD_WIDTH = 197.436;
 
 /**
@@ -265,8 +265,8 @@ export function OrbCard({
       <Text
         style={{
           position: 'absolute',
-          right: scale(11.59),
-          top: scale(13.085),
+          right: scale(10.68),
+          top: scale(12.79),
           ...BODY,
           color: COLOR.text.body,
         }}
@@ -309,7 +309,7 @@ export function OrbCard({
       <Text
         style={{
           position: 'absolute',
-          top: scale(140.44),
+          top: scale(140.02),
           width: '100%',
           textAlign: 'center',
           fontSize: scale(7.333),
@@ -341,7 +341,7 @@ export function OrbCard({
         </Text>
         <Text
           style={{
-            marginTop: scale(3.1),
+            marginTop: scale(4.22),
             fontSize: scale(11.282),
             lineHeight: scale(15.795),
             letterSpacing: scale(-0.1128),
@@ -371,7 +371,7 @@ export function OrbCard({
             style={{
               position: 'absolute',
               left: scale(2),
-              top: scale(8.23 - 5.077),
+              top: scale(2.73),
               width: '100%',
               textAlign: 'center',
               fontSize: scale(7.333),
@@ -384,10 +384,11 @@ export function OrbCard({
         </View>
       )}
 
+      {/* v3 dropped v4's second line ("나빠지면 점점 붉은빛으로 물들어요"). */}
       <Text
         style={{
           position: 'absolute',
-          top: scale(197.16),
+          top: scale(203.28),
           width: '100%',
           textAlign: 'center',
           ...BODY,
@@ -396,7 +397,7 @@ export function OrbCard({
         className="font-plex">
         컨디션이 좋아 오브가{' '}
         <Text style={{ color: COLOR.brand.violetText }}>푸른빛</Text>
-        이에요{'\n'}나빠지면 점점 붉은빛으로 물들어요
+        이에요
       </Text>
 
       <View
@@ -416,10 +417,10 @@ export function OrbCard({
             key={index}
             colors={
               index === page
-                ? [...GRADIENT_PASTEL.colors]
+                ? [...GRADIENT_PROGRESS.colors]
                 : [COLOR.surface.tint2, COLOR.surface.tint2, COLOR.surface.tint2]
             }
-            locations={[...GRADIENT_PASTEL.locations]}
+            locations={[...GRADIENT_PROGRESS.locations]}
             start={DOT_POINTS.start}
             end={DOT_POINTS.end}
             style={{
@@ -431,14 +432,16 @@ export function OrbCard({
         ))}
       </View>
 
+      {/* v3: Regular 10 / 22 in `text/plum` (v4 drew it body-size in `text/body`). */}
       <Text
         style={{
           position: 'absolute',
-          top: scale(237.03),
+          top: scale(236.74),
           width: '100%',
           textAlign: 'center',
-          ...BODY,
-          color: COLOR.text.body,
+          fontSize: scale(5.641),
+          lineHeight: scale(12.41),
+          color: COLOR.text.plum,
         }}
         className="font-plex">
         {hint}

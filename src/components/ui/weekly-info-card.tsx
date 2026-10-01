@@ -1,12 +1,14 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Text, View, type ImageSourcePropType } from 'react-native';
+import { Text, View } from 'react-native';
+import Svg, { Circle, Path } from 'react-native-svg';
 
-import { COLOR, GRADIENT_PASTEL, TONE_TEXT, type Tone } from '@/lib/design';
+import { Icon, type IconName } from '@/components/ui/icon';
+import { COLOR, GRADIENT_PROGRESS, TONE_TEXT, type Tone } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `LifeDNA_WeeklyInfo_Card` — v4 179.385×67.291 (`1363:2072`), one
+ * Figma: `LifeDNA_WeeklyInfo_Card` — v3 179.385×67.291 (`1312:1651`), one
  * metric inside 나의 LifeDNA 정보 on 홈. Icon chip and title on top, a progress
  * bar under them, then a week of score bars beside a sentence about the trend.
  *
@@ -14,8 +16,9 @@ import { scale } from '@/lib/scale';
  * is a fixed box in v4 and the caption now wraps to two lines inside it.
  *
  * Composed from Figma sub-components: `_Status` (the 좋음/주의/위험 word),
- * `_ProgressBar` (Low/Mid/High) and `_ScoreBar` (seven fill levels). v4 fills
- * both the progress and the score bars with the pastel ramp (`pastelAngle`).
+ * `_ProgressBar` (Low/Mid/High) and `_ScoreBar` (seven fill levels). v3 fills
+ * the progress bar with `GRADIENT_PROGRESS` and the score bars with solid
+ * `text/on-pastel` (v4 had the pastel ramp on both).
  */
 const WORD: Record<Tone, string> = { good: '좋음', warn: '주의', danger: '위험' };
 const PROGRESS_FILL: Record<Level, number> = { low: 0.2606, mid: 0.5211, high: 0.7817 };
@@ -33,9 +36,56 @@ const BAR_PITCH = 4.538;
 /** v4's hairline on the icon chip, progress bar and score bars. */
 const HAIRLINE = '0px 0px 1.103px rgba(148, 148, 148, 0.25)';
 
+/**
+ * v3's two drawn icons for 신체's cards, as Figma exports them. They sit on the
+ * card, not centred in the chip: the moon (`Group 1175`, a yellow disc cut by a
+ * white one, plus three `#FFDD00` Z's) and the drop (`Ellipse 24`). Boxes are
+ * card-relative, ×220/390.
+ */
+export type WeeklyGlyph = 'sleep' | 'water';
+
+function isGlyph(icon: IconName | WeeklyGlyph): icon is WeeklyGlyph {
+  return icon === 'sleep' || icon === 'water';
+}
+
+function Glyph({ name }: { name: WeeklyGlyph }) {
+  if (name === 'sleep') {
+    return (
+      <Svg
+        width={scale(15.231)}
+        height={scale(14.667)}
+        viewBox="0 0 27 26"
+        style={{ position: 'absolute', left: scale(12.708), top: scale(9.693) }}>
+        <Circle cx={10.035} cy={15.8046} r={10.035} fill="#FFDD00" />
+        <Circle cx={16.7284} cy={10.4525} r={10.035} fill="#FFFFFF" />
+        <Path d="M9.956 12.562V11.9547L11.9326 9.29639H9.96173V8.41409H13.319V9.02139L11.3425 11.6797H13.3133V12.562H9.956Z" fill="#FFDD00" />
+        <Path d="M21.4331 13H14.6341V11.466L19.3271 5.447H14.8681V3.926H21.3031V5.46L16.5971 11.479H21.4331V13Z" fill="#FFDD00" />
+        <Path d="M14.0478 17.0522V16.2425L16.6833 12.6981H14.0555V11.5217H18.5319V12.3314L15.8965 15.8759H18.5242V17.0522H14.0478Z" fill="#FFDD00" />
+      </Svg>
+    );
+  }
+  return (
+    <Svg
+      width={scale(6.769)}
+      height={scale(11.282)}
+      viewBox="0 0 12 20"
+      style={{ position: 'absolute', left: scale(15.992), top: scale(12.134) }}>
+      <Path
+        d="M11.7333 14.0399C11.7333 17.5499 9.10674 19.5556 5.86667 19.5556C2.6266 19.5556 0 17.5499 0 14.0399C2.13333 4.0114 5.33333 0 5.86667 0C6.4 0 9.6 4.0114 11.7333 14.0399Z"
+        fill="#9CD6FF"
+      />
+    </Svg>
+  );
+}
+
 type WeeklyInfoCardProps = {
   title: string;
-  icon: ImageSourcePropType;
+  /**
+   * The area's line icon centred in the chip, or one of v3's drawn 신체 glyphs.
+   * v3 draws only 신체's cards; the other areas take the `Icon/*` glyph v3 uses
+   * for that area on 개선책, so one area never shows two icon styles.
+   */
+  icon: IconName | WeeklyGlyph;
   tone: Tone;
   level: Level;
   /** Seven days, oldest first. */
@@ -43,10 +93,10 @@ type WeeklyInfoCardProps = {
   caption: string;
 };
 
-function pastel(width: number, height: number) {
+function progressRamp(width: number, height: number) {
   return {
-    colors: [...GRADIENT_PASTEL.colors] as const,
-    locations: [...GRADIENT_PASTEL.locations] as const,
+    colors: [...GRADIENT_PROGRESS.colors] as const,
+    locations: [...GRADIENT_PROGRESS.locations] as const,
     ...cssGradientPoints(pastelAngle(width, height), width, height),
   };
 }
@@ -81,19 +131,17 @@ export function WeeklyInfoCard({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        {/* v4's slot is the hidden 14.34 `IconHere` placeholder, centred. */}
-        <Image
-          source={icon}
-          style={{ width: scale(14.34), height: scale(14.34) }}
-          resizeMode="contain"
-        />
+        {isGlyph(icon) ? null : (
+          <Icon name={icon} size={scale(13.538)} color={COLOR.icon.primary} />
+        )}
       </View>
+      {isGlyph(icon) ? <Glyph name={icon} /> : null}
       <Text
         numberOfLines={1}
         style={{
           position: 'absolute',
           left: scale(36.68),
-          top: scale(10.69),
+          top: scale(11.46),
           maxWidth: scale(105),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
@@ -106,8 +154,9 @@ export function WeeklyInfoCard({
       <Text
         style={{
           position: 'absolute',
-          left: scale(155.3 - 10),
-          top: scale(19.47 - 5.077),
+          // v3 centres the word at x 156.09, y 17.96 (mean of the two cards).
+          left: scale(156.09 - 10),
+          top: scale(17.96 - 5.077),
           width: scale(20),
           textAlign: 'center',
           fontSize: scale(7.333),
@@ -130,7 +179,7 @@ export function WeeklyInfoCard({
           boxShadow: HAIRLINE,
         }}>
         <LinearGradient
-          {...pastel(fillWidth, PROGRESS_HEIGHT)}
+          {...progressRamp(fillWidth, PROGRESS_HEIGHT)}
           style={{
             width: scale(fillWidth),
             height: '100%',
@@ -145,10 +194,9 @@ export function WeeklyInfoCard({
         // Figma steps the fill in eighths, starting at two.
         const height = (BAR_HEIGHT * (score + 1)) / 8;
         return (
-          <LinearGradient
+          <View
             // Position is the identity here — the same day keeps its slot.
             key={index}
-            {...pastel(BAR_WIDTH, height)}
             style={{
               position: 'absolute',
               left: scale(9.13 + index * BAR_PITCH),
@@ -157,6 +205,7 @@ export function WeeklyInfoCard({
               height: scale(height),
               borderTopLeftRadius: scale(2.206),
               borderTopRightRadius: scale(2.206),
+              backgroundColor: COLOR.text.onPastel,
               boxShadow: HAIRLINE,
             }}
           />
@@ -166,7 +215,7 @@ export function WeeklyInfoCard({
         style={{
           position: 'absolute',
           left: scale(46.21),
-          top: scale(40.7),
+          top: scale(39.29),
           width: scale(123.9),
           height: scale(21),
           justifyContent: 'center',

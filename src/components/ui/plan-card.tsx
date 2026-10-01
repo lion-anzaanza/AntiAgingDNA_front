@@ -1,18 +1,22 @@
-import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
+import { Icon, type IconName } from '@/components/ui/icon';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
  * The icon + title + caption row that 05_사용자_맞춤_개선책 is built out of:
- * 더 알아보기 on 메인 (v4 `1363:2945`, `1363:2953`), and the 인사이트 / 제안 cards
- * on 주간 리포트 (`1363:3122`, `1363:3128`, `1363:3116`).
+ * 더 알아보기 on 메인 (v3 `1318:1602`, `1318:1603`), and the 인사이트 / 제안 cards
+ * on 주간 리포트 (`1319:1536`, `1319:1537`, `1319:1535`).
  *
- * v4 draws both families 197.436 × 46.154, but a few points apart inside: 메인
- * puts the tile at 9.73 / 9.61 with the text at 47.6 and a trailing `→` chip,
- * 리포트 puts the tile at 9.03 / 10.1 with the text at 41.65 and no arrow. Each
- * family is consistent across its own cards, so the two are kept as layouts
- * rather than averaged. The icon is centred in its tile in every v4 card.
+ * v3 draws both families 350 × 81.818 (197.436 × 46.154), but a few points apart
+ * inside: 메인 puts the tile at 17.25 / 17.05 with the text at 84.3 and a
+ * trailing `→` chip, 리포트 puts the tile at 16 / 17.9 with the text at 73.8 and
+ * no arrow. Each family is consistent across its own cards, so the two are kept
+ * as layouts rather than averaged. Title and caption rows agree across all five.
+ *
+ * The icon is v3's 28pt `Icon/*` line glyph in `icon/primary`, centred in its
+ * tile (all five sit within 0.3 of the tile's centre).
  */
 const LAYOUT = {
   link: { tileLeft: 9.73, tileTop: 9.61, textLeft: 47.6 },
@@ -21,17 +25,16 @@ const LAYOUT = {
 
 const CARD_HEIGHT = 46.154;
 const TILE = 25.962;
-/** Line-box tops: v4 centres the title at 17.14–17.23 and the caption at 28.87–28.92. */
-const TITLE_TOP = 17.18 - 13.538 / 2;
-const CAPTION_TOP = 28.89 - 10.154 / 2;
-/** `→` chip: 19.231 round at x 168.66, centred on the card (v4 13.46; the second card's copy is 14.42). */
+const ICON = 15.795;
+/** Line-box centres: v3 puts the title at 31.76–31.91 and the caption at 50.43–50.52 of 81.818. */
+const TITLE_TOP = 17.95 - 13.538 / 2;
+const CAPTION_TOP = 28.47 - 10.154 / 2;
+/** `→` chip: 19.231 round at x 168.66, centred on the card (v3 13.46; the second card's copy is 14.42). */
 const ARROW_LEFT = 168.66;
 const ARROW_SIZE = 19.231;
 
 type PlanCardProps = {
-  icon: ImageSourcePropType;
-  iconWidth?: number;
-  iconHeight?: number;
+  icon: IconName;
   title: string;
   caption: string;
   layout: keyof typeof LAYOUT;
@@ -39,16 +42,7 @@ type PlanCardProps = {
   onPress?: () => void;
 };
 
-export function PlanCard({
-  icon,
-  iconWidth = 24.038,
-  iconHeight = 24.038,
-  title,
-  caption,
-  layout,
-  arrow = false,
-  onPress,
-}: PlanCardProps) {
+export function PlanCard({ icon, title, caption, layout, arrow = false, onPress }: PlanCardProps) {
   const { tileLeft, tileTop, textLeft } = LAYOUT[layout];
   return (
     <Pressable
@@ -71,11 +65,7 @@ export function PlanCard({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Image
-          source={icon}
-          style={{ width: scale(iconWidth), height: scale(iconHeight) }}
-          resizeMode="contain"
-        />
+        <Icon name={icon} size={scale(ICON)} color={COLOR.icon.primary} />
       </View>
 
       <Text

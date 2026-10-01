@@ -108,8 +108,7 @@ npm test
   문장(백로그 27), 일지 하단의 오늘 날씨(백로그 12 — 저장에 위경도를 안 보내 기록되는
   날씨가 없습니다)가 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
   그대로 박혀 있습니다** — 지표별 등급 규칙이 없습니다(백로그 10).
-  **무엇이 남았는지는 `docs/backend-backlog.md`의 "프론트 연동 현황" 표가
-  목록입니다.**
+  **무엇이 남았는지는 `docs/frontend-status.md`가 목록입니다.**
 - 입력 검증은 화면마다 다릅니다. **오늘의 기록은 저장을 누르면 미응답 항목을
   빨갛게 표시**하고 그 자리로 스크롤합니다(`SelectFeel5_NeedAnswer`). 회원가입
   단계는 여전히 **다음 버튼 비활성화**까지만이라 왜 막혔는지 알려주지 못합니다 —
@@ -172,37 +171,42 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 `src/components/ui/`의 아래 항목은 전부 Figma 마스터를 옮긴 것입니다. 화면을 새로
 만들 때는 직접 스타일을 쓰지 말고 이것들을 조합해주세요.
 
-모든 컴포넌트는 v4 개편(`99_개선안_v4`)을 따릅니다. 값을 어떻게 정했는지는
-[docs/redesign-v4-inventory.md](docs/redesign-v4-inventory.md)에 있습니다.
+모든 컴포넌트는 **v3(`99_개선안_v3`, `1307:1533`) — 2026-10-01에 디자인 완성본으로
+확정된 섹션**을 따릅니다. v3는 390pt 프레임이라 코드의 값은 ×220/390입니다. 값을
+어떻게 정했는지는 두 문서에 나눠 있습니다: v4 개편(2026-09-30, v3를 220으로 줄인
+사본 — 지금은 Figma에서 지워짐) 때의 결정은
+[docs/redesign-v4-inventory.md](docs/redesign-v4-inventory.md), 그 뒤 v3에서 바뀐
+것은 [docs/redesign-v3-delta.md](docs/redesign-v3-delta.md).
 
 | 컴포넌트 | Figma | 용도 |
 |---|---|---|
+| `icon` | Icon/* | v3 선 아이콘 38종 (`SvgXml`, 색은 호출부가 `currentColor`로) |
 | `button` | ButtonNextUI | 하단 주요 액션 버튼 |
-| `button-back` | ButtonBack | 13.46×12.5 뒤로가기 칩 (v4, 빈 스택 가드 포함) |
+| `button-back` | ButtonBack | 22.56 정사각 뒤로가기 타일 + `Icon/Arrow-Left` (빈 스택 가드 포함) |
 | `select-button` | SelectButton1~5 | 선택 알약 (`size`: 일지·회원가입·리커트 × 3상태) |
 | `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열, 카드 없음) |
 | `select-card` | SelectItem{3,4,6}[_Caption]_Card | 카드 + 라벨 + 설명 + 알약 한 줄 |
 | `likert-card` | SelectItem6_Card | 0~5 숫자 척도 카드 |
-| `feel-select` | SelectFeel5 / _NeedAnswer | 5단계 컨디션 (이모지 5종) |
+| `feel-select` | SelectFeel5 / _NeedAnswer | 5단계 컨디션 (v3 `Icon/Mood-*` 얼굴 5종) |
 | `input-time-card` | InputTime_Card | 시작/종료 시각 + 소요시간 뱃지 |
 | `slider-0-to-10` | Select0To10 / _Card / _History | 0~10 슬라이더 (`card`·`history` prop) |
 | `text-input` (`TextInputField`) | TextInput | 라벨 + 입력 필드 |
 | `checkbox` | 약관 체크박스 | |
 | `step-header` | 회원가입 헤더 | 뒤로가기 + 제목 + 진행바 |
-| `bottom-bar` | BottomBar0~4 | 하단 탭 바 (활성 시 아이콘만 바뀜) |
+| `bottom-bar` | TabBar | 하단 탭 바 (`Icon/Tab-*`, 활성 탭은 알약 배경 + 보라 아이콘·글자) |
 | `date-cell` | Date | 캘린더 날짜 칸 (없음/낮음/중간/높음) |
 | `daily-summary-card` | 일간_컨디션_요약 | 날짜 탭 시 뜨는 하루 요약 카드 |
 | `living-artwork` | (Figma에 모션 없음) | 오브·DNA 상시 미세 운동 + 누름 반응 |
 | `dna-kind` | DNAKind | 5개 영역 분류 칩 (좋음/주의/위험/기본) |
 | `weekly-info-card` | LifeDNA_WeeklyInfo_Card | 지표 1개 + 주간 점수 막대 |
 | `weekly-condition-chart` | 주간_컨디션_그래프 | 7일 컨디션 꺾은선 (react-native-svg) |
-| `diary-status` | Diary_Status | 일지/메인 지난 기록의 등급별 얼굴 (비트맵 3종) |
+| `diary-status` | Diary_Status | 일지/메인 지난 기록의 등급별 얼굴 (`Icon/Mood-*` 3종) |
 | `plan-card` | (개선책 더 알아보기·인사이트 카드) | 아이콘 + 제목 + 설명 행 (`layout`: `link`·`insight`) |
 | `area-delta-card` | 지난 주 대비 영역별 변화 | 6개 영역 변화 표 (주간 리포트·한 달 뒤) |
 
 **`pill-group`과 `select-card`는 형제입니다.** Figma가 같은 알약 묶음을 카드 없는
 `SelectItem*`(회원가입)과 카드 있는 `SelectItem*_Card`(일지) 두 벌로 그려두었고,
-크기가 달라서(v4: 그룹은 179.385 폭·필 24.8, 카드는 열 폭 197.44·필 18.1) 별도 컴포넌트로 두었습니다.
+크기가 달라서(그룹은 179.385 폭·필 24.8, 카드는 열 폭 197.44·필 22.56) 별도 컴포넌트로 두었습니다.
 
 **필은 3상태입니다** — `inactive` / `active` / `history`. `history`는 지난 기록을
 읽기 전용으로 되비출 때 쓰는 상태로, v4부터 `active`와 같은 색이고 눌리지만 않습니다.
@@ -217,11 +221,12 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 수작업 도형이거나 `PillGroup`이 표현할 수 없는 배치라서 직접 조립했습니다.
 새 화면의 본보기로 삼지 마세요.
 
-- `features/auth/survey-screen.tsx` — 수면 유형 알약(아이콘)은 `Pressable`로, 수면의 질·운동량은
-  글자 폭에 맞춘 19pt `SelectButton`으로 직접 배치 (v4의 `NoSelect`·수작업 도형)
+- `features/auth/survey-screen.tsx` — 수면 유형 알약(`Icon/Mood-*` 얼굴)은 `Pressable`로, 수면의 질·운동량은
+  줄을 채우는 `SelectButton`으로 직접 배치 (v3의 `NoSelect`·수작업 도형)
 - `features/journal/today-screen.tsx`·`detail-screen.tsx` — 카페인 섭취(질문 두 개가 한 카드)·운동 습관
   카드. Figma 원본이 컴포넌트가 아닌 낱개 도형이라 `journal/components/form-text`의 조각으로
-  조립합니다 (v4에서 알약은 `SelectCard`와 같은 균등 그리드가 됐습니다)
+  조립합니다. 일곱 문항은 v3가 글자 길이에 맞춘 고르지 않은 폭을 그려서 `SelectCard`의
+  `widths`로 그대로 씁니다 (`journal-options.ts`의 `*_WIDTHS`)
 - `features/home/components/` — 오브 카드·지표 카드·일지 CTA. 전부 Figma에서 컴포넌트가
   아니고, 오브 카드는 절대 위치로 조립해야 하는 배치입니다
 
@@ -234,8 +239,10 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
   컴포넌트 치수 캐시.
 - **[docs/backend-api.md](docs/backend-api.md)** — 백엔드 API 레퍼런스. 엔드포인트,
   스키마, 그리고 **enum ↔ 화면 선택지 대응표**. 연동할 때 여기부터 보세요.
-- **[docs/backend-backlog.md](docs/backend-backlog.md)** — 백엔드에 요청·확인할
-  것들. 디자인에는 있는데 API가 못 하는 게 보이면 **즉시 여기 적어주세요.**
+- **[docs/backend-backlog.md](docs/backend-backlog.md)** — 백엔드에 넘기는 열린
+  요청. 디자인에는 있는데 API가 못 하는 게 보이면 **즉시 여기 적어주세요.**
+- **[docs/frontend-status.md](docs/frontend-status.md)** — 우리가 붙일 것(🟡)과
+  기획 결정 대기(🟣), 화면별 API 커버리지.
 - **[docs/deploy.md](docs/deploy.md)** — `release` 브랜치 → TestFlight 배포.
   동작 중입니다: JS 변경은 OTA로 수십 초, 네이티브 변경만 새 빌드.
 

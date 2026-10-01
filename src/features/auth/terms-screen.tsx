@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Icon } from '@/components/ui/icon';
 import { StepHeader } from '@/components/ui/step-header';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -29,10 +30,13 @@ const TERMS = [
 type TermKey = (typeof TERMS)[number]['key'];
 
 /*
- * Figma v4 회원가입/3 (`1363:1921`). Gaps below the header are measured from
- * v4's own "STEP 3" line, so they hold wherever `StepHeader` ends.
+ * Figma v3 회원가입/3 (`1307:1534`), ×220/390. Gaps below the header are
+ * measured from v3's own "STEP 3" line, so they hold wherever `StepHeader`
+ * ends. Rows are on a 24.82 pitch: a 13.54 circle, its label 4.57 to the right,
+ * and an `Icon/Chevron-Right` 8.74 in from the column's right edge.
  */
 const COLUMN_INSET = 11.28;
+const CHEVRON = { size: 11.282, right: 8.744 };
 const ROW_TEXT = { fontSize: scale(8.462), lineHeight: scale(12.41) } as const;
 
 export default function TermsScreen() {
@@ -71,7 +75,7 @@ export default function TermsScreen() {
         style={{
           flex: 1,
           paddingHorizontal: scale(COLUMN_INSET),
-          paddingTop: scale(9.42),
+          paddingTop: scale(6.987),
         }}>
         <StepHeader
           title="약관 동의"
@@ -85,26 +89,23 @@ export default function TermsScreen() {
             fontSize: scale(11.282),
             lineHeight: scale(15.795),
             letterSpacing: scale(-0.1128),
-            marginTop: scale(11.4),
+            marginTop: scale(12.727),
             color: COLOR.text.heading,
           }}
           className="font-plex-bold">
           마지막이에요! 약관에 동의해주세요
         </Text>
 
-        {/* v4 sits the circle 0.95pt below the label's centre; reproduced. */}
         <Pressable
           onPress={toggleAll}
-          style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: scale(20.55) }}>
-          <View style={{ marginTop: scale(2.08) }}>
-            <Checkbox checked={allAgreed} onPress={toggleAll} />
-          </View>
+          style={{ flexDirection: 'row', alignItems: 'center', marginTop: scale(20.415) }}>
+          <Checkbox checked={allAgreed} onPress={toggleAll} />
           <Text
             style={{
               fontSize: scale(9.59),
               lineHeight: scale(13.538),
               letterSpacing: scale(-0.0959),
-              marginLeft: scale(6.79),
+              marginLeft: scale(4.53),
               color: COLOR.text.heading,
             }}
             className="font-plex-semibold">
@@ -112,7 +113,7 @@ export default function TermsScreen() {
           </Text>
         </Pressable>
 
-        <View style={{ marginTop: scale(12.8), gap: scale(12.41) }}>
+        <View style={{ marginTop: scale(11.369), gap: scale(11.282) }}>
           {TERMS.map((term) => (
             <Pressable
               key={term.key}
@@ -122,31 +123,29 @@ export default function TermsScreen() {
               <Text
                 style={{
                   ...ROW_TEXT,
-                  marginLeft: scale(6.83),
+                  marginLeft: scale(4.57),
                   color: agreed[term.key] ? COLOR.text.heading : COLOR.text.body,
                 }}
                 className="font-plex">
                 {term.label}
               </Text>
               {/*
-                v4 ends every row in a `>` as if it opened the term's full text.
-                There is no such screen, so it is drawn and does nothing.
+                v3 ends every row in a chevron as if it opened the term's full
+                text. There is no such screen, so it is drawn and does nothing.
                 */}
-              <Text
+              <View
                 style={{
-                  ...ROW_TEXT,
                   position: 'absolute',
-                  right: scale(COLUMN_INSET),
-                  color: COLOR.text.body,
-                }}
-                className="font-plex">
-                {'>'}
-              </Text>
+                  right: scale(CHEVRON.right),
+                  top: scale((13.538 - CHEVRON.size) / 2),
+                }}>
+                <Icon name="chevron-right" size={scale(CHEVRON.size)} color={COLOR.text.muted} />
+              </View>
             </Pressable>
           ))}
         </View>
 
-        <View style={{ marginTop: scale(15.53) }}>
+        <View style={{ marginTop: scale(15.062) }}>
           <Button
             label="가입하고 LifeDNA 만들기 →"
             disabled={!canSubmit}

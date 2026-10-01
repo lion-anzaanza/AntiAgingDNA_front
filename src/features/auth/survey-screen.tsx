@@ -1,10 +1,10 @@
-import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { type ReactNode } from 'react';
 import { Pressable, ScrollView, Text, View, type TextStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/ui/button';
+import { Icon, type IconName } from '@/components/ui/icon';
 import { LikertCard } from '@/components/ui/likert-card';
 import { PillGroup } from '@/components/ui/pill-group';
 import { SelectButton } from '@/components/ui/select-button';
@@ -14,37 +14,41 @@ import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { isDiagnosisComplete, useSignUpForm } from '@/features/auth/sign-up-form';
 
-const SLEEP_TYPE_OPTIONS = [
-  { label: '아침형', icon: require('@/assets/images/auth/sleep-morning.png') },
-  { label: '저녁형', icon: require('@/assets/images/auth/sleep-evening.png') },
-  { label: '일반형', icon: require('@/assets/images/auth/sleep-normal.png') },
-  { label: '예민형', icon: require('@/assets/images/auth/sleep-sensitive.png') },
+/**
+ * v3 puts one of the `Icon/Mood-*` faces on each pill, in this order — a
+ * frowning face on 아침형 included (see docs/redesign-v3-delta.md 결정 대기).
+ */
+const SLEEP_TYPE_OPTIONS: { label: string; icon: IconName }[] = [
+  { label: '아침형', icon: 'mood-very-bad' },
+  { label: '저녁형', icon: 'mood-bad' },
+  { label: '일반형', icon: 'mood-normal' },
+  { label: '예민형', icon: 'mood-good' },
 ];
 /**
- * v4 sizes these pills to their text and packs them two over three, each row
- * flush to both edges. The widths are v4's; the gaps fall out of
- * `space-between` (v4's second row is 6.94 then 3.76, read as a slip).
+ * v3 sizes these pills to fill each row — two over three, flush to both edges
+ * (`Chip Row`, 153 + 153 and 118 + 107 + 75 at 390). The widths are v3's; the
+ * gaps fall out of `space-between` and land on v3's 12 and 9.
  */
 const SLEEP_QUALITY_ROWS = [
   [
-    { label: '잠드는데 30분 이상 걸려요', width: 88.923 },
-    { label: '잠을 자도 개운하지 않아요', width: 83.927 },
+    { label: '잠드는데 30분 이상 걸려요', width: 86.308 },
+    { label: '잠을 자도 개운하지 않아요', width: 86.308 },
   ],
   [
-    { label: '낮에 졸림이 잦아요', width: 65.943 },
-    { label: '자다가 자주 깨요', width: 63.945 },
-    { label: '해당없음', width: 38.808 },
+    { label: '낮에 졸림이 잦아요', width: 66.564 },
+    { label: '자다가 자주 깨요', width: 60.359 },
+    { label: '해당없음', width: 42.308 },
   ],
 ];
-/** v4's `NoSelect` draws these 19 tall, like 수면의 질 — not the groups' 24.82. */
+/** v3 draws these two equal pills a row, 14 apart at 390. */
 const EXERCISE_ROWS = [
   [
-    { label: '주 150분 미만', width: 85.87 },
-    { label: '주 150 ~ 300분', width: 85.87 },
+    { label: '주 150분 미만', width: 85.744 },
+    { label: '주 150 ~ 300분', width: 85.744 },
   ],
   [
-    { label: '300분 초과', width: 85.87 },
-    { label: '거의 안 함', width: 85.87 },
+    { label: '300분 초과', width: 85.744 },
+    { label: '거의 안 함', width: 85.744 },
   ],
 ];
 const WORK_TYPE_OPTIONS = ['교대·야간근무', '잦은 출장·시차', '해당없음'];
@@ -93,47 +97,59 @@ function toggleExclusive(selected: string[], option: string): string[] {
 }
 
 /*
- * Figma v4 회원가입/2 (`1363:1629`). Every question sits in its own white card
+ * Figma v3 회원가입/2 (`1311:1533`). Every question sits in its own white card
  * (`카드/…`) on the 197.44 column, 6.77 apart. The vertical padding is not one
- * value in v4 — it goes by card, so each card carries its own (`CARD_PAD`) and
- * every card below keeps v4's y.
+ * value — it goes by card, so each card carries its own (`CARD_PAD`) and every
+ * card below keeps v3's y. Values are v3's ×220/390.
  */
 const CARD_SHADOW = '0px 1.128px 4.513px rgba(0, 0, 0, 0.05)';
 const CARD_GAP = 6.769;
 /** Pills fill the card's 179.39 content width from a 9.03 inset. */
 const CARD_PAD_X = 9.03;
-/** v4's padding above the question and below the last line, per card. */
+/** v3's padding above the question and below the last line, per card. */
 const CARD_PAD = {
   twoColumn: { top: 4.08, bottom: 14.25 },
-  sleepQuality: { top: 2.65, bottom: 6.77 },
-  exercise: { top: 2.59, bottom: 4.18 },
-  /**
-   * v4 puts this card's pills 1.52 closer to the question than `PillGroup`
-   * does (5.03 vs 6.77); the bottom gives it back so the card stays 52.8.
-   */
-  workType: { top: 2.42, bottom: 5.25 },
+  sleepQuality: { top: 3.667, bottom: 6.77 },
+  exercise: { top: 3.61, bottom: 4.795 },
+  workType: { top: 3.44, bottom: 6.77 },
   drinkSmoking: { top: 6.32, bottom: 7.9 },
   /**
-   * v4 draws 민감도 as 59.28-tall slider cards; the four pills (backlog 6) are
-   * shorter, so the card keeps v4's height with its content at the top.
+   * v3 draws 민감도 as 59.28-tall slider cards; the four pills (backlog 6) are
+   * shorter, so the card keeps v3's height with its content at the top.
    */
-  sensitivity: { top: 3.59, bottom: 0, minHeight: 59.28 },
+  sensitivity: { top: 4.569, bottom: 0, minHeight: 59.28 },
 } as const;
 const PILL_ROW_GAP = 4.513;
-const SMALL_PILL_HEIGHT = 19;
-/** Question → pills, and caption → pills, as `PillGroup` spaces them. */
+/** v3's 40pt `Chip`s on 수면의 질 and 운동량 (v4 drew them 19 at 220). */
+const SMALL_PILL_HEIGHT = 22.564;
+/** Question → pills, as `PillGroup` spaces them. */
 const LABEL_GAP = 6.769;
-const CAPTION_GAP = 3.69;
+/**
+ * v3 sets this card's pills closer to its question than the family's 6.77, and
+ * starts the row 3.5 in from the left (22.2 vs 16 at 390) with its right edge
+ * still flush — three 55.62 pills instead of 56.79.
+ */
+const WORK_TYPE_LABEL_GAP = 4.231;
+const WORK_TYPE_ROW_INSET = 3.497;
+/** Caption → pills. */
+const CAPTION_GAP = 1.749;
 
-const BODY: TextStyle = {
-  fontSize: scale(8.462),
+/** v3's intro under "10가지만 답해주세요": Regular 13/15. */
+const INTRO: TextStyle = {
+  fontSize: scale(7.333),
+  lineHeight: scale(8.462),
+  color: COLOR.text.body,
+};
+/** v3's card captions and the footnotes: Regular 10, on a 22 or 15 line. */
+const CAPTION: TextStyle = {
+  fontSize: scale(5.641),
   lineHeight: scale(12.41),
   color: COLOR.text.body,
 };
 
-/** 수면 유형 pill: v4 centres the icon at 32.7 and the label at 54.4. */
+/** 수면 유형 pill: v3 centres the face at 32.15 and the label at 54.4. */
 const SLEEP_TYPE_PILL = { width: 87.436, height: 24.821 };
-const SLEEP_ICON = { left: 22.98, width: 19.381, height: 14.667 };
+const SLEEP_ICON = { left: 23.128, top: 3.385, size: 18.051 };
 
 function QuestionCard({
   pad,
@@ -166,8 +182,8 @@ function CardHeading({ title, caption }: { title: string; caption?: string }) {
         {title}
       </Text>
       {caption ? (
-        // v4 lets the caption's line box ride 2.2pt up into the question's.
-        <Text style={{ ...BODY, marginTop: scale(-2.22) }} className="font-plex">
+        // v3 lets the caption's line box ride 1.07pt up into the question's.
+        <Text style={{ ...CAPTION, marginTop: scale(-1.072) }} className="font-plex">
           {caption}
         </Text>
       ) : null}
@@ -175,7 +191,7 @@ function CardHeading({ title, caption }: { title: string; caption?: string }) {
   );
 }
 
-/** Rows of fixed-width 19pt pills, each row justified to both edges. */
+/** Rows of fixed-width 22.56pt pills, each row justified to both edges. */
 function SmallPillRows({
   rows,
   isSelected,
@@ -218,7 +234,7 @@ export default function SurveyScreen() {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: scale(11.28),
-          paddingTop: scale(9.42),
+          paddingTop: scale(6.987),
           paddingBottom: scale(24),
         }}
         keyboardShouldPersistTaps="handled">
@@ -229,14 +245,14 @@ export default function SurveyScreen() {
           currentStep={2}
         />
 
-        <Text style={[CARD_TITLE, { marginTop: scale(11.73) }]} className="font-plex-semibold">
+        <Text style={[CARD_TITLE, { marginTop: scale(12.923) }]} className="font-plex-semibold">
           10가지만 답해주세요
         </Text>
-        <Text style={{ ...BODY, marginTop: scale(0.82) }} className="font-plex">
+        <Text style={{ ...INTRO, marginTop: scale(5.6) }} className="font-plex">
           이 진단으로 나만의 기본 유전자가 만들어지고,{'\n'}일지 기록으로 정교해져요
         </Text>
 
-        <View style={{ marginTop: scale(19.22), gap: scale(CARD_GAP) }}>
+        <View style={{ marginTop: scale(21.549), gap: scale(CARD_GAP) }}>
           <QuestionCard pad={CARD_PAD.twoColumn}>
             <CardHeading title="평소 수면 유형은?" />
             <View style={{ gap: scale(PILL_ROW_GAP), marginTop: scale(LABEL_GAP) }}>
@@ -254,23 +270,20 @@ export default function SurveyScreen() {
                         style={{
                           width: scale(SLEEP_TYPE_PILL.width),
                           height: scale(SLEEP_TYPE_PILL.height),
-                          borderRadius: scale(5.641),
+                          borderRadius: scale(4.513),
                           backgroundColor: selected ? COLOR.brand.selected : COLOR.surface.chip,
                           justifyContent: 'center',
                           // Centres the label on 54.4 of the 87.4 pill.
                           paddingLeft: scale(21.46),
                         }}>
-                        <Image
-                          source={icon}
+                        <View
                           style={{
                             position: 'absolute',
                             left: scale(SLEEP_ICON.left),
-                            top: scale((SLEEP_TYPE_PILL.height - SLEEP_ICON.height) / 2),
-                            width: scale(SLEEP_ICON.width),
-                            height: scale(SLEEP_ICON.height),
-                          }}
-                          contentFit="contain"
-                        />
+                            top: scale(SLEEP_ICON.top),
+                          }}>
+                          <Icon name={icon} size={scale(SLEEP_ICON.size)} color={COLOR.icon.primary} />
+                        </View>
                         <Text
                           numberOfLines={1}
                           style={{
@@ -334,7 +347,7 @@ export default function SurveyScreen() {
               isSelected={(option) => form.exercise === option}
               onPress={(exercise) => update({ exercise })}
             />
-            <Text style={{ ...BODY, marginTop: scale(2.38) }} className="font-plex">
+            <Text style={{ ...CAPTION, marginTop: scale(2.087) }} className="font-plex">
               중강도 = 약간 숨이 차는 활동 (WHO 기준)
             </Text>
           </QuestionCard>
@@ -350,6 +363,8 @@ export default function SurveyScreen() {
               }}
               multiple
               columns={3}
+              labelGap={WORK_TYPE_LABEL_GAP}
+              rowInset={WORK_TYPE_ROW_INSET}
             />
           </QuestionCard>
           <QuestionCard pad={CARD_PAD.drinkSmoking}>
@@ -390,11 +405,11 @@ export default function SurveyScreen() {
           </QuestionCard>
         </View>
 
-        {/* v4 writes "기분 활력은" without the dot — read as a dropped character. */}
-        <Text style={[CARD_TITLE, { marginTop: scale(13.28) }]} className="font-plex-semibold">
+        {/* v3 writes "기분 활력은" without the dot — read as a dropped character. */}
+        <Text style={[CARD_TITLE, { marginTop: scale(14.046) }]} className="font-plex-semibold">
           최근(2주 이내) 전반적인 기분·활력은?
         </Text>
-        <View style={{ gap: scale(4), marginTop: scale(6.22) }}>
+        <View style={{ gap: scale(4.005), marginTop: scale(5.415) }}>
           {MOOD_STATEMENTS.map((statement) => (
             <LikertCard
               key={statement}
@@ -405,15 +420,9 @@ export default function SurveyScreen() {
           ))}
         </View>
 
-        {/*
-          v4's line is wider than its 197.44 box, wraps to two lines and runs its
-          second line under the button. It shrinks to one line here, on v4's
-          first line, and the button keeps v4's y.
-          */}
+        {/* v3 set this at 10/15, which fits the column on one line. */}
         <Text
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={{ ...BODY, marginTop: scale(28.57), textAlign: 'center' }}
+          style={{ ...CAPTION, lineHeight: scale(8.462), marginTop: scale(33.282), textAlign: 'center' }}
           className="font-plex">
           문항 기준 : WHO·AASM·EFSA·AUDIT-C·PSQI·WHO-5 근거
         </Text>
@@ -421,7 +430,7 @@ export default function SurveyScreen() {
         <Button
           label="다음 →"
           disabled={!canContinue}
-          style={{ marginTop: scale(6.18), opacity: canContinue ? 1 : 0.4 }}
+          style={{ marginTop: scale(5.641), opacity: canContinue ? 1 : 0.4 }}
           onPress={() => router.push('/(auth)/sign-up/terms')}
         />
       </ScrollView>

@@ -6,17 +6,17 @@ import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma v4: `Date/<n>` (일지/캘린더 `1363:2507`) — one day, tinted by that
+ * Figma v3: a `Chip` in 일지/캘린더's `Chip Row`s (`1316:1911`) — one day, tinted by that
  * day's score. `none` is a day with no entry at all, which is why it is a
- * separate level rather than a fourth colour: v4 draws it white, on the white
- * card, so only the number shows.
+ * separate level rather than a fourth colour: v3 draws it white, on the white
+ * card, so only the number shows. v3: 37.71×34 (21.27×19.18), radius 8 (4.51).
  *
  * Callers pass the level (`dayLevelFor` in `lib/score.ts`); nothing here
  * guesses it.
  */
 export type DateLevel = 'none' | 'low' | 'mid' | 'high';
 
-export const DATE_CELL_WIDTH = 21.436;
+export const DATE_CELL_WIDTH = 21.27;
 export const DATE_CELL_HEIGHT = 19.179;
 
 /**
@@ -38,7 +38,7 @@ const TEXT: Record<DateLevel, string> = {
   high: COLOR.text.onPastel,
 };
 
-/** v4 draws the pastel cell at 122.2°, which is `pastelAngle` of its own box. */
+/** v3 draws the pastel cell at 122.0°, which is `pastelAngle` of its own box. */
 const RAMP = cssGradientPoints(
   pastelAngle(DATE_CELL_WIDTH, DATE_CELL_HEIGHT),
   DATE_CELL_WIDTH,
@@ -62,7 +62,7 @@ export function DateCell({ day, level, onPress }: DateCellProps) {
         style={{
           width: scale(DATE_CELL_WIDTH),
           height: scale(DATE_CELL_HEIGHT),
-          borderRadius: scale(4.808),
+          borderRadius: scale(4.513),
           alignItems: 'center',
           justifyContent: 'center',
         }}>

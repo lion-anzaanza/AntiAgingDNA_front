@@ -1,4 +1,6 @@
-import { Image, Text, View, type ImageSourcePropType } from 'react-native';
+import { Text, View } from 'react-native';
+
+import { Icon, type IconName } from '@/components/ui/icon';
 
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -17,20 +19,24 @@ import { Button } from './button';
  * tokens instead of hex, solid `brand/violet-text` where there was gradient
  * text, `surface/tint` tiles (the `surface/tint` strip is 캘린더's own summary
  * colour family), and the shared `Button` for 입력 기록 보기.
+ *
+ * v3 has no counterpart either; it takes v3's icons — the line moon / drop /
+ * flame of 홈's stat cards and the `Icon/Mood-*` faces, all `icon/primary` —
+ * in place of the bitmaps.
  */
-const TILE_ICONS: Record<string, ImageSourcePropType> = {
-  sleep: require('@/assets/images/home/ic-sleep.png'),
-  water: require('@/assets/images/home/ic-water.png'),
-  stress: require('@/assets/images/home/ic-stress.png'),
+const TILE_ICONS: Record<'sleep' | 'water' | 'stress', IconName> = {
+  sleep: 'moon',
+  water: 'drop',
+  stress: 'flame',
 };
 
 /** The 기분 tile shows the 만족도 face for that day's condition. */
-const FEEL_FACES: ImageSourcePropType[] = [
-  require('@/assets/images/journal/feel-very-bad.png'),
-  require('@/assets/images/journal/feel-bad.png'),
-  require('@/assets/images/journal/feel-normal.png'),
-  require('@/assets/images/journal/feel-good.png'),
-  require('@/assets/images/journal/feel-very-good.png'),
+const FEEL_FACES: IconName[] = [
+  'mood-very-bad',
+  'mood-bad',
+  'mood-normal',
+  'mood-good',
+  'mood-very-good',
 ];
 
 /** Card padding: 9.03 like every v4 card row in 일지. */
@@ -146,7 +152,7 @@ function Tile({
   label,
   value,
 }: {
-  icon: ImageSourcePropType;
+  icon: IconName;
   label: string;
   value: string;
 }) {
@@ -160,7 +166,7 @@ function Tile({
         alignItems: 'center',
         paddingTop: scale(4),
       }}>
-      <Image source={icon} style={{ width: scale(15), height: scale(15) }} resizeMode="contain" />
+      <Icon name={icon} size={scale(15)} color={COLOR.icon.primary} />
       <Text
         style={{ fontSize: scale(6.769), lineHeight: scale(9.026), color: COLOR.text.body }}
         className="font-plex">

@@ -4,17 +4,18 @@ import {
   ScrollView,
   Text,
   View,
-  type ImageSourcePropType,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { DnaKind } from '@/components/ui/dna-kind';
+import { type IconName } from '@/components/ui/icon';
 import {
   WeeklyInfoCard,
   type Level,
   type ScoreBarValue,
+  type WeeklyGlyph,
 } from '@/components/ui/weekly-info-card';
 import { JournalCta } from '@/features/home/components/journal-cta';
 import {
@@ -28,13 +29,13 @@ import { StatCard, STATS } from '@/features/home/components/stat-card';
 import { useAuth } from '@/lib/auth';
 import { addDays, isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { toDiaryDraft, type DiaryRow } from '@/lib/diary-request';
-import { COLOR, SHADOW, type Tone } from '@/lib/design';
+import { COLOR, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { byDate, diariesPath, scoresPath, type DailyScore } from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
- * Figma: 홈/메인 v4 — `1363:1953`.
+ * Figma: 홈/메인 v3 — `1312:1533` (v4 `1363:1953` was its 220 copy).
  *
  * The orb card is a two-page swipe: 오늘의 LifeDNA 컨디션 with the gene orb,
  * then 나의 유전자 나선 with the DNA helix (`457:791` in the old design). v4
@@ -74,47 +75,41 @@ const PAGE_WIDTH = Dimensions.get('window').width;
  * two of the five areas score `null` even on a full day (33). The score bars
  * are the same two patterns the old card used, which Figma kept.
  *
- * **The icons are the unfinished part.** Figma supplies them for 신체 and 정신
- * only, reusing one glyph for both cards, and leaves 감정·사회·환경 as empty
- * white squares. Rather than pick five new icons, the port uses the 5 영역 icons
- * the 개선책 screens already ship — one per area — as a visible stand-in.
+ * **신체 follows v3 exactly** (`1312:1651`, `1312:1685`): "수면 시간" with a yellow
+ * moon and Z's, "수분 섭취량" with a blue drop, and the same two-line caption on
+ * both, as drawn — the owner declared v3 final, and these two cards are the
+ * shape `GET /api/scores/items` returns (backlog 11).
  *
- * v4 draws only 신체, as "수면 시간" / "수분 섭취량" with a moon and a drop in the
- * icon slot (the slot itself is a hidden `IconHere` placeholder) and the same
- * caption pasted on both. Those strings are mock too, so the per-area set below
- * stays — see 결정 대기 in `docs/redesign-v4-inventory.md`.
+ * v3 draws no other tab. Those four keep the port's per-area cards and use the
+ * 5 영역 icons the 개선책 screens already ship as a visible stand-in.
  */
 type BalanceArea = {
   label: string;
   tone: Tone;
-  icon: ImageSourcePropType;
-  cards: { title: string; caption: string; tone: Tone; level: Level }[];
+  /** The same `Icon/*` glyph 개선책's 영역 cards use for this area. */
+  icon: IconName;
+  /** `glyph` overrides the area's icon with one of v3's drawn ones. */
+  cards: { title: string; caption: string; tone: Tone; level: Level; glyph?: WeeklyGlyph }[];
 };
+
+/** v3's caption, pasted on both 신체 cards, broken where v3 breaks it. */
+const BODY_CAPTION = '올빼미형 - 취침이 3일째\n30분씩 빨라졌어요.';
 
 const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '신체',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-body.png'),
+    icon: 'heart',
     cards: [
-      {
-        title: '수면 패턴(시간·질)',
-        caption: '최근 평균 6.4시간 · 잠들기까지 15분',
-        tone: 'good',
-        level: 'high',
-      },
-      {
-        title: '수면 리듬(크로노타입)',
-        caption: '올빼미형 — 취침이 3일째 30분씩 빨라졌어요.',
-        tone: 'warn',
-        level: 'mid',
-      },
+      { title: '수면 시간', caption: BODY_CAPTION, tone: 'good', level: 'high', glyph: 'sleep' },
+      // v3 paints this 주의 in danger red; it stays warn (redesign-v3-delta 결정).
+      { title: '수분 섭취량', caption: BODY_CAPTION, tone: 'warn', level: 'mid', glyph: 'water' },
     ],
   },
   {
     label: '정신',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-mind.png'),
+    icon: 'mind',
     cards: [
       {
         title: '스트레스 회복력',
@@ -133,7 +128,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '환경',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-environment.png'),
+    icon: 'leaf',
     cards: [
       {
         title: '날씨 영향',
@@ -152,7 +147,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '감정',
     tone: 'danger',
-    icon: require('@/assets/images/plan/area-emotion.png'),
+    icon: 'smile',
     cards: [
       {
         title: '기분 안정도',
@@ -171,7 +166,7 @@ const BALANCE_AREAS: BalanceArea[] = [
   {
     label: '사회',
     tone: 'good',
-    icon: require('@/assets/images/plan/area-social.png'),
+    icon: 'users',
     cards: [
       {
         title: '사람 만나는 주기',
@@ -311,7 +306,7 @@ export default function HomeScreen() {
             paddingLeft: scale(CONTENT_INSET),
             paddingRight: scale(CONTENT_INSET_RIGHT),
           }}>
-          <SectionHeading top={357.01 - 343} bottom={377.92 - 372.805}>
+          <SectionHeading top={357.9 - 343} bottom={377.95 - 373.695}>
             오늘의 일지
           </SectionHeading>
           <JournalCta />
@@ -327,15 +322,16 @@ export default function HomeScreen() {
             ))}
           </View>
 
-          <SectionHeading top={565.813 - 557.15} bottom={588 - 581.608}>
+          <SectionHeading top={566.7 - 557.15} bottom={588.02 - 582.495}>
             나의 LifeDNA 정보
           </SectionHeading>
           <View
             style={{
               borderRadius: scale(11.031),
               backgroundColor: COLOR.surface.card,
-              boxShadow: SHADOW,
-              paddingTop: scale(8.79),
+              // v3: a 7.822px blur at 390 — slightly softer than `SHADOW`.
+              boxShadow: '0px 0px 4.412px rgba(169, 169, 169, 0.25)',
+              paddingTop: scale(9.56),
               paddingBottom: scale(208.492 - 197.461),
               paddingHorizontal: scale(9.03),
             }}>
@@ -354,7 +350,7 @@ export default function HomeScreen() {
               style={{
                 flexDirection: 'row',
                 gap: scale(2.27),
-                marginTop: scale(30.89 - 8.79 - 13.538),
+                marginTop: scale(30.89 - 9.56 - 13.538),
               }}>
               {BALANCE_AREAS.map((area, index) => (
                 <DnaKind
@@ -366,10 +362,10 @@ export default function HomeScreen() {
               ))}
             </View>
             {BALANCE_AREAS[areaIndex].cards.map((card, index) => (
-              <View key={card.title} style={{ marginTop: scale(52.95 - 43.024) }}>
+              <View key={card.title} style={{ marginTop: scale(61.13 - 51.198) }}>
                 <WeeklyInfoCard
                   title={card.title}
-                  icon={BALANCE_AREAS[areaIndex].icon}
+                  icon={card.glyph ?? BALANCE_AREAS[areaIndex].icon}
                   tone={card.tone}
                   level={card.level}
                   scores={index === 0 ? FIRST_CARD_SCORES : SECOND_CARD_SCORES}

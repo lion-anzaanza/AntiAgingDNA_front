@@ -145,7 +145,13 @@ export function isPersonalInfoComplete(form: SignUpForm): boolean {
     // Cannot check strength: the server documents no password rule at all
     // (docs/backend-backlog.md item 19). Matching is ours to check regardless.
     form.password === form.passwordConfirm &&
-    isBirthYear(form.birthYear)
+    isBirthDate(form.birthYear, form.birthMonth, form.birthDay) &&
+    // v3 draws 성별·직업 again and the owner chose to collect them
+    // (2026-10-01). They are not sent — `SignUpRequest` has no place for them
+    // (backlog 13) — but an unanswered question still blocks 다음, like every
+    // other one on the step.
+    form.gender !== null &&
+    form.job !== null
   );
 }
 
@@ -176,12 +182,21 @@ export function isEmailish(value: string): boolean {
 }
 
 /**
+ * A real calendar date, entered as v3's three 년 / 월 / 일 boxes. Only the year is
+ * sent (`birthYear`, backlog 13), but a 2월 30일 is still a typo worth refusing.
+ *
  * 1900 is the API's own floor and the ceiling is just "not in the future".
  * Being under 14 is rejected by the server (backlog item 20) rather than here —
  * it is a moving target, and the server's message is the one worth showing.
  */
-function isBirthYear(value: string): boolean {
-  if (!/^\d{4}$/.test(value)) return false;
-  const year = Number(value);
-  return year >= 1900 && year <= new Date().getFullYear();
+export function isBirthDate(yearText: string, monthText: string, dayText: string): boolean {
+  if (!/^\d{4}$/.test(yearText) || !/^\d{1,2}$/.test(monthText) || !/^\d{1,2}$/.test(dayText)) {
+    return false;
+  }
+  const [year, month, day] = [Number(yearText), Number(monthText), Number(dayText)];
+  if (year < 1900 || month < 1 || month > 12 || day < 1) return false;
+  // Local-calendar maths, never UTC (see lib/dates.ts): day 0 of the next month
+  // is the last day of this one.
+  if (day > new Date(year, month, 0).getDate()) return false;
+  return new Date(year, month - 1, day) <= new Date();
 }

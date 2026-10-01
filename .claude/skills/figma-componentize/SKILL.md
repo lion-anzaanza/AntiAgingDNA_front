@@ -1,6 +1,6 @@
 ---
 name: figma-componentize
-description: lifeDNA Figma 파일 안에서 화면의 개별 도형(사각형+텍스트 등)을 디자인 시스템 컴포넌트 인스턴스로 교체("컴포넌트화")할 때 사용. use_figma로 Figma 파일 자체를 고치는 작업 전용 — 코드 작성에는 관여하지 않는다. 화면을 코드로 만드는 작업은 figma-redesign 스킬을 대신 쓸 것. `99_개선안_v4`는 컴포넌트화하지 않는다(docs/redesign-v4-inventory.md). use_figma를 쓰기 전에 먼저 figma-use 스킬과 함께 로드.
+description: lifeDNA Figma 파일 안에서 화면의 개별 도형(사각형+텍스트 등)을 디자인 시스템 컴포넌트 인스턴스로 교체("컴포넌트화")할 때 사용. use_figma로 Figma 파일 자체를 고치는 작업 전용 — 코드 작성에는 관여하지 않는다. 화면을 코드로 만드는 작업은 figma-redesign 스킬을 대신 쓸 것. `99_개선안_v3`(완성본)·`_v4`~`_v6`(색 모드 변형)는 컴포넌트화하지 않는다(docs/redesign-v3-delta.md). use_figma를 쓰기 전에 먼저 figma-use 스킬과 함께 로드.
 ---
 
 # Figma 컴포넌트화 규칙 (lifeDNA)
