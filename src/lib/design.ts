@@ -26,7 +26,8 @@ export const GRADIENT_BRAND: readonly [string, string] = ['#4655F6', '#9423FF'];
 export type Tone = 'good' | 'warn' | 'danger';
 
 export const TONE_TEXT: Record<Tone, string> = {
-  good: '#00A172',
+  // v3 darkened 좋음 from #00A172 — every v3 green word (홈, 주간 리포트, 한달뒤) is this.
+  good: '#007D59',
   warn: '#C57100',
   danger: '#F53942',
 };
@@ -86,4 +87,15 @@ export const GRADIENT_PASTEL = {
   colors: ['#FFDFF3', '#EDDEFA', '#D5E4FA'] as const,
   locations: [0.39435, 0.66925, 0.94414] as const,
   angle: 166.3185637562333,
+};
+
+/**
+ * v3's fill for anything that shows *progress* — the 회원가입 step bar, 홈's
+ * page dots and weekly progress bars, the 0–10 slider fill, 개선책's 실천 bar.
+ * The same stops as `GRADIENT_PASTEL`, more saturated; buttons, banners and
+ * chips keep the pastel one. Angles are per box, as with the pastel ramp.
+ */
+export const GRADIENT_PROGRESS = {
+  colors: ['#F6B8DF', '#C7B2F3', '#A8C0F2'] as const,
+  locations: GRADIENT_PASTEL.locations,
 };

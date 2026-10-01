@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { type Href } from 'expo-router';
 import { Text, View } from 'react-native';
 
-import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, GRADIENT_PROGRESS, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 import { ButtonBack } from './button-back';
@@ -27,8 +27,6 @@ import { ButtonBack } from './button-back';
  * width; each step keeps the angle v4 gives for that width.
  */
 const BAR_WIDTH = 197.44;
-/** v3's progress fill — more saturated than `GRADIENT_PASTEL`, same stops. */
-const PROGRESS_COLORS = ['#F6B8DF', '#C7B2F3', '#A8C0F2'] as const;
 const BACK_OUTSET = 2.256;
 const FILL_HEIGHT = 4.81;
 const TRACK_HEIGHT = 2.88;
@@ -83,7 +81,7 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
       <View style={{ width: scale(BAR_WIDTH), height: scale(FILL_HEIGHT), marginTop: scale(title ? 4.56 : 7.12) }}>
         {ramp ? (
           <LinearGradient
-            colors={[...PROGRESS_COLORS]}
+            colors={[...GRADIENT_PROGRESS.colors]}
             locations={[...GRADIENT_PASTEL.locations]}
             start={ramp.start}
             end={ramp.end}

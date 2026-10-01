@@ -28,13 +28,13 @@ import { StatCard, STATS } from '@/features/home/components/stat-card';
 import { useAuth } from '@/lib/auth';
 import { addDays, isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { toDiaryDraft, type DiaryRow } from '@/lib/diary-request';
-import { COLOR, SHADOW, type Tone } from '@/lib/design';
+import { COLOR, type Tone } from '@/lib/design';
 import { scale } from '@/lib/scale';
 import { byDate, diariesPath, scoresPath, type DailyScore } from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
- * Figma: 홈/메인 v4 — `1363:1953`.
+ * Figma: 홈/메인 v3 — `1312:1533` (v4 `1363:1953` was its 220 copy).
  *
  * The orb card is a two-page swipe: 오늘의 LifeDNA 컨디션 with the gene orb,
  * then 나의 유전자 나선 with the DNA helix (`457:791` in the old design). v4
@@ -311,7 +311,7 @@ export default function HomeScreen() {
             paddingLeft: scale(CONTENT_INSET),
             paddingRight: scale(CONTENT_INSET_RIGHT),
           }}>
-          <SectionHeading top={357.01 - 343} bottom={377.92 - 372.805}>
+          <SectionHeading top={357.9 - 343} bottom={377.95 - 373.695}>
             오늘의 일지
           </SectionHeading>
           <JournalCta />
@@ -327,15 +327,16 @@ export default function HomeScreen() {
             ))}
           </View>
 
-          <SectionHeading top={565.813 - 557.15} bottom={588 - 581.608}>
+          <SectionHeading top={566.7 - 557.15} bottom={588.02 - 582.495}>
             나의 LifeDNA 정보
           </SectionHeading>
           <View
             style={{
               borderRadius: scale(11.031),
               backgroundColor: COLOR.surface.card,
-              boxShadow: SHADOW,
-              paddingTop: scale(8.79),
+              // v3: a 7.822px blur at 390 — slightly softer than `SHADOW`.
+              boxShadow: '0px 0px 4.412px rgba(169, 169, 169, 0.25)',
+              paddingTop: scale(9.56),
               paddingBottom: scale(208.492 - 197.461),
               paddingHorizontal: scale(9.03),
             }}>
@@ -354,7 +355,7 @@ export default function HomeScreen() {
               style={{
                 flexDirection: 'row',
                 gap: scale(2.27),
-                marginTop: scale(30.89 - 8.79 - 13.538),
+                marginTop: scale(30.89 - 9.56 - 13.538),
               }}>
               {BALANCE_AREAS.map((area, index) => (
                 <DnaKind
@@ -366,7 +367,7 @@ export default function HomeScreen() {
               ))}
             </View>
             {BALANCE_AREAS[areaIndex].cards.map((card, index) => (
-              <View key={card.title} style={{ marginTop: scale(52.95 - 43.024) }}>
+              <View key={card.title} style={{ marginTop: scale(61.13 - 51.198) }}>
                 <WeeklyInfoCard
                   title={card.title}
                   icon={BALANCE_AREAS[areaIndex].icon}

@@ -5,19 +5,32 @@ import { COLOR, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * v4 draws the three metric icons as 13.538pt line glyphs (`icon-moon`,
- * `icon-drop`, `icon-flame`) — a 1.015pt `#5F5E5A` stroke, no fill — where the
- * old design had coloured bitmaps. The paths are Figma's own SVG export. The
- * old `ic-*.png` files stay: `daily-summary-card` still draws them.
+ * v3's three metric icons (`icon-moon`, `icon-drop`, `icon-flame`): 28pt line
+ * glyphs, a 2.1 `icon/primary` stroke, no fill — the v4 1pt grey strokes,
+ * redrawn larger in violet. The paths are Figma's own SVG export (28 viewBox).
+ * The old `ic-*.png` files stay: `daily-summary-card` still draws them.
+ *
+ * Each icon keeps its own place in the card, as Figma has it (in 220 units):
+ * the moon sits 2.6 right of centre and the three tops differ.
  */
-const ICON_PATHS = {
-  sleep:
-    'M11.5642 7.44615C11.4287 8.32145 11.0535 9.14213 10.48 9.81716C9.90657 10.4922 9.15736 10.9952 8.31548 11.2704C7.47359 11.5456 6.57193 11.5822 5.7105 11.3762C4.84907 11.1702 4.06153 10.7296 3.43524 10.1033C2.80894 9.47701 2.36835 8.68947 2.16234 7.82804C1.95634 6.96661 1.99296 6.06495 2.26815 5.22306C2.54335 4.38118 3.04635 3.63197 3.72138 3.05853C4.39641 2.48508 5.21709 2.10982 6.09239 1.97436C5.59023 2.73367 5.36585 3.64317 5.45723 4.54891C5.54861 5.45465 5.95013 6.30099 6.59384 6.9447C7.23755 7.58841 8.0839 7.98993 8.98964 8.08131C9.89538 8.17269 10.8049 7.94831 11.5642 7.44615Z',
-  water:
-    'M6.76848 1.80504C6.76848 1.80504 3.38386 5.4717 3.38386 7.78453C3.38386 8.68218 3.74046 9.54307 4.3752 10.1778C5.00993 10.8125 5.87082 11.1691 6.76848 11.1691C7.66614 11.1691 8.52703 10.8125 9.16176 10.1778C9.7965 9.54307 10.1531 8.68218 10.1531 7.78453C10.1531 5.4717 6.76848 1.80504 6.76848 1.80504Z',
-  stress:
-    'M6.76978 1.41003C7.22106 3.10234 6.93901 4.5126 6.3185 5.6408C5.86722 5.0767 5.35953 4.62542 4.62619 4.34336C5.02106 5.75362 3.38517 6.76901 3.38517 8.46131C3.38517 9.35897 3.74176 10.2199 4.3765 10.8546C5.01124 11.4893 5.87213 11.8459 6.76978 11.8459C7.66744 11.8459 8.52833 11.4893 9.16307 10.8546C9.79781 10.2199 10.1544 9.35897 10.1544 8.46131C10.1544 5.6408 7.89799 3.66644 6.76978 1.41003Z',
+const ICONS = {
+  sleep: {
+    left: 25.38,
+    top: 5.97,
+    d: 'M23.9159 15.4002C23.6357 17.2104 22.8596 18.9078 21.6736 20.3038C20.4877 21.6999 18.9381 22.7402 17.197 23.3094C15.4558 23.8785 13.591 23.9543 11.8094 23.5282C10.0278 23.1021 8.39905 22.1909 7.10374 20.8956C5.80844 19.6003 4.89723 17.9716 4.47118 16.19C4.04512 14.4084 4.12086 12.5436 4.69001 10.8024C5.25915 9.06124 6.29946 7.51173 7.69555 6.32575C9.09163 5.13977 10.7889 4.36366 12.5992 4.0835C11.5607 5.65389 11.0966 7.53489 11.2856 9.40813C11.4746 11.2814 12.305 13.0318 13.6363 14.3631C14.9676 15.6944 16.718 16.5248 18.5913 16.7138C20.4645 16.9028 22.3455 16.4387 23.9159 15.4002Z',
+  },
+  water: {
+    left: 22.19,
+    top: 8.23,
+    d: 'M14 3.7334C14 3.7334 7 11.3167 7 16.1001C7 17.9566 7.7375 19.7371 9.05025 21.0498C10.363 22.3626 12.1435 23.1001 14 23.1001C15.8565 23.1001 17.637 22.3626 18.9497 21.0498C20.2625 19.7371 21 17.9566 21 16.1001C21 11.3167 14 3.7334 14 3.7334Z',
+  },
+  stress: {
+    left: 22.94,
+    top: 7.67,
+    d: 'M14 2.9165C14.9333 6.4165 14.35 9.33317 13.0667 11.6665C12.1333 10.4998 11.0833 9.5665 9.56667 8.98317C10.3833 11.8998 7 13.9998 7 17.4998C7 19.3564 7.7375 21.1368 9.05025 22.4496C10.363 23.7623 12.1435 24.4998 14 24.4998C15.8565 24.4998 17.637 23.7623 18.9497 22.4496C20.2625 21.1368 21 19.3564 21 17.4998C21 11.6665 16.3333 7.58317 14 2.9165Z',
+  },
 } as const;
+const ICON_SIZE = 15.795;
 
 /**
  * The three metric cards. `value` is replaced with the day's real answer in
@@ -35,14 +48,14 @@ export const STATS: {
   badge: string;
   bg: string;
   fg: string;
-  icon: keyof typeof ICON_PATHS;
+  icon: keyof typeof ICONS;
 }[] = [
   {
     label: '수면',
     value: '6.4시간',
     badge: '조금 부족',
     bg: '#FBF2E1',
-    fg: '#E5A64E',
+    fg: '#C57100',
     icon: 'sleep',
   },
   {
@@ -57,7 +70,7 @@ export const STATS: {
     value: '3~5잔',
     badge: '좋아요',
     bg: '#E6F4EE',
-    fg: '#4B9977',
+    fg: '#3A775D',
     icon: 'water',
   },
   {
@@ -65,7 +78,7 @@ export const STATS: {
     value: '72%',
     badge: '높음',
     bg: '#F9E9E8',
-    fg: '#D25D53',
+    fg: '#F53942',
     icon: 'stress',
   },
 ];
@@ -73,11 +86,12 @@ export const STATS: {
 type StatCardProps = (typeof STATS)[number];
 
 /**
- * v4 `1363:1967`/`1980`/`1987`: 61.3×78. Figma puts each icon at a different
- * height (7.2 / 9.5 / 8.7 from the card top) and the moon 2.5pt right of
- * centre; the code centres all three at the middle value, 8.73.
+ * v3 `Group 1316`–`1318` (`1312:1546`…): 61.3×78. The icon is placed
+ * absolutely; the value, label and badge follow in a centred column at v3's
+ * line-box tops (24.74 / 40.58 / 57).
  */
 export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
+  const glyph = ICONS[icon];
   return (
     <View
       style={{
@@ -87,13 +101,17 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
         backgroundColor: COLOR.surface.card,
         boxShadow: SHADOW,
         alignItems: 'center',
-        paddingTop: scale(8.73),
+        paddingTop: scale(24.74),
       }}>
-      <Svg width={scale(13.538)} height={scale(13.538)} viewBox="0 0 13.5385 13.5385">
+      <Svg
+        width={scale(ICON_SIZE)}
+        height={scale(ICON_SIZE)}
+        viewBox="0 0 28 28"
+        style={{ position: 'absolute', left: scale(glyph.left), top: scale(glyph.top) }}>
         <Path
-          d={ICON_PATHS[icon]}
-          stroke="#5F5E5A"
-          strokeWidth={1.01538}
+          d={glyph.d}
+          stroke={COLOR.icon.primary}
+          strokeWidth={2.1}
           strokeLinejoin="round"
           fill="none"
         />
@@ -104,7 +122,6 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
           fontSize: scale(11.282),
           lineHeight: scale(15.795),
           letterSpacing: scale(-0.1128),
-          marginTop: scale(27.35 - 8.73 - 13.538),
           color: COLOR.text.strong,
         }}
         className="font-plex-bold">
@@ -112,10 +129,10 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
       </Text>
       <Text
         style={{
-          fontSize: scale(8.462),
+          fontSize: scale(6.769),
           lineHeight: scale(12.41),
-          // Figma's label line box starts 0.58 above the value's bottom.
-          marginTop: scale(42.57 - 27.35 - 15.795),
+          // The label's line box starts 0.06 above the value's bottom.
+          marginTop: scale(40.58 - 24.74 - 15.795),
           color: COLOR.text.body,
         }}
         className="font-plex">
@@ -125,7 +142,7 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
         style={{
           width: scale(37),
           height: scale(12),
-          marginTop: scale(57 - 42.57 - 12.41),
+          marginTop: scale(57 - 40.58 - 12.41),
           borderRadius: scale(10),
           backgroundColor: bg,
           alignItems: 'center',
@@ -133,7 +150,7 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
         }}>
         <Text
           numberOfLines={1}
-          style={{ fontSize: scale(7.333), lineHeight: scale(10.154), color: fg }}
+          style={{ fontSize: scale(6.769), lineHeight: scale(10.154), color: fg }}
           className="font-plex-semibold">
           {badge}
         </Text>

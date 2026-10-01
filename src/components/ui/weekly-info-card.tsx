@@ -1,12 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Text, View, type ImageSourcePropType } from 'react-native';
 
-import { COLOR, GRADIENT_PASTEL, TONE_TEXT, type Tone } from '@/lib/design';
+import { COLOR, GRADIENT_PROGRESS, TONE_TEXT, type Tone } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma: `LifeDNA_WeeklyInfo_Card` — v4 179.385×67.291 (`1363:2072`), one
+ * Figma: `LifeDNA_WeeklyInfo_Card` — v3 179.385×67.291 (`1312:1651`), one
  * metric inside 나의 LifeDNA 정보 on 홈. Icon chip and title on top, a progress
  * bar under them, then a week of score bars beside a sentence about the trend.
  *
@@ -14,8 +14,9 @@ import { scale } from '@/lib/scale';
  * is a fixed box in v4 and the caption now wraps to two lines inside it.
  *
  * Composed from Figma sub-components: `_Status` (the 좋음/주의/위험 word),
- * `_ProgressBar` (Low/Mid/High) and `_ScoreBar` (seven fill levels). v4 fills
- * both the progress and the score bars with the pastel ramp (`pastelAngle`).
+ * `_ProgressBar` (Low/Mid/High) and `_ScoreBar` (seven fill levels). v3 fills
+ * the progress bar with `GRADIENT_PROGRESS` and the score bars with solid
+ * `text/on-pastel` (v4 had the pastel ramp on both).
  */
 const WORD: Record<Tone, string> = { good: '좋음', warn: '주의', danger: '위험' };
 const PROGRESS_FILL: Record<Level, number> = { low: 0.2606, mid: 0.5211, high: 0.7817 };
@@ -43,10 +44,10 @@ type WeeklyInfoCardProps = {
   caption: string;
 };
 
-function pastel(width: number, height: number) {
+function progressRamp(width: number, height: number) {
   return {
-    colors: [...GRADIENT_PASTEL.colors] as const,
-    locations: [...GRADIENT_PASTEL.locations] as const,
+    colors: [...GRADIENT_PROGRESS.colors] as const,
+    locations: [...GRADIENT_PROGRESS.locations] as const,
     ...cssGradientPoints(pastelAngle(width, height), width, height),
   };
 }
@@ -93,7 +94,7 @@ export function WeeklyInfoCard({
         style={{
           position: 'absolute',
           left: scale(36.68),
-          top: scale(10.69),
+          top: scale(11.46),
           maxWidth: scale(105),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
@@ -106,8 +107,9 @@ export function WeeklyInfoCard({
       <Text
         style={{
           position: 'absolute',
-          left: scale(155.3 - 10),
-          top: scale(19.47 - 5.077),
+          // v3 centres the word at x 156.09, y 17.96 (mean of the two cards).
+          left: scale(156.09 - 10),
+          top: scale(17.96 - 5.077),
           width: scale(20),
           textAlign: 'center',
           fontSize: scale(7.333),
@@ -130,7 +132,7 @@ export function WeeklyInfoCard({
           boxShadow: HAIRLINE,
         }}>
         <LinearGradient
-          {...pastel(fillWidth, PROGRESS_HEIGHT)}
+          {...progressRamp(fillWidth, PROGRESS_HEIGHT)}
           style={{
             width: scale(fillWidth),
             height: '100%',
@@ -145,10 +147,9 @@ export function WeeklyInfoCard({
         // Figma steps the fill in eighths, starting at two.
         const height = (BAR_HEIGHT * (score + 1)) / 8;
         return (
-          <LinearGradient
+          <View
             // Position is the identity here — the same day keeps its slot.
             key={index}
-            {...pastel(BAR_WIDTH, height)}
             style={{
               position: 'absolute',
               left: scale(9.13 + index * BAR_PITCH),
@@ -157,6 +158,7 @@ export function WeeklyInfoCard({
               height: scale(height),
               borderTopLeftRadius: scale(2.206),
               borderTopRightRadius: scale(2.206),
+              backgroundColor: COLOR.text.onPastel,
               boxShadow: HAIRLINE,
             }}
           />
@@ -166,7 +168,7 @@ export function WeeklyInfoCard({
         style={{
           position: 'absolute',
           left: scale(46.21),
-          top: scale(40.7),
+          top: scale(39.29),
           width: scale(123.9),
           height: scale(21),
           justifyContent: 'center',

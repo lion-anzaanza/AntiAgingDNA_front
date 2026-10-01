@@ -99,7 +99,9 @@ export const BottomBarButton = forwardRef<View, BottomBarButtonProps>(function B
         style,
         { flex: 1, flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' },
       ]}>
-      {/* Always rendered, only its colour changes (AGENTS.md #3). */}
+      {/* Always rendered, only its opacity changes (AGENTS.md #3). Toggling the
+          colour from `transparent` instead left Android drawing a square pill on
+          a tab that gained focus later — the radius was not reapplied. */}
       <View
         style={{
           position: 'absolute',
@@ -107,7 +109,8 @@ export const BottomBarButton = forwardRef<View, BottomBarButtonProps>(function B
           width: scale(PILL.width),
           height: scale(PILL.height),
           borderRadius: scale(PILL.radius),
-          backgroundColor: isFocused ? COLOR.brand.selected : 'transparent',
+          backgroundColor: COLOR.brand.selected,
+          opacity: isFocused ? 1 : 0,
         }}
       />
       <View style={{ marginTop: scale(ICON.top) }}>
