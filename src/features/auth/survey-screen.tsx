@@ -124,8 +124,13 @@ const PILL_ROW_GAP = 4.513;
 const SMALL_PILL_HEIGHT = 22.564;
 /** Question → pills, as `PillGroup` spaces them. */
 const LABEL_GAP = 6.769;
-/** v3 sets this card's pills closer to its question than the family's 6.77. */
+/**
+ * v3 sets this card's pills closer to its question than the family's 6.77, and
+ * starts the row 3.5 in from the left (22.2 vs 16 at 390) with its right edge
+ * still flush — three 55.62 pills instead of 56.79.
+ */
 const WORK_TYPE_LABEL_GAP = 4.231;
+const WORK_TYPE_ROW_INSET = 3.497;
 /** Caption → pills. */
 const CAPTION_GAP = 1.749;
 
@@ -359,6 +364,7 @@ export default function SurveyScreen() {
               multiple
               columns={3}
               labelGap={WORK_TYPE_LABEL_GAP}
+              rowInset={WORK_TYPE_ROW_INSET}
             />
           </QuestionCard>
           <QuestionCard pad={CARD_PAD.drinkSmoking}>

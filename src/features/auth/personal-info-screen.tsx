@@ -152,21 +152,21 @@ export default function PersonalInfoScreen() {
             }}>
             <DateBox
               unit="년"
-              placeholder="1999"
+              placeholder="YYYY"
               maxLength={4}
               value={form.birthYear}
               onChange={(birthYear) => update({ birthYear })}
             />
             <DateBox
               unit="월"
-              placeholder="12"
+              placeholder="MM"
               maxLength={2}
               value={form.birthMonth}
               onChange={(birthMonth) => update({ birthMonth })}
             />
             <DateBox
               unit="일"
-              placeholder="24"
+              placeholder="DD"
               maxLength={2}
               value={form.birthDay}
               onChange={(birthDay) => update({ birthDay })}
