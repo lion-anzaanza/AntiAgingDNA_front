@@ -38,12 +38,14 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
 ## 위치 비교 (AGENTS 규칙 13)
 
 1. Figma 프레임을 `download_assets`(`defaultFormat: png`, `defaultScale: 4`)로 받는다.
+   **v3(390pt) 프레임은 `defaultScale: 2.25641`**(= 4 × 220/390)로 받는다 — 그러면
+   예전 220pt × 4와 같은 880px 폭이 되어 아래 스크립트를 그대로 쓴다.
    그림자 때문에 880보다 넓게 오면 프레임 부분만 잘라낸다.
 2. 에뮬레이터 스크린샷을 받는다(1080×2400).
 3. 비교한다:
 
    ```bash
-   python .claude/skills/figma-redesign/scripts/compare_bands.py figma.png device.png --bg f6f3fa
+   python .claude/skills/figma-redesign/scripts/compare_bands.py figma.png device.png --bg fbf9fd
    ```
 
    두 이미지에서 잉크가 있는 가로 띠를 pt 단위로 찾아 차이를 출력한다. 짝은 순서가
@@ -54,7 +56,7 @@ AGENTS.md "Verifying on the Android emulator"가 기본 절차다. 여기는 개
    기본으로 x 0~175pt만 본다(오른쪽 위 Expo 개발 메뉴 버튼을 피하려고).
    - 아이콘과 글자가 한 띠로 뭉쳐 원인이 섞이면 `--x-range 20 60`처럼 열을 좁혀
      따로 돌린다.
-   - 흰 카드는 `#F6F3FA` 배경과 차이가 작아(60 미만) 띠로 안 잡힌다. 카드 가장자리를
+   - 흰 카드는 `#FBF9FD` 배경과 차이가 작아(60 미만) 띠로 안 잡힌다. 카드 가장자리를
      재려면 `--threshold 15`로 낮춘다.
 
 - **`PhoneHeader` 높이가 프레임마다 조금 다르다**(회원가입/2는 +1, /3은 −3). 합의값이

@@ -3,14 +3,38 @@
 `use_figma` 전에 `figma-use` 스킬을 로드한다. 아래는 전부 읽기만 한다 — v4는
 참조용 사본이니 **고치지 않는다.** 노드를 바꾸는 코드를 섞지 않는다.
 
-## v4 화면 목록 (노드 ID)
+> **v4(`1363:1533`)는 지워졌다.** 아래 스크립트의 `'1363:1533'`은 v3 `'1307:1533'`으로
+> 바꿔 쓴다. 결과는 390 단위다 — 코드에 넣을 때 `220/390`을 곱한다.
+
+## v3 화면 목록 (노드 ID)
 
 인벤토리 "화면" 표가 기본이다. 표를 다시 맞춰야 할 때:
 
 ```js
-const v4 = await figma.getNodeByIdAsync('1363:1533');
-return v4.children.flatMap(sub => sub.children.map(f => `${sub.name} | ${f.name} | ${f.id}`));
+const v3 = await figma.getNodeByIdAsync('1307:1533');
+return v3.children.flatMap(sub => sub.children.map(f => `${sub.name} | ${f.name} | ${f.id}`));
 ```
+
+## 사본 이후 바뀐 것 — 노드 ID의 세션 번호로 찾는다
+
+노드 ID `A:B`의 `A`는 그 노드를 만든 편집 세션이고, 시간이 갈수록 커진다. v4 사본은
+세션 `1363`에서 만들어졌으므로 **v3 안에서 `A ≥ 1363`인 노드는 사본 뒤에 새로 그린
+것**이다(2026-10-01 기준 `1400`·`1401`·`1430`·`1440`·`1441`·`1451`). 부모가 새 노드가
+아닌 것만 모으면 "새로 들어온 덩어리" 목록이 된다:
+
+```js
+const v3 = await figma.getNodeByIdAsync('1307:1533');
+const sess = n => parseInt(n.id.split(':')[0], 10);
+const out = {};
+for (const f of v3.findAll(n => n.type === 'FRAME' && n.parent.type === 'SECTION')) {
+  out[f.name] = f.findAll(n => sess(n) >= 1363 && !(sess(n.parent) >= 1363))
+    .map(n => `${n.id} ${n.type} "${n.name}"`);
+}
+return out;
+```
+
+**이걸로는 기존 노드의 속성 변경(색·위치·글자)은 안 잡힌다.** ID가 그대로이기 때문이다.
+그건 화면마다 에뮬레이터와 위치 비교(`verification.md`)와 글자 대조로 찾는다.
 
 ## 같은 이름의 노드를 전 프레임에서 비교
 

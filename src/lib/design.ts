@@ -42,18 +42,23 @@ export const TONE_BG: Record<Tone, string> = {
  * name for name. Nearly every v4 text and surface is bound to one of these, so
  * take the variable name off `get_design_context` (`var(--text/body, …)`) and
  * look it up here rather than copying the hex.
+ *
+ * Values are the collection's default `Pink` mode, which is what v3 (the final
+ * design, 2026-10-01) uses. Three moved after the v4 copy — violet-text, bg and
+ * muted all darkened — and `brand/accent` · `icon/primary` are new.
  */
 export const COLOR = {
   brand: {
     pink: '#FFDFF3',
     violet: '#DCCFF8',
     periwinkle: '#D5E4FA',
-    violetText: '#7A55D8',
+    violetText: '#6642C4',
     pinkText: '#B04FB0',
     selected: '#FAE0F3',
+    accent: '#A88DEB',
   },
   surface: {
-    bg: '#F6F3FA',
+    bg: '#FBF9FD',
     card: '#FFFFFF',
     chip: '#F3EFFA',
     tint: '#F8EEFA',
@@ -62,11 +67,12 @@ export const COLOR = {
   },
   border: { soft: '#E9E3F5' },
   calendar: { level1: '#F5EFFC', level2: '#E4D9F8' },
+  icon: { primary: '#9C7BE6' },
   text: {
     heading: '#2E2545',
     strong: '#1F1B2E',
     body: '#6B6680',
-    muted: '#9A95AB',
+    muted: '#726D86',
     plum: '#5A3D8A',
     onPastel: '#4A3780',
   },

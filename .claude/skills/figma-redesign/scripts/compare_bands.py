@@ -5,7 +5,7 @@ image, converts them to Figma points, pairs them in order and prints the offset.
 A consistent offset is just the status-bar difference; a band that disagrees with
 the consensus is a layout bug candidate.
 
-usage: compare_bands.py FIGMA.png DEVICE.png [--bg f6f3fa] [--figma-scale 4]
+usage: compare_bands.py FIGMA.png DEVICE.png [--bg fbf9fd] [--figma-scale 4]
                         [--frame-width 220] [--x-range 0 175] [--threshold 60]
                         [--figma-top 39] [--device-top 12]
 """
@@ -37,7 +37,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("figma")
     p.add_argument("device")
-    p.add_argument("--bg", default="f6f3fa", help="background hex, no #")
+    p.add_argument("--bg", default="fbf9fd", help="background hex, no #")
     p.add_argument("--figma-scale", type=float, default=4)
     p.add_argument("--frame-width", type=float, default=220)
     p.add_argument("--x-range", type=float, nargs=2, default=(0, 175), metavar=("X0", "X1"),
