@@ -893,6 +893,9 @@ the running app rather than from the type-checker.
   *(v4: drawn again — v4's strike is `surface/track`, a different colour from
   the label, which Android cannot give a text decoration. It sits where v4 puts
   it, 0.18 below the Plex line box's centre; checked against the export.)*
+  *(v3: Gray 600 `#5F5E5B` on a Gray 400 label, on the line box's centre; the
+  done box is `brand/selected` with an `on-pastel` check — measured within 0.2pt
+  on the emulator.)*
 - **한달뒤내모습's hero card has no orb in Figma.** `523:490` leaves the top 57.5pt
   of the 184×110 card empty — no node, no instance — while its own teaser on
   메인 (`Frame 33`) does carry one. Read as a dropped layer, not a design, so the
@@ -900,6 +903,9 @@ the running app rather than from the type-checker.
   saying so. **Worth a designer's eye**; replace once the frame is fixed.
   *(v4: fixed — v4 draws `orb-better`, squashed sideways like 홈's orb; the code
   draws it round. 결정 대기 9 in the inventory.)*
+  *(v3: replaced — the hero and 메인's teaser both carry a new white-lavender
+  pearl orb, `assets/images/plan/orb-pearl.png`, with three highlight dots. The
+  dark `orb-unknown` and the borrowed `orb-better` are gone from 개선책.)*
 - **Every orb breathes.** 개선책's teaser and the forecast hero both go through
   `LivingArtwork` now rather than a plain `<Image>`, so the motion phase-1 work
   applies everywhere an orb appears, not just on 홈.

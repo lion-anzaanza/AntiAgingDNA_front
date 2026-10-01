@@ -8,13 +8,13 @@ import { COLOR } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma v4: 사용자맞춤개선책/맞춤영양제 — `1363:3003` (was `559:1295`).
+ * Figma v3: 사용자맞춤개선책/맞춤영양제 — `1318:1604` (v4 `1363:3003`, first `559:1295`).
  *
  * Three recommendations, each pairing the reason it was picked with the
  * evidence line beneath it. 담기 and 정기구독 have nowhere to go — there is no
  * cart, and the API has no commerce endpoints at all.
  *
- * Positions are v4's, frame y − 38.
+ * Positions are v3's ×220/390, frame y − 38.
  */
 const CONTENT_INSET = 11.28;
 const CARD_WIDTH = 197.436;
@@ -23,34 +23,28 @@ const COLUMN = {
   paddingRight: scale(220 - CONTENT_INSET - CARD_WIDTH),
 };
 
-/** v4 icon boxes — the bitmaps are the same pictures as the files (compared side by side). */
+/** v3 icons: `Icon/pill`, `Icon/sun`, `Icon/drop`. */
 const SUPPLEMENTS: Supplement[] = [
   {
     name: '마그네슘 · 테아닌',
     reason: '스트레스 누적형 · 수면 질 ↓',
     evidence: '마그네슘 · L-테아닌은 이완 · 수면 질 개선에 흔히 활용돼요.',
     price: '월 12,900원 / 30일분',
-    icon: require('@/assets/images/plan/sup-magnesium.png'),
-    iconWidth: 24.793,
-    iconHeight: 23.077,
+    icon: 'pill',
   },
   {
     name: '비타민 D',
     reason: '흐린날 컨디션 저하형',
     evidence: '일조량↓ · 실내 활동이 많을 때 보충을 고려해요.',
     price: '월 9,900원 / 30일분',
-    icon: require('@/assets/images/plan/sup-vitamin-d.png'),
-    iconWidth: 25,
-    iconHeight: 25,
+    icon: 'sun',
   },
   {
     name: '오메가3',
     reason: '잦은 패스트푸드 · 당분 ↑',
     evidence: '식습관 지표(패스트푸드·당분)가 높은 주에 보조로 먹어요.',
     price: '월 18,900원 / 30일분',
-    icon: require('@/assets/images/plan/sup-omega3.png'),
-    iconWidth: 24.038,
-    iconHeight: 24.038,
+    icon: 'drop',
   },
 ];
 
@@ -70,14 +64,14 @@ export default function SupplementsScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: scale(20) }}>
         {/* Header: the banner starts at 27.38. */}
         <View style={{ height: scale(27.38) }}>
-          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(5.27) }}>
+          <View style={{ position: 'absolute', left: scale(9.026), top: scale(0.25) }}>
             <ButtonBack fallbackHref="/plan" />
           </View>
           <Text
             style={{
               position: 'absolute',
-              left: scale(34.45),
-              top: scale(11.68 - 18.051 / 2),
+              left: scale(35.397),
+              top: scale(11.2 - 18.051 / 2),
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.2708),
@@ -110,7 +104,7 @@ export default function SupplementsScreen() {
                   position: 'absolute',
                   left: scale(8.73),
                   right: scale(8.73),
-                  top: scale(17.33 - 10.154 + index * 10.154),
+                  top: scale(11.903 - 10.154 / 2 + index * 10.154),
                   fontSize: scale(7.333),
                   lineHeight: scale(10.154),
                   color: COLOR.text.body,
@@ -128,21 +122,25 @@ export default function SupplementsScreen() {
           ))}
         </View>
 
+        {/*
+          * v3: Regular 10 / 12, two lines, 22.8 below the last card. That card is
+          * 1.07 taller in v3 than the shared card geometry, so it is added here.
+          */}
         <Text
           style={{
-            marginTop: scale(7.18),
+            marginTop: scale(12.873 + 1.076),
             textAlign: 'center',
-            fontSize: scale(6.769),
-            lineHeight: scale(9.026),
+            fontSize: scale(5.641),
+            lineHeight: scale(6.769),
             color: COLOR.text.body,
             ...COLUMN,
           }}
           className="font-plex">
-          건강기능식품이며 의약품이 아닙니다. 질환·복용 중인 약이 있으면 전문가와 상담하세요.
+          건강기능식품이며 의약품이 아닙니다.{'\n'}질환·복용 중인 약이 있으면 전문가와 상담하세요.
         </Text>
 
-        <View style={{ marginTop: scale(7.44), ...COLUMN }}>
-          {/* The shared v4 button, which is exactly this node; pressing it does nothing (no cart). */}
+        <View style={{ marginTop: scale(5.178), ...COLUMN }}>
+          {/* The shared button (v3 draws it 48 tall, r16 — the component keeps the v4 decision); pressing it does nothing (no cart). */}
           <Button label="3종 정기구독으로 담기 →" />
         </View>
       </ScrollView>

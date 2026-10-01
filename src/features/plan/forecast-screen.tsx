@@ -6,19 +6,17 @@ import { AreaDeltaCard, type AreaDeltas } from '@/components/ui/area-delta-card'
 import { ButtonBack } from '@/components/ui/button-back';
 import { LivingArtwork } from '@/components/ui/living-artwork';
 import { GrowthCurveCard } from '@/features/plan/components/growth-curve-card';
-import { COLOR, GRADIENT_PASTEL, SHADOW_V4, TONE_TEXT } from '@/lib/design';
+import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma v4: 사용자맞춤개선책/한달뒤내모습 — `1363:3134` (was `523:490`). What
- * 개선책 메인's locked teaser opens.
+ * Figma v3: 사용자맞춤개선책/한달뒤내모습 — `1318:1741` (v4 `1363:3134`, first
+ * `523:490`). What 개선책 메인's locked teaser opens.
  *
- * v4 still gives this frame a tab bar that lights MY rather than 개선책. The bar
- * here derives the active tab from the route, so it lights 개선책; the mock is a
- * slip.
+ * v3's tab bar lights 개선책 here (v4's lit MY, a slip the code never copied).
  *
- * Positions are v4's, frame y − 38.
+ * Positions are v3's ×220/390, frame y − 38.
  */
 const CONTENT_INSET = 11.28;
 const CARD_WIDTH = 197.436;
@@ -40,29 +38,29 @@ const HERO_HEIGHT = 105.961;
 const HERO_RAMP = cssGradientPoints(pastelAngle(CARD_WIDTH, HERO_HEIGHT), CARD_WIDTH, HERO_HEIGHT);
 
 /**
- * v4 finally draws the hero's orb (`Rectangle 3190`, pre-v4 the band was empty
- * and the code borrowed 홈's `orb-nice`). It is 홈's `orb-better` picture —
- * pink to violet — but squashed: its opaque body is 44.2 × 40.3 (aspect 1.10)
- * where the file's is 1.01, the same sideways stretch as 홈's orb card
- * (결정 대기 9). Kept round, as there: `orb-better.png` with its body at v4's
- * height (40.3), centred on the card at v4's body centre y 31.38.
- *
- * The file's body spans px 20–160 × 12–151 of 181 × 180, centred on (90, 81.5).
+ * v3's hero orb is the white-lavender pearl the 메인 teaser carries
+ * (`Group 1362`, bitmap `Rectangle 3190` — v4 had 홈's pink `orb-better` here).
+ * v3 serves this copy at 189 × 188 with a little more padding; it is the same
+ * drawing, so `orb-pearl.png` (181 × 180, body px 20–160 × 12–151) is placed
+ * with its body on v3's 74.6 × 74 body box at (138, 30.8).
  */
-const ORB_K = 40.28 / 139;
-const ORB_FRAME = {
-  width: 181 * ORB_K,
-  height: 180 * ORB_K,
-  left: CARD_WIDTH / 2 - 90 * ORB_K,
-  top: 31.38 - 81.5 * ORB_K,
-};
+const ORB_FRAME = { left: 71.96, top: 13.8, width: 53.88, height: 53.58 };
 
-/** v4's three highlight dots over the orb, card-relative. */
+/** v3's three highlight dots over the orb, card-relative. */
 const SPARKLES = [
-  { left: 88.32, top: 34.22, width: 1.28, height: 1.162, color: 'rgba(255,232,233,0.5)', glow: '0px 0px 5.014px rgba(255,255,255,0.5)' },
-  { left: 109.44, top: 20.28, width: 1.28, height: 1.162, color: 'rgba(255,232,233,0.5)', glow: '0px 0px 5.014px rgba(255,255,255,0.5)' },
-  { left: 101.76, top: 35.97, width: 1.92, height: 1.743, color: 'rgba(255,221,221,0.75)', glow: '0px 0px 4.011px 1.003px rgba(255,255,255,0.25)' },
+  { left: 89.19, top: 40.95, size: 1.194, color: '#FFFFFF', glow: '0px 0px 2.821px rgba(255,255,255,0.5)' },
+  { left: 108.89, top: 26.63, size: 1.194, color: '#FFFFFF', glow: '0px 0px 2.821px rgba(255,255,255,0.5)' },
+  {
+    left: 101.72,
+    top: 42.74,
+    size: 1.791,
+    color: 'rgba(255,255,255,0.75)',
+    glow: '0px 0px 2.256px 0.564px rgba(255,255,255,0.25)',
+  },
 ];
+
+/** v3's `+7점` green — not the delta table's `#007D59`; drawn once. */
+const GAIN = '#009469';
 
 const OPTION_WIDTH = 95.333;
 const OPTION_HEIGHT = 44.231;
@@ -75,14 +73,14 @@ export default function ForecastScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: scale(20) }}>
         {/* Header: the hero starts at 26.42 (this frame sits ~1pt higher than its siblings). */}
         <View style={{ height: scale(26.42) }}>
-          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(4.31) }}>
+          <View style={{ position: 'absolute', left: scale(9.026), top: scale(-0.72) }}>
             <ButtonBack fallbackHref="/plan" />
           </View>
           <Text
             style={{
               position: 'absolute',
-              left: scale(34.51),
-              top: scale(10.78 - 18.051 / 2),
+              left: scale(35.736),
+              top: scale(10.3 - 18.051 / 2),
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.2708),
@@ -101,7 +99,7 @@ export default function ForecastScreen() {
             end={HERO_RAMP.end}
             style={{ height: scale(HERO_HEIGHT), borderRadius: scale(9.615), boxShadow: SHADOW_V4 }}>
             <LivingArtwork
-              source={require('@/assets/images/home/orb-better.png')}
+              source={require('@/assets/images/plan/orb-pearl.png')}
               frame={ORB_FRAME}
               sheen
               accessibilityLabel="30일 뒤 예상 컨디션 오브"
@@ -114,21 +112,22 @@ export default function ForecastScreen() {
                   position: 'absolute',
                   left: scale(sparkle.left),
                   top: scale(sparkle.top),
-                  width: scale(sparkle.width),
-                  height: scale(sparkle.height),
-                  borderRadius: scale(sparkle.width),
+                  width: scale(sparkle.size),
+                  height: scale(sparkle.size),
+                  borderRadius: scale(sparkle.size),
                   backgroundColor: sparkle.color,
                   boxShadow: sparkle.glow,
                 }}
               />
             ))}
 
+            {/* v3 moved the caption from under the orb to the card's top-left corner. */}
             <Text
               style={{
                 position: 'absolute',
-                left: 0,
-                right: 0,
-                top: scale(62.52 - 10.154 / 2),
+                left: scale(40.05 - 30),
+                top: scale(11.17 - 10.154 / 2),
+                width: scale(60),
                 textAlign: 'center',
                 fontSize: scale(7.333),
                 lineHeight: scale(10.154),
@@ -137,18 +136,18 @@ export default function ForecastScreen() {
               className="font-plex-semibold">
               30일 뒤 예상 컨디션
             </Text>
-            {/* Nested so the 18pt score and the 13.5pt "← 현재 74" share a baseline, as in v4. */}
+            {/* Nested so the 18pt score and the 13.5pt "← 현재 74" share a baseline, as in v3. */}
             <Text
               style={{
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: scale(74.57 - 22.564 / 2),
+                top: scale(72.66 - 22.564 / 2),
                 textAlign: 'center',
                 fontSize: scale(13.538),
                 lineHeight: scale(22.564),
                 letterSpacing: scale(-0.2708),
-                color: '#A07EAD',
+                color: '#735A7C',
               }}
               className="font-plex-bold">
               <Text
@@ -166,15 +165,15 @@ export default function ForecastScreen() {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: scale(89.09 - 13.538 / 2),
+                top: scale(92.11 - 13.538 / 2),
                 textAlign: 'center',
-                fontSize: scale(9.59),
+                fontSize: scale(8.462),
                 lineHeight: scale(13.538),
-                letterSpacing: scale(-0.0959),
+                letterSpacing: scale(-0.0846),
                 color: COLOR.text.strong,
               }}
               className="font-plex-semibold">
-              최근 실천율 78% 유지기준 <Text style={{ color: TONE_TEXT.good }}>+7점</Text>
+              최근 실천율 78% 유지기준 <Text style={{ color: GAIN }}>+7점</Text>
             </Text>
           </LinearGradient>
         </View>
@@ -187,17 +186,17 @@ export default function ForecastScreen() {
           <AreaDeltaCard
             heading="지난 주 대비 영역별 변화"
             deltas={DELTAS}
-            rightColumn={{ chip: 107.07, label: 126.6, valueRight: 181.6 }}
+            rightColumn={{ chip: 107.07, valueRight: 181.72 }}
           />
         </View>
 
-        {/* Delta card bottom 295.84 → option cards 326.61. */}
-        <View style={{ height: scale(30.77) }}>
+        {/* Delta card bottom 307.88 → option cards 339.02. */}
+        <View style={{ height: scale(31.14) }}>
           <Text
             style={{
               position: 'absolute',
               left: scale(10.55),
-              top: scale(19.67 - 15.795 / 2),
+              top: scale(20.95 - 15.795 / 2),
               fontSize: scale(11.282),
               lineHeight: scale(15.795),
               letterSpacing: scale(-0.1128),
@@ -214,22 +213,19 @@ export default function ForecastScreen() {
         </View>
 
         {/*
-          * v4 ends this at 208.8, the column's edge, on one line 196.5 wide —
-          * all but the whole column. Android sets Plex ~2% wider than Figma, so
-          * inside the column it wrapped its last word at font scale 1.0; the box
-          * is let out to the left instead (right-aligned, so the text does not
-          * move). At a larger system font it wraps; it is the last thing on the
-          * screen.
+          * v3 set this at 10pt (5.64) and ends it at 191.8, well inside the
+          * column, right-aligned. At a larger system font it wraps; it is the
+          * last thing on the screen.
           */}
         <Text
           style={{
-            marginTop: scale(381.56 - 9.026 / 2 - (326.61 + OPTION_HEIGHT)),
+            marginTop: scale(392.41 - 9.026 / 2 - (339.02 + OPTION_HEIGHT)),
             textAlign: 'right',
-            fontSize: scale(6.769),
+            fontSize: scale(5.641),
             lineHeight: scale(9.026),
             color: COLOR.text.body,
-            paddingLeft: scale(4),
-            paddingRight: COLUMN.paddingRight,
+            paddingLeft: COLUMN.paddingLeft,
+            paddingRight: scale(220 - 191.79),
           }}
           className="font-plex">
           * 최근 기록 추세로 계산한 시뮬레이션이며, 실제 결과는 달라질 수 있어요.
@@ -240,9 +236,10 @@ export default function ForecastScreen() {
 }
 
 /**
- * The two 다음 주 제안 outcomes. v4 gives the second a `surface/tint` fill and a
+ * The two 다음 주 제안 outcomes. v3 gives the second a `surface/tint` fill and a
  * 0.288 `brand/violet` border instead of the shadow the first carries, and its
- * label in `brand/violet-text` (was the gradient text).
+ * label in `brand/violet-text`. v3 shrank the score to 28 / 40 and the detail to
+ * 10 / 16.
  */
 function OptionCard({
   label,
@@ -272,11 +269,11 @@ function OptionCard({
         borderColor: highlighted ? COLOR.brand.violet : 'transparent',
         boxShadow: highlighted ? 'none' : SHADOW_V4,
       }}>
-      {/* v4 tops are from the card's outer edge; absolute children start inside the 0.288 border. */}
+      {/* v3 tops are from the card's outer edge; absolute children start inside the 0.288 border. */}
       <Text
         style={{
           ...centred,
-          top: scale(10.28 - 10.154 / 2) - scale(0.288),
+          top: scale(9.85 - 10.154 / 2) - scale(0.288),
           fontSize: scale(7.333),
           lineHeight: scale(10.154),
           color: highlighted ? COLOR.brand.violetText : COLOR.text.strong,
@@ -287,10 +284,10 @@ function OptionCard({
       <Text
         style={{
           ...centred,
-          top: scale(23.69 - 22.564 / 2) - scale(0.288),
-          fontSize: scale(18.051),
+          top: scale(23.47 - 22.564 / 2) - scale(0.288),
+          fontSize: scale(15.795),
           lineHeight: scale(22.564),
-          letterSpacing: scale(-0.361),
+          letterSpacing: scale(-0.316),
           color: COLOR.text.plum,
         }}
         className="font-plex-bold">
@@ -299,8 +296,8 @@ function OptionCard({
       <Text
         style={{
           ...centred,
-          top: scale(34.69 - 9.026 / 2) - scale(0.288),
-          fontSize: scale(6.769),
+          top: scale(36.89 - 9.026 / 2) - scale(0.288),
+          fontSize: scale(5.641),
           lineHeight: scale(9.026),
           color: COLOR.text.body,
         }}

@@ -1,37 +1,43 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Pressable, Text, View, type ImageSourcePropType } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
+import { Icon, type IconName } from '@/components/ui/icon';
 import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
 /**
- * One 맞춤 영양제 card — v4 `1363:3014` / `3025` / `3036`.
+ * One 맞춤 영양제 card — v3 `1318:1662` / `1318:1663` / `1318:1661`.
  *
- * Card-relative, from the first two cards, which agree to within 0.8. The third
+ * Card-relative, from the first card; the second agrees to within 0.9. The third
  * is drawn 1.07 taller with its contents about 0.5–1 lower — a one-off, so every
- * card uses the first two's geometry.
+ * card uses the first's geometry.
+ *
+ * v3 changes from v4: the icon is a 28pt `Icon/*` glyph in `icon/primary` (was a
+ * bitmap), 담기 grew to 64 × 32 with a smaller radius and a soft drop shadow,
+ * and the evidence sentence is centred in its chip rather than flush left.
  *
  * 담기 does nothing: there is no cart, and the API has no commerce endpoints.
  */
 const CARD_HEIGHT = 81.964;
 const TILE = { left: 9.38, top: 8.65, width: 26.923, height: 25 };
 const TEXT_LEFT = 47;
-const NAME_TOP = 16.2 - 13.538 / 2;
-const REASON_TOP = 28.8 - 10.154 / 2;
-const BUY = { left: 159.12, top: 13.46, width: 28.972, height: 15.385 };
+const ICON = 15.795;
+const NAME_TOP = 17.036 - 13.538 / 2;
+const REASON_TOP = 28.57 - 10.154 / 2;
+const BUY = { left: 151.99, top: 12.128, width: 36.103, height: 18.051 };
 const BUY_RAMP = cssGradientPoints(pastelAngle(BUY.width, BUY.height), BUY.width, BUY.height);
+/** `drop-shadow 0 0 3.409px rgba(169,169,169,.25)` at 390. */
+const BUY_SHADOW = '0px 0px 1.923px rgba(169, 169, 169, 0.25)';
 const EVIDENCE = { left: 9.03, top: 41.35, width: 172.265, height: 16.346 };
-const PRICE_TOP = 71.97 - 10.154 / 2;
+const PRICE_TOP = 71.55 - 10.154 / 2;
 
 export type Supplement = {
   name: string;
   reason: string;
   evidence: string;
   price: string;
-  icon: ImageSourcePropType;
-  iconWidth: number;
-  iconHeight: number;
+  icon: IconName;
 };
 
 export function SupplementCard({
@@ -40,8 +46,6 @@ export function SupplementCard({
   evidence,
   price,
   icon,
-  iconWidth,
-  iconHeight,
 }: Supplement) {
   return (
     <View
@@ -63,11 +67,8 @@ export function SupplementCard({
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-        <Image
-          source={icon}
-          style={{ width: scale(iconWidth), height: scale(iconHeight) }}
-          resizeMode="contain"
-        />
+        {/* v3 draws each glyph within 0.9 of the tile's centre; centred. */}
+        <Icon name={icon} size={scale(ICON)} color={COLOR.icon.primary} />
       </View>
 
       <Text
@@ -105,8 +106,8 @@ export function SupplementCard({
           style={{
             width: scale(BUY.width),
             height: scale(BUY.height),
-            borderRadius: scale(4.808),
-            boxShadow: SHADOW_V4,
+            borderRadius: scale(4.513),
+            boxShadow: BUY_SHADOW,
             alignItems: 'center',
             justifyContent: 'center',
           }}>
@@ -118,6 +119,12 @@ export function SupplementCard({
         </LinearGradient>
       </Pressable>
 
+      {/*
+        * v3 makes the chip an auto-layout box (8pt side padding) and centres the
+        * sentence in it. No `adjustsFontSizeToFit`: on Android it shrank this
+        * line ~7% at font scale 1.0, where it visibly fits. At 1.1 the two
+        * longer sentences end in "…" instead.
+        */}
       <View
         style={{
           position: 'absolute',
@@ -125,35 +132,19 @@ export function SupplementCard({
           top: scale(EVIDENCE.top),
           width: scale(EVIDENCE.width),
           height: scale(EVIDENCE.height),
-          borderRadius: scale(4.808),
+          paddingHorizontal: scale(4.513),
+          borderRadius: scale(4.513),
           backgroundColor: COLOR.surface.tint,
-        }}
-      />
-      {/*
-        * v4 starts the sentence at 8.57 — flush with the box's own left edge
-        * (9.03), no inset — in all three cards, so it is reproduced. It is its
-        * own node, not the box's child, so it is placed on the card.
-        */}
-      {/*
-        * No `adjustsFontSizeToFit` here: on Android it shrank this line ~7% at
-        * font scale 1.0, where it visibly fits (cause not pinned down — the
-        * banner's autosize, with `left` + `right` rather than `maxWidth`, does
-        * not). At 1.1 the two longer sentences end in "…" instead.
-        */}
-      <Text
-        numberOfLines={1}
-        style={{
-          position: 'absolute',
-          left: scale(8.57),
-          top: scale(49.4 - 9.026 / 2),
-          maxWidth: scale(EVIDENCE.width + 0.46),
-          fontSize: scale(6.769),
-          lineHeight: scale(9.026),
-          color: COLOR.text.body,
-        }}
-        className="font-plex">
-        {evidence}
-      </Text>
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+        <Text
+          numberOfLines={1}
+          style={{ fontSize: scale(6.769), lineHeight: scale(9.026), color: COLOR.text.body }}
+          className="font-plex">
+          {evidence}
+        </Text>
+      </View>
 
       <Text
         style={{
