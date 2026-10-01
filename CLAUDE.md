@@ -24,18 +24,22 @@ Expo / React Native app. The UI is ported from Figma.
 | How to work here, traps, open items | AGENTS below |
 | Figma node IDs and measurements | `docs/figma-reference.md` |
 | API endpoints, schemas, enum ↔ UI mapping | `docs/backend-api.md` |
-| Open questions for the backend team | `docs/backend-backlog.md` |
+| Open requests to the backend team | `docs/backend-backlog.md` |
+| What we still have to wire or wait on (🟡 / 🟣), per-screen coverage | `docs/frontend-status.md` |
 | How the app reaches teammates | `docs/deploy.md` |
 
 **Keep `docs/backend-backlog.md` current.** Anything the design needs and the
 API cannot do belongs there the moment you notice it — that document is how the
-backend team hears about it.
+backend team hears about it. It is handed over one way and replies come back
+verbally: record each as one dated line (`구두:` for what they said, `확인:` for
+what we checked on the server), never as pasted prose, and close nothing without
+a `확인:` line.
 
-It is organised by **who has to move next**, not by priority, and the status
-that matters most is 🟡 프론트: the backend answered *and the answer requires a
-screen change*. Filing those as "resolved" is how the work disappears — four of
-them sat unnoticed until a re-read. When a reply lands, decide which side it
-leaves the ball on before closing anything.
+The status that matters most is 🟡 프론트: the backend answered *and the answer
+requires a screen change*. Closing those in the backlog is how the work
+disappears — four of them sat unnoticed until a re-read. When a reply leaves the
+ball with us, close it in the backlog **and** move it under the same number to
+`docs/frontend-status.md`.
 
 `docs/figma-reference.md` and `docs/backend-api.md` are both **caches**, not
 truth. Node IDs have already churned once; the API spec is regenerated with

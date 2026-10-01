@@ -620,12 +620,13 @@ measured on Figma's July 2026, which fits in five week rows. August 2026 needs
 six and the 낮음/높음 legend was cut off the bottom. It is a `minHeight` now —
 in v4 the floor is the 197.436 square the frame draws.
 
-**The list of what is left is in `docs/backend-backlog.md` under "프론트 연동
-현황".** That table exists because the backlog used to track only what the
+**The list of what is left is `docs/frontend-status.md`.** It was split out of
+the backlog on 2026-09-30, because the backlog used to track only what the
 *backend* was blocking: the coverage table's ✅ meant "the API can do this", six
 rows were ✅ while nothing was wired, and none of them were being counted as
-work. The coverage table now has two columns — `API` and `화면` — and
-`API ✅ / 화면 ❌` is the front-end queue.
+work. The coverage table has two columns — `API` and `화면` — and
+`API ✅ / 화면 ❌` is the front-end queue. The backlog itself now holds only open
+requests to the backend.
 
 Two traps this screen already stepped in, worth not repeating:
 

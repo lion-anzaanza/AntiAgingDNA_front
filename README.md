@@ -108,8 +108,7 @@ npm test
   문장(백로그 27), 일지 하단의 오늘 날씨(백로그 12 — 저장에 위경도를 안 보내 기록되는
   날씨가 없습니다)가 그렇습니다. 홈 지표 카드의 등급 뱃지는 **Figma 문구가
   그대로 박혀 있습니다** — 지표별 등급 규칙이 없습니다(백로그 10).
-  **무엇이 남았는지는 `docs/backend-backlog.md`의 "프론트 연동 현황" 표가
-  목록입니다.**
+  **무엇이 남았는지는 `docs/frontend-status.md`가 목록입니다.**
 - 입력 검증은 화면마다 다릅니다. **오늘의 기록은 저장을 누르면 미응답 항목을
   빨갛게 표시**하고 그 자리로 스크롤합니다(`SelectFeel5_NeedAnswer`). 회원가입
   단계는 여전히 **다음 버튼 비활성화**까지만이라 왜 막혔는지 알려주지 못합니다 —
@@ -234,8 +233,10 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
   컴포넌트 치수 캐시.
 - **[docs/backend-api.md](docs/backend-api.md)** — 백엔드 API 레퍼런스. 엔드포인트,
   스키마, 그리고 **enum ↔ 화면 선택지 대응표**. 연동할 때 여기부터 보세요.
-- **[docs/backend-backlog.md](docs/backend-backlog.md)** — 백엔드에 요청·확인할
-  것들. 디자인에는 있는데 API가 못 하는 게 보이면 **즉시 여기 적어주세요.**
+- **[docs/backend-backlog.md](docs/backend-backlog.md)** — 백엔드에 넘기는 열린
+  요청. 디자인에는 있는데 API가 못 하는 게 보이면 **즉시 여기 적어주세요.**
+- **[docs/frontend-status.md](docs/frontend-status.md)** — 우리가 붙일 것(🟡)과
+  기획 결정 대기(🟣), 화면별 API 커버리지.
 - **[docs/deploy.md](docs/deploy.md)** — `release` 브랜치 → TestFlight 배포.
   동작 중입니다: JS 변경은 OTA로 수십 초, 네이티브 변경만 새 빌드.
 
