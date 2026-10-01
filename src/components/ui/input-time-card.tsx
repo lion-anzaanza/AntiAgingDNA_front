@@ -73,7 +73,12 @@ export function InputTimeCard({
         </View>
       ) : null}
 
-      <View style={{ flexDirection: 'row', marginTop: scale(4.03) }}>
+      {/*
+        * v3 says 4.03, but the 6.77 Plex labels (and the field text under them)
+        * render ~0.8 low on Android against the title, as card captions do —
+        * see `CAPTION_TUCK`. 3.33 lands both rows on v3's ink.
+        */}
+      <View style={{ flexDirection: 'row', marginTop: scale(3.33) }}>
         <FieldLabel>{startLabel}</FieldLabel>
         <View style={{ width: scale(ARROW_WIDTH) }} />
         <FieldLabel>{endLabel}</FieldLabel>

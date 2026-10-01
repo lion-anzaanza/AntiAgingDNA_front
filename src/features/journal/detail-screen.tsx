@@ -7,7 +7,12 @@ import { ButtonBack } from '@/components/ui/button-back';
 import { FeelSelect } from '@/components/ui/feel-select';
 import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
-import { pillWidth, SelectCard } from '@/components/ui/select-card';
+import {
+  HISTORY_CAPTION,
+  pillWidth,
+  rowUnderCaption,
+  SelectCard,
+} from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { fromIsoDate } from '@/lib/dates';
 import { COLOR } from '@/lib/design';
@@ -187,8 +192,8 @@ export default function JournalDetailScreen() {
         <Gap>
           <LooseCard>
             <CardTitle>카페인 섭취</CardTitle>
-            <CardCaption>{CAFFEINE_CAPTION}</CardCaption>
-            <PillRow marginTop={4.42}>
+            <CardCaption history>{CAFFEINE_CAPTION}</CardCaption>
+            <PillRow marginTop={4.42 - HISTORY_CAPTION.drop}>
               {CAFFEINE_CUPS.map((option, index) => (
                 <SelectButton
                   key={option}
@@ -199,8 +204,8 @@ export default function JournalDetailScreen() {
               ))}
             </PillRow>
             <CardTitle marginTop={6.32}>마지막 섭취 시각</CardTitle>
-            <CardCaption>{CAFFEINE_TIME_CAPTION}</CardCaption>
-            <PillRow marginTop={4.38}>
+            <CardCaption history>{CAFFEINE_TIME_CAPTION}</CardCaption>
+            <PillRow marginTop={rowUnderCaption(true)}>
               {CAFFEINE_TIME.map((option, index) => (
                 <SelectButton
                   key={option}

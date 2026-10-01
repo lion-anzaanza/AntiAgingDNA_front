@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import { Text, View } from 'react-native';
 
 import {
-  CAPTION_TUCK,
+  captionStyle,
   CARD_INSET,
   CARD_PAD_TOP,
   CARD_SURFACE,
@@ -60,18 +60,13 @@ export function CardTitle({ children, marginTop = 0 }: { children: string; margi
   );
 }
 
-/** Plex Regular 6.77 note under a card title, tucked under its line box like `SelectCard`'s. */
-export function CardCaption({ children }: { children: string }) {
+/**
+ * Plex Regular 6.77 note under a card title, tucked under its line box like
+ * `SelectCard`'s; `history` takes 상세보기's smaller, lower caption.
+ */
+export function CardCaption({ children, history = false }: { children: string; history?: boolean }) {
   return (
-    <Text
-      style={{
-        fontSize: scale(6.769),
-        lineHeight: scale(9.026),
-        marginTop: scale(CAPTION_TUCK),
-        marginLeft: scale(8.6),
-        color: COLOR.text.body,
-      }}
-      className="font-plex">
+    <Text style={[captionStyle(history), { marginLeft: scale(8.6) }]} className="font-plex">
       {children}
     </Text>
   );

@@ -35,6 +35,29 @@ export const ROW_UNDER_TITLE = 3.76;
 export const CAPTION_TUCK = -1.82;
 export const ROW_UNDER_CAPTION = 4.38;
 
+/**
+ * 상세보기 (`history`) sets every card caption smaller — Plex Regular 5.64
+ * (10px) on the same 9.03 line — and its line box 1.69 lower, with the row in
+ * the same place. All six captions on that frame agree, so it is a variant,
+ * not a slip.
+ */
+export const HISTORY_CAPTION = { fontSize: 5.641, drop: 1.69 };
+
+/** A card caption's text style; `history` takes 상세보기's smaller, lower line. */
+export function captionStyle(history: boolean): TextStyle {
+  return {
+    fontSize: scale(history ? HISTORY_CAPTION.fontSize : 6.769),
+    lineHeight: scale(9.026),
+    marginTop: scale(CAPTION_TUCK + (history ? HISTORY_CAPTION.drop : 0)),
+    color: COLOR.text.body,
+  };
+}
+
+/** The pill row's gap under a caption, which the lower history caption eats into. */
+export function rowUnderCaption(history: boolean): number {
+  return ROW_UNDER_CAPTION - (history ? HISTORY_CAPTION.drop : 0);
+}
+
 /** A pill's share of its row: a v3 width when the row gives one, else equal. */
 export function pillWidth(widths: readonly number[] | undefined, index: number): ViewStyle {
   return widths ? { width: scale(widths[index]), flexShrink: 1 } : { flex: 1 };
@@ -100,16 +123,7 @@ export function SelectCard(props: SelectCardProps) {
         {label}
       </Text>
       {caption ? (
-        <Text
-          style={{
-            fontSize: scale(6.769),
-            lineHeight: scale(9.026),
-            // The caption's line box tucks under the title's (`CAPTION_TUCK`).
-            marginTop: scale(CAPTION_TUCK),
-            marginLeft: scale(8.5),
-            color: COLOR.text.body,
-          }}
-          className="font-plex">
+        <Text style={[captionStyle(history), { marginLeft: scale(8.5) }]} className="font-plex">
           {caption}
         </Text>
       ) : null}
@@ -118,7 +132,7 @@ export function SelectCard(props: SelectCardProps) {
           flexDirection: 'row',
           gap: scale(4.513),
           paddingHorizontal: scale(CARD_INSET),
-          marginTop: scale(caption ? ROW_UNDER_CAPTION : ROW_UNDER_TITLE),
+          marginTop: scale(caption ? rowUnderCaption(history) : ROW_UNDER_TITLE),
         }}>
         {options.map((option, index) => (
           <SelectButton
