@@ -620,12 +620,13 @@ The read side is wired too, as of 2026-08-17 — 홈, 일지/메인, 일지/캘�
 - `src/lib/dates.ts` — local-calendar helpers. `isoDate` moved here out of
   `today.tsx`; the UTC trap it guards against is described in its header.
 
-**Never call `GET /api/scores/{date}` or `/api/scores/today`.** Reading a single
-date *creates* that date's score row on the server, permanently, and there is no
-way to delete it (`DELETE` → 405) — verified 2026-08-17, backlog 31. A calendar
-drawing one month with per-day fetches would record that whole month. The ranged
-form creates nothing, so `scoresPath` only ever builds a range and a single day
-is a one-day window.
+**Read scores by range only.** `GET /api/scores/{date}` used to *create* that
+date's score row on the server, permanently (`DELETE` → 405) — verified
+2026-08-17, backlog 31 — so a calendar drawing one month with per-day fetches
+would have recorded the whole month. The backend fixed it (verified 2026-10-02:
+a single read no longer writes a row), but `scoresPath` still only builds a
+range and a single day is a one-day window: one code path, pinned by
+`score.test.ts`.
 
 **And do not use the response's `grade`.** It follows `displayTotal`, which is
 smoothed and includes the signup baseline, so it disagrees with the day it

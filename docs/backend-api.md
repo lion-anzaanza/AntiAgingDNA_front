@@ -73,8 +73,8 @@ type as `*/*` rather than `application/json`.
 | DELETE | `/api/diaries/{date}` | — | 204 | — |
 | GET | `/api/scores` | `?from=&to=` | 200 `DailyScoreResponse[]` | ✅ |
 | GET | `/api/scores/items` | `?from=&to=` (≤366 days) | 200 `ItemTrendResponse[]` | — path built, not called |
-| GET | `/api/scores/{date}` | — | 200 `DailyScoreResponse` | ⛔ never (see Scores) |
-| GET | `/api/scores/today` | — | 200 `DailyScoreResponse` | ⛔ never (see Scores) |
+| GET | `/api/scores/{date}` | — | 200 `DailyScoreResponse` | — safe since the fix (see Scores) |
+| GET | `/api/scores/today` | — | 200 `DailyScoreResponse` | — |
 | GET | `/api/dna` | — | 200 `DnaInfoResponse` | — |
 | GET | `/health` | — | 200 | — |
 
@@ -245,12 +245,14 @@ The colour for each is ours to choose.
 - `/api/dna`'s `baseline` is computed from the onboarding answers instead, so its
   holes differ from a day's: `emotion` present, `social` and `environment` null.
 
-**Do not call `GET /api/scores/{date}` or `/today`.** Reading a single date
-**created** that date's score row on the server, permanently (`DELETE` → 405) —
-verified 2026-08-17. The backend reports a fix (store only for dates with a
-diary and for today) that has **not been confirmed deployed** (backlog 31). The
-ranged form creates nothing, so every screen uses `?from&to`, narrowing to a
-one-day window when it needs a single day.
+**A single-date read no longer writes a row** — verified 2026-10-02 (backlog
+31): `GET /api/scores/2024-06-14` on `demo` returned 200 and the range
+`2024-06-10..20` stayed empty. Rows are stored only for days with a diary and for
+today; other dates are computed and returned. Before the fix (verified
+2026-08-17) every single-date read created a permanent row (`DELETE` → 405),
+which is why every screen still uses `?from&to`, narrowing to a one-day window
+when it needs a single day — keep it that way; it is one code path and
+`score.test.ts` pins it.
 
 Two derived values are computed on the device, with the backend's agreement
 (backlog 28): 어제보다 from a two-day range (no yesterday row → no delta), and
@@ -259,10 +261,15 @@ the calendar's 기록 N일 · 평균 · 최고 from the month's range.
 ### Item trend — `GET /api/scores/items`
 
 One row per recorded day: `sleepMinutes`, `sleepScore` (0–100), `sleepGrade`,
-`waterIntake` (enum), `waterScore` (0–100), `waterGrade`. Grades on 70/40.
+`waterIntake` (enum), `waterScore` (0–100), `waterGrade`, and since 2026-10-02
+(backlog 10) `stressLevel`, `stressScore`, `stressGrade`. Grades on 70/40.
+`stressScore` points the wellbeing way — `100 × (10 − stressLevel) / 10`, so high
+stress is a low score and `stressGrade` `DANGER` (verified on `demo`: level 7 →
+30 → `DANGER`, 3 → 70 → `GOOD`). The 홈 stat card's `%` points the other way
+(backlog 26), so map the badge from the grade, not from the `%`.
 Built for the 나의 LifeDNA 정보 수면 / 수분 cards. The v4 redesign
 (2026-09-30) brought 신체 back to exactly those two cards, so it can now be wired;
-nothing calls it yet (frontend-status, 11). The sleep fields are always `null` for the reason above.
+nothing calls it yet (frontend-status, 11). The sleep fields are `null` for every day entered through the app, for the reason above; the `demo` seed carries bedtimes, so it shows `sleepMinutes` where real users will not.
 
 **No sentences, anywhere.** Every sentence the design shows — card comments,
 summaries, the orb's status chip — is the front end's to compose from these
