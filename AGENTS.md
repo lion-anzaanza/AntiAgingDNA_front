@@ -538,11 +538,13 @@ and each is listed so the next person does not "fix" the code back.
   icon on 112, the wordmark on 111.5, the greeting on 112, 회원가입 on 112.5 and
   아이디·비밀번호 찾기 on 110.5, while the button is dead-centre on 110. The code
   centres everything on 110; reproducing the scatter is not worth it.
-- **회원가입/1 no longer matches Figma, on purpose.** The mock draws 성별, 직업
-  and a 년/월/일 birth date; the backend will not accept any of them and stores
-  only `birthYear` (backlog item 13), so the screen collects six fields and the
-  mock needs updating. `ui/date-input-row.tsx` went with them. v4 still draws
-  them (and no 아이디); the screen takes v4's look, not its field list.
+- **회원가입/1 follows v3's field list, plus 아이디 (owner's decision,
+  2026-10-01).** v3 draws 성별, 직업 and a 년/월/일 birth date, so the screen
+  does too and gates 다음 on them — but the backend stores only `birthYear`
+  (backlog item 13), so 성별·직업·월·일 stay in the draft and are never sent.
+  v3 draws no 아이디 while 로그인 asks for one and the server requires
+  `loginId`; the screen adds it at the top in the other fields' style. Both
+  are rows in `docs/redesign-v3-delta.md`.
 
 ### The backend is wired for auth
 

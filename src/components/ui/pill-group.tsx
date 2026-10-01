@@ -36,6 +36,8 @@ type PillGroupProps = {
   caption?: string;
   options: string[];
   columns?: 1 | 2 | 3 | 4;
+  /** Question → pills, when a card draws it tighter than the family's 6.77. */
+  labelGap?: number;
   /** Read-only replay of an earlier answer — see `SelectButtonState`. */
   history?: boolean;
 } & (
@@ -49,6 +51,7 @@ export function PillGroup(props: PillGroupProps) {
     caption,
     options,
     columns = 2,
+    labelGap = LABEL_GAP,
     history = false,
   } = props;
   const width = scale(pillWidth(columns));
@@ -98,7 +101,7 @@ export function PillGroup(props: PillGroupProps) {
         Explicit rows rather than flexWrap: the pills fill the row exactly, and
         a rounding hair over the width would wrap the last one onto its own row.
         */}
-      <View style={{ gap: scale(GAP), marginTop: label ? scale(caption ? 3.69 : LABEL_GAP) : 0 }}>
+      <View style={{ gap: scale(GAP), marginTop: label ? scale(caption ? 3.69 : labelGap) : 0 }}>
         {rowsOf(options, columns).map((row) => (
           <View key={row[0]} style={{ flexDirection: 'row', gap: scale(GAP) }}>
             {row.map((option) => (

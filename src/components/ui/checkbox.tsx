@@ -1,6 +1,6 @@
 import { Pressable } from 'react-native';
 
-import { COLOR, SHADOW_V4 } from '@/lib/design';
+import { COLOR, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
 type CheckboxProps = {
@@ -9,20 +9,21 @@ type CheckboxProps = {
 };
 
 /**
- * Figma v4 회원가입/3: an 11.28 circle, white at rest and `surface/tint-2` once
- * ticked. v4 draws no ✓ inside it — the row's label turning `text/heading`
- * is the other half of the checked state (see the inventory, 결정 대기).
+ * Figma v3 회원가입/3: a 24pt circle (13.54 at 220), white with the 4px ambient
+ * shadow at rest and a flat `#8169A2` once ticked — v3's own hex, not one of the
+ * colour tokens. Still no ✓ inside; the row's label turning `text/heading` is
+ * the other half of the checked state.
  */
 export function Checkbox({ checked, onPress }: CheckboxProps) {
   return (
     <Pressable
       onPress={onPress}
       style={{
-        width: scale(11.282),
-        height: scale(11.282),
-        borderRadius: scale(5.641),
-        backgroundColor: checked ? COLOR.surface.tint2 : COLOR.surface.card,
-        boxShadow: SHADOW_V4,
+        width: scale(13.538),
+        height: scale(13.538),
+        borderRadius: scale(6.769),
+        backgroundColor: checked ? '#8169A2' : COLOR.surface.card,
+        boxShadow: checked ? 'none' : SHADOW,
       }}
     />
   );

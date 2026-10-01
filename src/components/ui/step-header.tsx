@@ -8,8 +8,14 @@ import { scale } from '@/lib/scale';
 import { ButtonBack } from './button-back';
 
 /**
- * Figma v4 회원가입/1·2·3: back chip + title, a three-segment progress bar, and
+ * Figma v3 회원가입/1·2·3: back chip + title, a three-segment progress bar, and
  * the "STEP n" label.
+ *
+ * v3 grew the back chip to a 22.56 tile that sits 2.26 left of the column
+ * (x 9.03 against 11.28), so the row is the chip's height and the title follows
+ * it 3.93 later, centred on it. The bar starts 4.56 below the chip — the same
+ * 7.12 below the title's line box as v4. The fill took a stronger ramp of its
+ * own (`#F6B8DF → #C7B2F3 → #A8C0F2`, all three frames).
  *
  * The bar spans the 197.44 column. The filled part is one pastel ramp covering
  * the steps done so far; the segments still to come are thinner `surface/track`
@@ -21,6 +27,9 @@ import { ButtonBack } from './button-back';
  * width; each step keeps the angle v4 gives for that width.
  */
 const BAR_WIDTH = 197.44;
+/** v3's progress fill — more saturated than `GRADIENT_PASTEL`, same stops. */
+const PROGRESS_COLORS = ['#F6B8DF', '#C7B2F3', '#A8C0F2'] as const;
+const BACK_OUTSET = 2.256;
 const FILL_HEIGHT = 4.81;
 const TRACK_HEIGHT = 2.88;
 const RADIUS = 2.885;
@@ -55,14 +64,14 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
   return (
     <View>
       {title ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: scale(-BACK_OUTSET) }}>
           <ButtonBack fallbackHref={backHref} />
           <Text
             style={{
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.271),
-              marginLeft: scale(9.4),
+              marginLeft: scale(3.93),
               color: COLOR.text.strong,
             }}
             className="font-plex-bold">
@@ -71,10 +80,10 @@ export function StepHeader({ title, backHref, stepLabel, currentStep }: StepHead
         </View>
       ) : null}
 
-      <View style={{ width: scale(BAR_WIDTH), height: scale(FILL_HEIGHT), marginTop: scale(7.12) }}>
+      <View style={{ width: scale(BAR_WIDTH), height: scale(FILL_HEIGHT), marginTop: scale(title ? 4.56 : 7.12) }}>
         {ramp ? (
           <LinearGradient
-            colors={[...GRADIENT_PASTEL.colors]}
+            colors={[...PROGRESS_COLORS]}
             locations={[...GRADIENT_PASTEL.locations]}
             start={ramp.start}
             end={ramp.end}
