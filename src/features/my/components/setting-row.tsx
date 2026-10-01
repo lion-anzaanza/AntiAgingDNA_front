@@ -72,6 +72,10 @@ export function SettingRow({
           style={{
             position: 'absolute',
             left: at(190.36),
+            // Stops where the chevron's stroke starts (box 314 + 7.5): at font
+            // scale 1.1 the unbounded caption ran underneath it. v3's own text
+            // box (123 wide) is too tight for Android's glyph widths at 1.0.
+            width: at(321.5 - 190.36),
             top: at(row.labelCentre - 8),
             fontSize: at(12),
             lineHeight: at(16),
