@@ -38,3 +38,16 @@ export const MET_PEOPLE_CAPTION = '대면·통화·영상 모두 포함';
 
 /** Between consecutive cards in a section — 4.81 everywhere in both v4 일지 frames. */
 export const CARD_GAP = 4.808;
+
+/**
+ * v3 pill widths for the rows it no longer shares equally — each follows its
+ * labels, and 오늘의기록 and 상세보기 draw them identically. Rows not listed are
+ * equal. 걸은 시간's labels are ours (backlog 9) but keep v3's widths.
+ */
+export const SLEEP_ONSET_WIDTHS = [40.62, 40.62, 41.18, 43.44];
+export const MEAL_COUNT_WIDTHS = [25.84, 25.84, 25.84, 25.84, 25.84, 27.64];
+export const CAFFEINE_TIME_WIDTHS = [32.72, 29.33, 46.82, 56.97];
+export const EXERCISE_MINUTES_WIDTHS = [41.18, 40.62, 40.62, 43.44];
+export const WALKED_WIDTHS = [41.18, 40.62, 40.62, 43.44];
+export const SAT_WIDTHS = [41.18, 39.49, 39.49, 45.69];
+export const SCREEN_TIME_WIDTHS = [43.44, 39.49, 39.49, 43.44];

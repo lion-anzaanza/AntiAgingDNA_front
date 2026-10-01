@@ -27,13 +27,16 @@ import { areaPath, splinePath } from '@/lib/spline';
  * the same 9.59 SemiBold title, and the summary in the same `surface/tint`
  * strip as 월간 보기. v4 has no gradient text or strokes, so the line, dots
  * and summary are solid `brand/violet-text`.
+ *
+ * v3 has no frame for it either; it follows v3's 주간_기록 (title line 13.08,
+ * strip radius 4.51, first and last day centres 18.72 / 178.31).
  */
 const CARD_WIDTH = 197.436;
 const CARD_HEIGHT = 91.346;
 
 /** The plot band: score 0 sits on PLOT_BOTTOM, score 100 on PLOT_TOP. */
-const PLOT_LEFT = 18.89;
-const PLOT_RIGHT = 178.3;
+const PLOT_LEFT = 18.72;
+const PLOT_RIGHT = 178.31;
 const PLOT_TOP = 30;
 const PLOT_BOTTOM = 52;
 /** The area fill closes 5pt below the lowest possible dot. */
@@ -89,7 +92,7 @@ export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartPr
         style={{
           position: 'absolute',
           left: scale(8.7),
-          top: scale(12.31 - 13.538 / 2),
+          top: scale(13.08 - 13.538 / 2),
           fontSize: scale(9.59),
           lineHeight: scale(13.538),
           letterSpacing: scale(-0.0959),
@@ -142,7 +145,7 @@ export function WeeklyConditionChart({ points, summary }: WeeklyConditionChartPr
           top: scale(63.46),
           width: scale(179.385),
           height: scale(18.269),
-          borderRadius: scale(4.808),
+          borderRadius: scale(4.513),
           backgroundColor: COLOR.surface.tint,
           alignItems: 'center',
           justifyContent: 'center',

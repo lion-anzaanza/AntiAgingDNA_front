@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 
-import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
+import { COLOR, GRADIENT_PROGRESS, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 
@@ -46,9 +46,16 @@ const FILL_ANGLE = 176.37;
 const TAP_SLOP = 4;
 
 /**
- * Figma: Select0To10 / Select0To10_Card — a pastel bar up to the handle, and a
- * thinner `surface/track` remainder after it, both carrying the ambient shadow.
+ * Figma: Select0To10 / Select0To10_Card — a `GRADIENT_PROGRESS` bar up to the
+ * handle (v3; v4 drew it pastel), and a thinner `surface/track` remainder after
+ * it, both carrying the ambient shadow.
+ *
+ * v3 card rhythm: title line 5.42 down, track 5.08 under it, labels 1.8 under
+ * the handle, 5.01 to the bottom (52.88 in all). The 현재 선택 badge is centred
+ * at 163.03 of the 197.44 card — not against the edge — so it is pulled in.
+ * `Select0To10_History` (상세보기) keeps it flush right.
  */
+const BADGE_PULL_IN = 5.2;
 export function Slider0To10({
   label,
   value,
@@ -93,8 +100,8 @@ export function Slider0To10({
       style={[
         carded ? CARD_SURFACE : undefined,
         {
-          paddingTop: scale(carded ? 4.65 : 0),
-          paddingBottom: scale(carded ? 4.71 : 0),
+          paddingTop: scale(carded ? 5.42 : 0),
+          paddingBottom: scale(carded ? 5.01 : 0),
           paddingHorizontal: scale(carded ? CARD_INSET : 0),
         },
       ]}>
@@ -107,6 +114,7 @@ export function Slider0To10({
             height: scale(9.615),
             borderRadius: scale(9.615),
             paddingHorizontal: scale(1),
+            marginRight: scale(card && !history ? BADGE_PULL_IN : 0),
             backgroundColor: COLOR.surface.tint2,
             alignItems: 'center',
             justifyContent: 'center',
@@ -126,7 +134,7 @@ export function Slider0To10({
       <View
         {...(history ? {} : panResponder.panHandlers)}
         onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
-        style={{ height: scale(HANDLE), marginTop: scale(5.6), justifyContent: 'center' }}>
+        style={{ height: scale(HANDLE), marginTop: scale(5.08), justifyContent: 'center' }}>
         {/*
           The bars and handle must not take touches: `updateFromX` reads
           `locationX`, which is relative to whichever view was hit, and the
@@ -145,8 +153,8 @@ export function Slider0To10({
           }}
         />
         <LinearGradient
-          colors={[...GRADIENT_PASTEL.colors]}
-          locations={[...GRADIENT_PASTEL.locations]}
+          colors={[...GRADIENT_PROGRESS.colors]}
+          locations={[...GRADIENT_PROGRESS.locations]}
           start={ramp.start}
           end={ramp.end}
           pointerEvents="none"
@@ -176,7 +184,7 @@ export function Slider0To10({
       </View>
 
       <View
-        style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: scale(2.35) }}>
+        style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: scale(1.8) }}>
         <Text style={SCALE_LABEL} className="font-plex">
           0 | 낮음
         </Text>

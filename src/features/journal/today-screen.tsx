@@ -8,7 +8,7 @@ import { ButtonBack } from '@/components/ui/button-back';
 import { FeelSelect, type FeelValue } from '@/components/ui/feel-select';
 import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
-import { SelectCard } from '@/components/ui/select-card';
+import { pillWidth, SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
 import { ApiError, messageFor, request } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -29,34 +29,45 @@ import {
   CAFFEINE_CUPS,
   CAFFEINE_TIME,
   CAFFEINE_TIME_CAPTION,
+  CAFFEINE_TIME_WIDTHS,
   CARD_GAP,
   DID_EXERCISE,
   EXERCISE_KIND,
   EXERCISE_MINUTES,
+  EXERCISE_MINUTES_WIDTHS,
   JUNK_FOOD,
   JUNK_FOOD_CAPTION,
   MEAL_COUNT,
+  MEAL_COUNT_WIDTHS,
   MET_PEOPLE,
   MET_PEOPLE_CAPTION,
   MOOD_RECOVERY,
   MOOD_RECOVERY_CAPTION,
   SAT,
+  SAT_WIDTHS,
   SCREEN_TIME,
+  SCREEN_TIME_WIDTHS,
   SLEEP_ONSET,
+  SLEEP_ONSET_WIDTHS,
   WALKED,
+  WALKED_WIDTHS,
   WATER,
   WATER_CAPTION,
 } from '@/features/journal/journal-options';
 import { scale } from '@/lib/scale';
 
 /**
- * Figma v4: 일지/오늘의기록(생성) — `1363:2209` (was `480:1269`). Positions are
- * v4's, frame y − 38 for the `PhoneHeader` mock; the column is 11.28 / 197.436.
+ * Figma v3: 일지/오늘의기록(생성) — `1316:1610` (v4 `1363:2209`, first
+ * `480:1269`). Positions are v3's ×220/390, frame y − 38 for the status-bar
+ * mock; the column is 11.28 / 197.436.
  *
  * 카페인 섭취 and 운동 습관 are drawn as loose shapes in Figma rather than as
  * SelectItem components (a card holding two questions, and one with captioned
- * sub-rows), so they are assembled by hand from `form-text`'s pieces. v4 made
- * their pills the same even grid as `SelectCard`'s.
+ * sub-rows), so they are assembled by hand from `form-text`'s pieces. Their
+ * pills use `pillWidth`: equal, or v3's label-following widths.
+ *
+ * v3 drops every section heading 0.9 lower than v4 — about 0.9 more above, 0.9
+ * less below — and keeps the 4.81 gap between cards.
  */
 export default function JournalTodayScreen() {
   const router = useRouter();
@@ -223,21 +234,21 @@ export default function JournalTodayScreen() {
         ref={scroller}
         contentContainerStyle={{
           paddingHorizontal: scale(CONTENT_INSET),
-          // v4 leaves 28.96 between the button and the tab bar; the shared
+          // v3 leaves 28.96 between the button and the tab bar; the shared
           // `Button` is 27.08 tall where this frame draws 29.33, so the
           // difference is added here to keep the page the same length.
           paddingBottom: scale(28.96 + (29.333 - 27.077)),
         }}>
-        {/* Header: v4's own y (frame y − 38); the banner starts at 34.12. */}
+        {/* Header: v3's own y (×220/390 − 38); the banner starts at 34.12. */}
         <View style={{ height: scale(72.12 - 38), marginHorizontal: scale(-CONTENT_INSET) }}>
-          <View style={{ position: 'absolute', left: scale(CONTENT_INSET), top: scale(43.27 - 38) }}>
+          <View style={{ position: 'absolute', left: scale(9.026), top: scale(0.26) }}>
             <ButtonBack fallbackHref="/(tabs)/home" />
           </View>
           <Text
             style={{
               position: 'absolute',
-              left: scale(31.16),
-              top: scale(49.75 - 38 - 18.051 / 2),
+              left: scale(35.66),
+              top: scale(2.25),
               fontSize: scale(13.538),
               lineHeight: scale(18.051),
               letterSpacing: scale(-0.2708),
@@ -250,7 +261,7 @@ export default function JournalTodayScreen() {
             style={{
               position: 'absolute',
               right: scale(CONTENT_INSET),
-              top: scale(50.01 - 38 - 12.41 / 2),
+              top: scale(5.51),
               fontSize: scale(8.462),
               lineHeight: scale(12.41),
               color: COLOR.text.body,
@@ -277,7 +288,7 @@ export default function JournalTodayScreen() {
             style={{
               position: 'absolute',
               left: scale(8.78),
-              top: scale(12.31 - 13.538 / 2),
+              top: scale(6.31),
               fontSize: scale(9.59),
               lineHeight: scale(13.538),
               letterSpacing: scale(-0.0959),
@@ -286,13 +297,13 @@ export default function JournalTodayScreen() {
             className="font-plex-semibold">
             항목별로 오늘의 기록을 채워주세요!
           </Text>
-          {/* v4 writes "LifeDAN" here; the name is LifeDNA (AGENTS, 2026-08-17). */}
+          {/* v4 wrote "LifeDAN" here; the name is LifeDNA (AGENTS, 2026-08-17). v3 sets it at 6.21. */}
           <Text
             style={{
               position: 'absolute',
-              left: scale(8.51),
-              top: scale(22.67 - 9.026 / 2),
-              fontSize: scale(6.769),
+              left: scale(8.5),
+              top: scale(20.37),
+              fontSize: scale(6.205),
               lineHeight: scale(9.026),
               color: COLOR.text.body,
             }}
@@ -301,7 +312,7 @@ export default function JournalTodayScreen() {
           </Text>
         </View>
 
-        <SectionHeading above={9.87} below={5.1}>
+        <SectionHeading above={10.77} below={4.21}>
           오늘의 컨디션
         </SectionHeading>
         <FeelSelect
@@ -314,7 +325,7 @@ export default function JournalTodayScreen() {
           }}
         />
 
-        <SectionHeading above={9.26} below={5.07}>
+        <SectionHeading above={10.72} below={4.18}>
           수면습관
         </SectionHeading>
         {/*
@@ -335,6 +346,7 @@ export default function JournalTodayScreen() {
           <SelectCard
             label="잠들기까지 걸린 시간"
             options={SLEEP_ONSET}
+            widths={SLEEP_ONSET_WIDTHS}
             value={sleepOnset}
             onChange={setSleepOnset}
           />
@@ -343,13 +355,19 @@ export default function JournalTodayScreen() {
           <FeelSelect label="수면 만족도" value={sleepFeel} onChange={setSleepFeel} />
         </View>
 
-        <SectionHeading above={8.23} below={5.15}>
+        <SectionHeading above={9.69} below={4.25}>
           식습관
         </SectionHeading>
-        <SelectCard label="오늘 식사 횟수" options={MEAL_COUNT} value={meals} onChange={setMeals} />
+        <SelectCard
+          label="오늘 식사 횟수"
+          options={MEAL_COUNT}
+          widths={MEAL_COUNT_WIDTHS}
+          value={meals}
+          onChange={setMeals}
+        />
         <View style={{ marginTop: scale(CARD_GAP) }}>
           <SelectCard
-            label="페스트푸드·단 음식"
+            label="패스트푸드·단 음식"
             caption={JUNK_FOOD_CAPTION}
             options={JUNK_FOOD}
             value={junkFood}
@@ -361,27 +379,27 @@ export default function JournalTodayScreen() {
           <LooseCard>
             <CardTitle>카페인 섭취</CardTitle>
             <CardCaption>{CAFFEINE_CAPTION}</CardCaption>
-            <PillRow marginTop={4.89}>
-              {CAFFEINE_CUPS.map((option) => (
+            <PillRow marginTop={4.42}>
+              {CAFFEINE_CUPS.map((option, index) => (
                 <SelectButton
                   key={option}
                   label={option}
                   state={option === caffeineCups ? 'active' : 'inactive'}
                   onPress={() => setCaffeineCups(option)}
-                  style={{ flex: 1 }}
+                  style={pillWidth(undefined, index)}
                 />
               ))}
             </PillRow>
-            <CardTitle marginTop={5.47}>마지막 섭취 시각</CardTitle>
+            <CardTitle marginTop={6.32}>마지막 섭취 시각</CardTitle>
             <CardCaption>{CAFFEINE_TIME_CAPTION}</CardCaption>
-            <PillRow marginTop={4.89}>
-              {CAFFEINE_TIME.map((option) => (
+            <PillRow marginTop={4.38}>
+              {CAFFEINE_TIME.map((option, index) => (
                 <SelectButton
                   key={option}
                   label={option}
                   state={option === caffeineTime ? 'active' : 'inactive'}
                   onPress={() => setCaffeineTime(option)}
-                  style={{ flex: 1 }}
+                  style={pillWidth(CAFFEINE_TIME_WIDTHS, index)}
                 />
               ))}
             </PillRow>
@@ -398,13 +416,13 @@ export default function JournalTodayScreen() {
           />
         </View>
 
-        <SectionHeading above={10.76} below={5.17}>
+        <SectionHeading above={11.66} below={4.28}>
           운동 습관
         </SectionHeading>
         <LooseCard>
           <CardTitle>오늘 운동했나요?</CardTitle>
-          <PillRow marginTop={4.55}>
-            {DID_EXERCISE.map((option) => (
+          <PillRow marginTop={3.78}>
+            {DID_EXERCISE.map((option, index) => (
               <SelectButton
                 key={option}
                 label={option}
@@ -416,7 +434,7 @@ export default function JournalTodayScreen() {
                     setExerciseKind(null);
                   }
                 }}
-                style={{ flex: 1 }}
+                style={pillWidth(undefined, index)}
               />
             ))}
           </PillRow>
@@ -430,27 +448,27 @@ export default function JournalTodayScreen() {
             */}
           {didExercise === '네' ? (
             <>
-              <FieldCaption marginTop={7.81}>운동 시간</FieldCaption>
-              <PillRow marginTop={3.56}>
-                {EXERCISE_MINUTES.map((option) => (
+              <FieldCaption marginTop={7.39}>운동 시간</FieldCaption>
+              <PillRow marginTop={3.99}>
+                {EXERCISE_MINUTES.map((option, index) => (
                   <SelectButton
                     key={option}
                     label={option}
                     state={option === exerciseMinutes ? 'active' : 'inactive'}
                     onPress={() => setExerciseMinutes(option)}
-                    style={{ flex: 1 }}
+                    style={pillWidth(EXERCISE_MINUTES_WIDTHS, index)}
                   />
                 ))}
               </PillRow>
-              <FieldCaption marginTop={7.7}>운동 종류</FieldCaption>
-              <PillRow marginTop={3.56}>
-                {EXERCISE_KIND.map((option) => (
+              <FieldCaption marginTop={7.27}>운동 종류</FieldCaption>
+              <PillRow marginTop={3.99}>
+                {EXERCISE_KIND.map((option, index) => (
                   <SelectButton
                     key={option}
                     label={option}
                     state={option === exerciseKind ? 'active' : 'inactive'}
                     onPress={() => setExerciseKind(option)}
-                    style={{ flex: 1 }}
+                    style={pillWidth(undefined, index)}
                   />
                 ))}
               </PillRow>
@@ -462,15 +480,22 @@ export default function JournalTodayScreen() {
           <SelectCard
             label="오늘 걸은 시간"
             options={WALKED}
+            widths={WALKED_WIDTHS}
             value={walked}
             onChange={setWalked}
           />
         </View>
         <View style={{ marginTop: scale(CARD_GAP) }}>
-          <SelectCard label="앉아 있던 시간" options={SAT} value={sat} onChange={setSat} />
+          <SelectCard
+            label="앉아 있던 시간"
+            options={SAT}
+            widths={SAT_WIDTHS}
+            value={sat}
+            onChange={setSat}
+          />
         </View>
 
-        <SectionHeading above={11.47} below={3.5}>
+        <SectionHeading above={12.37} below={2.61}>
           기타
         </SectionHeading>
         <Slider0To10
@@ -485,6 +510,7 @@ export default function JournalTodayScreen() {
           <SelectCard
             label="스마트폰 사용 시간 (스크린타임)"
             options={SCREEN_TIME}
+            widths={SCREEN_TIME_WIDTHS}
             value={screenTime}
             onChange={setScreenTime}
           />
@@ -508,13 +534,13 @@ export default function JournalTodayScreen() {
           />
         </View>
 
-        <SectionHeading above={9.8} below={5.17}>
+        <SectionHeading above={10.69} below={4.29}>
           자동 기록
         </SectionHeading>
         {/*
           * The server can record the day's weather now (backlog 12), but only
           * when the save carries `lat`/`lon`, and this screen sends neither —
-          * so nothing is ever recorded and v4's "서울 · 맑음 · 28°C" would be
+          * so nothing is ever recorded and v3's "서울 · 맑음 · 28°C" would be
           * invented. 결정 대기 13 in the v4 inventory.
           */}
         <WeatherCard value={NO_WEATHER} />

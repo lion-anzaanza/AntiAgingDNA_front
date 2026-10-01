@@ -1,4 +1,6 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+
+import { Icon, type IconName } from '@/components/ui/icon';
 
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
@@ -10,22 +12,21 @@ import { CARD_SURFACE, CARD_TITLE } from './select-card';
  * the five-face 컨디션 scale. The 일지 screens use it for 오늘의 컨디션 and
  * 수면 만족도.
  *
- * The faces come from one Figma spritesheet; `assets/images/journal/feel-*.png`
- * are the five crops, taken from `rawImages` so they keep their alpha
- * (AGENTS.md #7). v4 still uses the same sheet — re-cropped and compared
- * 2026-09-30, identical artwork.
+ * v3 replaced the spritesheet faces with the `Icon/Mood-*` line faces, 18.05
+ * (32pt) in `icon/primary` in every state; only the cell fill and label colour
+ * mark the choice.
  */
 export type FeelValue = 1 | 2 | 3 | 4 | 5;
 
 /** 1–5 → 매우나쁨…매우좋음, indexed by `value - 1`. */
 export const FEEL_LABELS = ['매우나쁨', '나쁨', '보통', '좋음', '매우좋음'] as const;
 
-const FEELS: { value: FeelValue; label: string; face: number }[] = [
-  { value: 1, label: FEEL_LABELS[0], face: require('@/assets/images/journal/feel-very-bad.png') },
-  { value: 2, label: FEEL_LABELS[1], face: require('@/assets/images/journal/feel-bad.png') },
-  { value: 3, label: FEEL_LABELS[2], face: require('@/assets/images/journal/feel-normal.png') },
-  { value: 4, label: FEEL_LABELS[3], face: require('@/assets/images/journal/feel-good.png') },
-  { value: 5, label: FEEL_LABELS[4], face: require('@/assets/images/journal/feel-very-good.png') },
+const FEELS: { value: FeelValue; label: string; face: IconName }[] = [
+  { value: 1, label: FEEL_LABELS[0], face: 'mood-very-bad' },
+  { value: 2, label: FEEL_LABELS[1], face: 'mood-bad' },
+  { value: 3, label: FEEL_LABELS[2], face: 'mood-normal' },
+  { value: 4, label: FEEL_LABELS[3], face: 'mood-good' },
+  { value: 5, label: FEEL_LABELS[4], face: 'mood-very-good' },
 ];
 
 /**
@@ -106,13 +107,13 @@ export function FeelSelect({
 
 type FeelButtonProps = {
   label: string;
-  face: number;
+  face: IconName;
   selected: boolean;
   history: boolean;
   onPress: () => void;
 };
 
-/** `VeryBad`…`VeryGood`: 42.87 tall, face 16.92 at 6.77 from the top. */
+/** `VeryBad`…`VeryGood`: 42.87 tall, face 18.05 at 6.2 from the top, label 3.49 under it. */
 function FeelButton({ label, face, selected, history, onPress }: FeelButtonProps) {
   // Same element tree every render — only style values change (AGENTS.md #3).
   // The selected face is the one v4 pill that carries the ambient shadow.
@@ -125,11 +126,11 @@ function FeelButton({ label, face, selected, history, onPress }: FeelButtonProps
         height: scale(42.872),
         borderRadius: scale(4.808),
         alignItems: 'center',
-        paddingTop: scale(6.77),
+        paddingTop: scale(6.2),
         backgroundColor: selected ? COLOR.brand.selected : COLOR.surface.chip,
         boxShadow: selected ? SHADOW_V4 : 'none',
       }}>
-      <Image source={face} style={{ width: scale(16.92), height: scale(16.92) }} resizeMode="contain" />
+      <Icon name={face} size={scale(18.051)} color={COLOR.icon.primary} />
       <Text
         numberOfLines={1}
         // At 1.0 this is Figma's size; at a phone's 1.1 font scale it shrinks
@@ -139,7 +140,7 @@ function FeelButton({ label, face, selected, history, onPress }: FeelButtonProps
         style={{
           fontSize: scale(7.333),
           lineHeight: scale(10.154),
-          marginTop: scale(4.45),
+          marginTop: scale(3.49),
           color: selected ? COLOR.text.onPastel : COLOR.text.body,
         }}
         className="font-plex-semibold">

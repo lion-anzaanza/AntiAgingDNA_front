@@ -152,7 +152,8 @@ Three follow-ons, learned while porting 일지 and 홈:
 - **One bitmap can back several nodes.** The five 만족도 faces are crops of a
   single sheet, so there is nothing per-face to export. Take the sheet and
   replay each `<img>`'s `w`/`h`/`left`/`top` percentages against its container
-  box; `assets/images/journal/feel-*.png` were cut that way.
+  box; the old `feel-*.png` were cut that way (v3 replaced them with the
+  `Icon/Mood-*` vectors in `ui/icon.tsx`, 2026-10-01).
 - **Vector nodes have no fill to fall back on**, and their export is flattened
   onto the canvas grey `#EAEAEA`. Key that flat grey to **transparent**, not to
   the background you happen to need: the 홈 stat icons were first keyed to white

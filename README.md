@@ -182,7 +182,7 @@ feature끼리는 서로 import하지 않습니다 — 두 탭이 함께 쓰게 �
 | `pill-group` | SelectItem3_1/3_2/4_1/4_2/5_1 | 라벨 + 알약 그리드 (2~4열, 카드 없음) |
 | `select-card` | SelectItem{3,4,6}[_Caption]_Card | 카드 + 라벨 + 설명 + 알약 한 줄 |
 | `likert-card` | SelectItem6_Card | 0~5 숫자 척도 카드 |
-| `feel-select` | SelectFeel5 / _NeedAnswer | 5단계 컨디션 (이모지 5종) |
+| `feel-select` | SelectFeel5 / _NeedAnswer | 5단계 컨디션 (v3 `Icon/Mood-*` 얼굴 5종) |
 | `input-time-card` | InputTime_Card | 시작/종료 시각 + 소요시간 뱃지 |
 | `slider-0-to-10` | Select0To10 / _Card / _History | 0~10 슬라이더 (`card`·`history` prop) |
 | `text-input` (`TextInputField`) | TextInput | 라벨 + 입력 필드 |

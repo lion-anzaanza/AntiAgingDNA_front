@@ -91,9 +91,9 @@ export const GRADIENT_PASTEL = {
 
 /**
  * v3's fill for anything that shows *progress*. In use: the 회원가입 step bar,
- * 홈's page dots and weekly progress bars. v3 draws the 0–10 slider fill, the
- * calendar legend and 개선책's 실천 bar in it too — those still use
- * `GRADIENT_PASTEL` and switch over in the 일지·개선책 tab work (not yet).
+ * 홈's page dots and weekly progress bars, the 0–10 slider fill and the
+ * calendar legend's high swatch. 개선책's 실천 bar is drawn in it too and still
+ * uses `GRADIENT_PASTEL` until the 개선책 tab work.
  * The same stops as `GRADIENT_PASTEL`, more saturated; buttons, banners and
  * chips keep the pastel one. Angles are per box, as with the pastel ramp.
  */

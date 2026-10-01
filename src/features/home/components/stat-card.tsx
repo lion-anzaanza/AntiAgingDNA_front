@@ -8,7 +8,6 @@ import { scale } from '@/lib/scale';
  * v3's three metric icons (`icon-moon`, `icon-drop`, `icon-flame`): 28pt line
  * glyphs, a 2.1 `icon/primary` stroke, no fill — the v4 1pt grey strokes,
  * redrawn larger in violet. The paths are Figma's own SVG export (28 viewBox).
- * The old `ic-*.png` files stay: `daily-summary-card` still draws them.
  *
  * Each icon keeps its own place in the card, as Figma has it (in 220 units):
  * the moon sits 2.6 right of centre and the three tops differ.

@@ -10,7 +10,8 @@ import { scale } from '@/lib/scale';
  * anything; the width comes from the container. What does change is the
  * **context**, and it does so consistently:
  *
- * - `journal` — every pill inside a 일지 card: 18.05 tall, radius 4.81.
+ * - `journal` — every pill inside a 일지 card: v3 grew it from 18.05 to 22.56
+ *   tall (40pt), radius 4.51.
  * - `signup` — 회원가입/2's questions: 24.82 tall, radius 4.51 (v3's 8; v4 had 5.64).
  * - `likert` — 회원가입/2's 0–5 WHO-5 row: v3 grew it from 14 to 22.56 tall,
  *   radius 4.51, with a larger 8.46 digit.
@@ -28,7 +29,7 @@ const SIZE: Record<
   SelectButtonSize,
   { height: number; radius: number; fontSize: number; lineHeight: number }
 > = {
-  journal: { height: 18.051, radius: 4.808, fontSize: 7.333, lineHeight: 10.154 },
+  journal: { height: 22.564, radius: 4.513, fontSize: 7.333, lineHeight: 10.154 },
   signup: { height: 24.821, radius: 4.513, fontSize: 7.333, lineHeight: 10.154 },
   likert: { height: 22.564, radius: 4.513, fontSize: 8.462, lineHeight: 11.282 },
 };

@@ -6,8 +6,9 @@ import { scale } from '@/lib/scale';
 import { CARD_INSET, CARD_SURFACE, CARD_TITLE, CARD_TITLE_INSET } from './select-card';
 
 /**
- * Figma: `InputTime_Card` (197.44×57.69 in v4) — a start/end time pair with a
- * duration badge in the corner. 일지 uses it for 취침 · 기상 시각.
+ * Figma: `InputTime_Card` (197.44×61.99 in v3) — a start/end time pair with a
+ * duration badge in the corner. 일지 uses it for 취침 · 기상 시각. v3 grew the
+ * fields to the journal pill's 22.56, radius 4.51.
  *
  * There is no picker behind it yet; like the rest of the app the fields are
  * display-only and the screen decides what tapping one does.
@@ -26,7 +27,7 @@ type InputTimeCardProps = {
 };
 
 /** The gap between the two fields, which the `→` sits centred in. */
-const ARROW_WIDTH = 27.82;
+const ARROW_WIDTH = 27.64;
 
 export function InputTimeCard({
   label,
@@ -42,7 +43,7 @@ export function InputTimeCard({
     <View
       style={[
         CARD_SURFACE,
-        { paddingTop: scale(4.08), paddingBottom: scale(6.96), paddingHorizontal: scale(CARD_INSET) },
+        { paddingTop: scale(4.85), paddingBottom: scale(6.97), paddingHorizontal: scale(CARD_INSET) },
       ]}>
       <Text
         style={[CARD_TITLE, { marginLeft: scale(CARD_TITLE_INSET - CARD_INSET) }]}
@@ -72,13 +73,13 @@ export function InputTimeCard({
         </View>
       ) : null}
 
-      <View style={{ flexDirection: 'row', marginTop: scale(4.28) }}>
+      <View style={{ flexDirection: 'row', marginTop: scale(4.03) }}>
         <FieldLabel>{startLabel}</FieldLabel>
         <View style={{ width: scale(ARROW_WIDTH) }} />
         <FieldLabel>{endLabel}</FieldLabel>
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: scale(1.53) }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: scale(1.01) }}>
         <TimeField value={start} onPress={onPressStart} />
         <Text
           style={{
@@ -113,8 +114,8 @@ function TimeField({ value, onPress }: { value: string; onPress?: () => void }) 
       onPress={onPress}
       style={{
         flex: 1,
-        height: scale(18.27),
-        borderRadius: scale(4.808),
+        height: scale(22.564),
+        borderRadius: scale(4.513),
         borderWidth: scale(0.673),
         borderColor: COLOR.border.soft,
         backgroundColor: COLOR.surface.card,

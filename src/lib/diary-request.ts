@@ -187,7 +187,7 @@ export function toDiaryRequest(answers: DiaryAnswers): DiaryRequest {
       sleepLatency: lookup('잠들기까지 걸린 시간', SLEEP_LATENCY, answers.sleepOnset),
       sleepSatisfaction: answers.sleepFeel ?? undefined,
       mealCount: lookup('오늘 식사 횟수', MEAL_COUNT_VALUE, answers.meals),
-      sugarIntake: lookup('페스트푸드·단 음식', SUGAR_INTAKE, answers.junkFood),
+      sugarIntake: lookup('패스트푸드·단 음식', SUGAR_INTAKE, answers.junkFood),
       caffeineCups: lookup('카페인 섭취', CAFFEINE_CUPS_VALUE, answers.caffeineCups),
       caffeineLastTime: lookup('마지막 섭취 시각', CAFFEINE_LAST_TIME, answers.caffeineTime),
       waterIntake: lookup('수분 섭취량', WATER_INTAKE, answers.water),
