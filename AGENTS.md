@@ -476,54 +476,46 @@ the routes.
   text fills it edge to edge (rule 14). Nothing is cut at 1.0. Found in the v3
   review; the pill is a fixed width.
 
-### From the review of the folder restructure (2026-09-30) — not yet done
+### From the review of the folder restructure (2026-09-30) — done 2026-10-02
 
-A `/code-review` of #11–#13 found no regression from the move itself. These are
-what it turned up instead, recorded rather than fixed so the restructure stays
-a pure move. Most urgent first.
+A `/code-review` of #11–#13 found no regression from the move itself, and
+turned up these instead. All are fixed but one:
 
-- **Bug: a failed session check signs the user out.** `lib/auth.tsx` discards
-  the stored token on *any* failure of `GET /api/auth/me` at launch, so opening
-  the app offline, or during a server 5xx, logs the user out. Only a 401/403
-  means the token is bad. Same shape as the 오늘의 기록 restore bug fixed on
-  2026-09-30, which treated every error as a 404.
-- **Requests have no timeout.** `lib/api.ts` never aborts a `fetch`, and on the
-  emulator with Wi-Fi and data off a request sat pending for over two minutes
-  rather than failing. Anything gated on a request — 오늘의 기록's 저장 while it
-  restores — stays locked that long, with no message.
-- **The lint boundary only covers listed features.** `eslint.config.js` builds
-  its zones from a hand-written `FEATURES` array, so a new folder under
-  `src/features` is unchecked until someone adds it. Reading the directory
-  (`fs.readdirSync(..., { withFileTypes: true })`) removes the manual step.
-- **`OrbState` is declared twice** — `features/home/components/orb-card.tsx`
-  redeclares the union `@/lib/score` already exports. Import it instead.
-- **Stale comments and docs**, each contradicting the code next to it:
-  - `features/my/main-screen.tsx` header says 데이터 개인정보·구독관리 are
-    unbuilt and their rows do nothing; `MENU` links to both.
-  - `docs/figma-reference.md` intro still says 06 has two undesigned frames;
-    its own Screens table maps both to built screens.
-  - `features/home/home-screen.tsx` header says there is no data layer; the
-    screen reads `/api/scores` and `/api/diaries`.
-  - `features/journal/today-screen.tsx` justifies the save `Alert` by 일지 메인
-    being static; it reads live scores now.
-  - The "Tests" heading below (and CLAUDE.md's "the tests cover `src/lib`")
-    is no longer true — `sign-up-form.test.ts` moved to `features/auth` — and
-    the count is 59, not 55. CLAUDE.md is project instruction, so change it
-    with the owner's say-so.
-- **README's placement rules read as conflicting**: "a helper used by one screen
-  stays in the screen" vs "hand-built cards go to `features/<tab>/components`".
-  The line actually drawn in #12 was size — cards of ~40 lines or more moved,
-  small helpers stayed. Say so in the README.
-- `release.yml`'s checks run `tsc` and lint but not `npm test`.
+- **A failed session check no longer signs the user out.** `lib/auth.tsx`
+  discards the token only on 401/403 from `GET /api/auth/me`. Offline or on a
+  5xx it opens with the last confirmed `User` (cached in secure-store next to
+  the token). Verified on the emulator with Wi-Fi and data off. Because that
+  restore does not check the token, **every authenticated call goes through
+  `authedRequest`** (from `useAuth`), which signs out on 401/403 — call it
+  rather than `request` with a token by hand.
+- **`GET` and `PUT` time out after 15s** (`REQUEST_TIMEOUT_MS` in `lib/api.ts`),
+  body included, and fail as a network error instead of hanging. `POST` and
+  `DELETE` do not: a signup abandoned while the server commits it would leave
+  the user facing 409 with no token.
+- **The lint boundary reads `src/features` from disk**, so a new feature folder
+  is fenced the moment it exists.
+- `OrbState` is imported from `@/lib/score`; the stale comments were fixed (most
+  had already gone with the v3 pass); `release.yml` runs `npm test`.
+- **Still open, needs the owner's say-so:** CLAUDE.md's "the tests cover
+  `src/lib`" — `sign-up-form.test.ts` lives in `features/auth`. CLAUDE.md is
+  project instruction, so it is not edited unilaterally.
+
+One trap found while verifying, worth a rule of its own: **never draw an
+`expo-linear-gradient` at zero width.** Android's `LinearGradientView.onDraw`
+throws `IllegalArgumentException` and Expo Go dies with "keeps stopping" — no
+red screen, no JS stack. `WeeklyInfoCard`'s empty progress bar did this while
+홈's week was loading; it now keeps a width and sets `opacity: 0`. The crash is
+only in `adb logcat -b crash`.
 
 Deliberately deferred, not a defect: `home-screen` still picks the orb artwork
 and sparkles from `ORB_STATES` itself rather than handing `OrbCard` the state.
 Move that lookup into `OrbCard` when a second screen needs an orb card.
 
-### Tests — `src/lib` only, and deliberately so
+### Tests — pure logic only, and deliberately so
 
-`jest-expo` + `npm test`. 55 tests across `dates`, `score`, `diary-request` and
-`spline` — the pure logic, where this project's two worst bugs actually lived:
+`jest-expo` + `npm test`. 108 tests across `src/lib` (`dates`, `score`,
+`diary-request`, `spline`, `gradient`) and the two pure files of
+`features/auth` (`sign-up-form`, `sign-up-request`) — the pure logic, where this project's two worst bugs actually lived:
 `toISOString()` filing every morning's diary against yesterday, and the diary
 round trip silently dropping fields under a `PUT` that replaces.
 
