@@ -1,11 +1,18 @@
 // https://docs.expo.dev/guides/using-eslint/
+const fs = require('fs');
+const path = require('path');
 const { defineConfig } = require('eslint/config');
 const expoConfig = require("eslint-config-expo/flat");
 
 // Imports flow one way: lib / components → features → app. A feature never
 // imports another feature — what two tabs share belongs in lib or
-// components/ui. Adding a folder under src/features means adding it here.
-const FEATURES = ["auth", "home", "journal", "plan", "my"];
+// components/ui. Every folder under src/features is a feature — read from
+// disk, so a new tab is fenced in the moment it exists (a hand-kept list left
+// new folders unchecked until someone remembered to add them).
+const FEATURES = fs
+  .readdirSync(path.join(__dirname, "src/features"), { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name);
 
 module.exports = defineConfig([
   expoConfig,

@@ -44,6 +44,22 @@ export class ApiError extends Error {
 /** Transport failures use 0 — there is no HTTP status to report. */
 export const NETWORK_ERROR_STATUS = 0;
 
+/**
+ * `fetch` has no timeout of its own: with Wi-Fi and data off, a request sat
+ * pending on the emulator for over two minutes, and anything gated on it —
+ * 오늘의 기록's 저장 while it restores — stayed locked that long with no
+ * message. Past this it fails as a network error instead.
+ *
+ * **Only idempotent methods get it** — `GET` and `PUT`. A timed-out write may
+ * still commit (backlog 34 saw one land after ~50s), which is harmless for the
+ * diary `PUT`: retrying replaces the day with the same form. It is not
+ * harmless for `POST /api/auth/signup`: giving up while the server creates the
+ * account would leave the user facing 409 on the retry with no token for the
+ * account they just made. So `POST` and `DELETE` wait for the server.
+ */
+export const REQUEST_TIMEOUT_MS = 15_000;
+const TIMED_METHODS = new Set(['GET', 'PUT']);
+
 type RequestOptions = {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   body?: unknown;
@@ -54,34 +70,50 @@ type RequestOptions = {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token, signal } = options;
 
-  let response: Response;
+  // One controller for both reasons to stop: the caller's signal and the clock.
+  // Both stay armed until the body has been read — headers can arrive and the
+  // body still stall (the chunked responses AGENTS.md describes on a bad LAN).
+  const controller = new AbortController();
+  const timer = TIMED_METHODS.has(method)
+    ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
+    : undefined;
+  const forward = () => controller.abort();
+  if (signal?.aborted) controller.abort();
+  signal?.addEventListener('abort', forward);
+
   try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      headers: {
-        Accept: 'application/json',
-        ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal,
-    });
-  } catch (cause) {
-    throw new ApiError(
-      NETWORK_ERROR_STATUS,
-      cause instanceof Error ? cause.message : '네트워크 오류',
-    );
+    let response: Response;
+    let text: string;
+    try {
+      response = await fetch(`${API_BASE_URL}${path}`, {
+        method,
+        headers: {
+          Accept: 'application/json',
+          ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        const problem = await readProblem(response);
+        throw new ApiError(response.status, problem?.title ?? `HTTP ${response.status}`, problem);
+      }
+      // 204, and any other body-less success.
+      if (response.status === 204) return undefined as T;
+      text = await response.text();
+    } catch (cause) {
+      if (cause instanceof ApiError) throw cause;
+      throw new ApiError(
+        NETWORK_ERROR_STATUS,
+        cause instanceof Error ? cause.message : '네트워크 오류',
+      );
+    }
+    return (text ? JSON.parse(text) : undefined) as T;
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', forward);
   }
-
-  if (!response.ok) {
-    const problem = await readProblem(response);
-    throw new ApiError(response.status, problem?.title ?? `HTTP ${response.status}`, problem);
-  }
-
-  // 204, and any other body-less success.
-  if (response.status === 204) return undefined as T;
-  const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 async function readProblem(response: Response): Promise<ProblemDetail | undefined> {
