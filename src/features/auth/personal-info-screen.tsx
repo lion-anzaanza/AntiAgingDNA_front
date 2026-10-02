@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  KeyboardAvoidingView,
   Pressable,
   TextInput as RNTextInput,
   ScrollView,
@@ -82,136 +83,141 @@ export default function PersonalInfoScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLOR.surface.bg }}>
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: scale(11.28),
-          paddingTop: scale(6.987),
-          paddingBottom: scale(24),
-        }}
-        keyboardShouldPersistTaps="handled">
-        <StepHeader
-          title="개인정보 입력"
-          backHref="/(auth)/sign-up"
-          stepLabel="STEP 1   개인정보 입력"
-          currentStep={1}
-        />
+      {/* The 생년월일 boxes sit low enough that the keyboard covered them
+          (frontend-status 40). The app is edge-to-edge, so Android does not
+          resize the window for the keyboard either — pad on both platforms. */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+        <ScrollView
+          contentContainerStyle={{
+            paddingHorizontal: scale(11.28),
+            paddingTop: scale(6.987),
+            paddingBottom: scale(24),
+          }}
+          keyboardShouldPersistTaps="handled">
+          <StepHeader
+            title="개인정보 입력"
+            backHref="/(auth)/sign-up"
+            stepLabel="STEP 1   개인정보 입력"
+            currentStep={1}
+          />
 
-        <View style={{ marginTop: scale(11.6), gap: scale(FIELD_GAP) }}>
-          <TextInputField
-            label="아이디"
-            placeholder="영문·숫자·_ 4자 이상"
-            value={form.loginId}
-            onChangeText={(loginId) => update({ loginId })}
-            autoCapitalize="none"
-            style={VALUE_TEXT}
-          />
-          <TextInputField
-            label="닉네임"
-            placeholder="별명을 입력해주세요"
-            value={form.nickname}
-            onChangeText={(nickname) => update({ nickname })}
-            style={VALUE_TEXT}
-          />
-          <TextInputField
-            label="이메일"
-            placeholder="your@lifedna.com"
-            value={form.email}
-            onChangeText={(email) => update({ email })}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            style={VALUE_TEXT}
-          />
-          <TextInputField
-            label="비밀번호"
-            placeholder="8자리 이상, 영문 숫자 포함"
-            value={form.password}
-            onChangeText={(password) => update({ password })}
-            secureTextEntry
-            style={VALUE_TEXT}
-          />
-          <TextInputField
-            label="비밀번호 재확인"
-            placeholder="다시 한 번 입력해주세요"
-            value={form.passwordConfirm}
-            onChangeText={(passwordConfirm) => update({ passwordConfirm })}
-            secureTextEntry
-            style={VALUE_TEXT}
-          />
-        </View>
-
-        <View style={{ marginTop: scale(4.062) }}>
-          <Text style={LABEL} className="font-plex-semibold">
-            생년월일
-          </Text>
-          {/* v3 insets the row 0.96 at both ends of the column. */}
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              paddingHorizontal: scale(0.962),
-            }}>
-            <DateBox
-              unit="년"
-              placeholder="YYYY"
-              maxLength={4}
-              value={form.birthYear}
-              onChange={(birthYear) => update({ birthYear })}
+          <View style={{ marginTop: scale(11.6), gap: scale(FIELD_GAP) }}>
+            <TextInputField
+              label="아이디"
+              placeholder="영문·숫자·_ 4자 이상"
+              value={form.loginId}
+              onChangeText={(loginId) => update({ loginId })}
+              autoCapitalize="none"
+              style={VALUE_TEXT}
             />
-            <DateBox
-              unit="월"
-              placeholder="MM"
-              maxLength={2}
-              value={form.birthMonth}
-              onChange={(birthMonth) => update({ birthMonth })}
+            <TextInputField
+              label="닉네임"
+              placeholder="별명을 입력해주세요"
+              value={form.nickname}
+              onChangeText={(nickname) => update({ nickname })}
+              style={VALUE_TEXT}
             />
-            <DateBox
-              unit="일"
-              placeholder="DD"
-              maxLength={2}
-              value={form.birthDay}
-              onChange={(birthDay) => update({ birthDay })}
+            <TextInputField
+              label="이메일"
+              placeholder="your@lifedna.com"
+              value={form.email}
+              onChangeText={(email) => update({ email })}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              style={VALUE_TEXT}
+            />
+            <TextInputField
+              label="비밀번호"
+              placeholder="8자리 이상, 영문 숫자 포함"
+              value={form.password}
+              onChangeText={(password) => update({ password })}
+              secureTextEntry
+              style={VALUE_TEXT}
+            />
+            <TextInputField
+              label="비밀번호 재확인"
+              placeholder="다시 한 번 입력해주세요"
+              value={form.passwordConfirm}
+              onChangeText={(passwordConfirm) => update({ passwordConfirm })}
+              secureTextEntry
+              style={VALUE_TEXT}
             />
           </View>
-        </View>
 
-        <View style={{ marginTop: scale(8.653) }}>
-          <Text style={LABEL} className="font-plex-semibold">
-            성별
-          </Text>
-          <ChoiceRow
-            options={GENDERS}
-            value={form.gender}
-            onChange={(gender) => update({ gender })}
-            gap={12.5}
-            height={29.418}
-            shadow={false}
-          />
-        </View>
+          <View style={{ marginTop: scale(4.062) }}>
+            <Text style={LABEL} className="font-plex-semibold">
+              생년월일
+            </Text>
+            {/* v3 insets the row 0.96 at both ends of the column. */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingHorizontal: scale(0.962),
+              }}>
+              <DateBox
+                unit="년"
+                placeholder="YYYY"
+                maxLength={4}
+                value={form.birthYear}
+                onChange={(birthYear) => update({ birthYear })}
+              />
+              <DateBox
+                unit="월"
+                placeholder="MM"
+                maxLength={2}
+                value={form.birthMonth}
+                onChange={(birthMonth) => update({ birthMonth })}
+              />
+              <DateBox
+                unit="일"
+                placeholder="DD"
+                maxLength={2}
+                value={form.birthDay}
+                onChange={(birthDay) => update({ birthDay })}
+              />
+            </View>
+          </View>
 
-        <View style={{ marginTop: scale(6.29) }}>
-          <Text style={LABEL} className="font-plex-semibold">
-            직업
-          </Text>
-          <ChoiceRow
-            options={JOBS}
-            value={form.job}
-            onChange={(job) => update({ job })}
-            gap={8.654}
-            height={30.083}
-            shadow
-            style={{ marginTop: scale(2.885) }}
-          />
-        </View>
+          <View style={{ marginTop: scale(8.653) }}>
+            <Text style={LABEL} className="font-plex-semibold">
+              성별
+            </Text>
+            <ChoiceRow
+              options={GENDERS}
+              value={form.gender}
+              onChange={(gender) => update({ gender })}
+              gap={12.5}
+              height={29.418}
+              shadow={false}
+            />
+          </View>
 
-        <View style={{ marginTop: scale(7.085) }}>
-          <Button
-            label="다음 →"
-            disabled={!canContinue}
-            style={{ opacity: canContinue ? 1 : 0.4 }}
-            onPress={next}
-          />
-        </View>
-      </ScrollView>
+          <View style={{ marginTop: scale(6.29) }}>
+            <Text style={LABEL} className="font-plex-semibold">
+              직업
+            </Text>
+            <ChoiceRow
+              options={JOBS}
+              value={form.job}
+              onChange={(job) => update({ job })}
+              gap={8.654}
+              height={30.083}
+              shadow
+              style={{ marginTop: scale(2.885) }}
+            />
+          </View>
+
+          <View style={{ marginTop: scale(7.085) }}>
+            <Button
+              label="다음 →"
+              disabled={!canContinue}
+              style={{ opacity: canContinue ? 1 : 0.4 }}
+              onPress={next}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

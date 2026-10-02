@@ -1,6 +1,12 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { isBirthDate, isNickname, isPersonalInfoComplete, type SignUpForm } from './sign-up-form';
+import {
+  isBirthDate,
+  isNickname,
+  isPassword,
+  isPersonalInfoComplete,
+  type SignUpForm,
+} from './sign-up-form';
 
 /**
  * The server's own rule, pinned here because it arrived late (backlog 19) and a
@@ -30,6 +36,27 @@ describe('isNickname', () => {
   it('rejects emoji and Hangul jamo, which the pattern excludes', () => {
     expect(isNickname('안자🙂')).toBe(false);
     expect(isNickname('ㅇㅈ')).toBe(false);
+  });
+});
+
+/** Backlog 37 — the spec's rule, so a weak password stops at STEP 1, not at 가입. */
+describe('isPassword', () => {
+  it('accepts 8–72 characters with a letter and a digit', () => {
+    for (const ok of ['abcd1234', 'A1234567', '1234567a', 'abc!@#12', '비밀번호abc123', 'a1'.repeat(36)]) {
+      expect(isPassword(ok)).toBe(true);
+    }
+  });
+
+  it('rejects anything shorter than 8 or longer than 72', () => {
+    expect(isPassword('abc1234')).toBe(false);
+    expect(isPassword('a1'.repeat(36) + 'a')).toBe(false);
+  });
+
+  it('needs both a Latin letter and a digit', () => {
+    expect(isPassword('abcdefgh')).toBe(false);
+    expect(isPassword('12345678')).toBe(false);
+    // Hangul is not a Latin letter.
+    expect(isPassword('비밀번호12345')).toBe(false);
   });
 });
 
@@ -76,6 +103,10 @@ describe('isPersonalInfoComplete', () => {
 
   it('passes a fully answered step', () => {
     expect(isPersonalInfoComplete(filled)).toBe(true);
+  });
+
+  it('blocks on a password the server would refuse', () => {
+    expect(isPersonalInfoComplete({ ...filled, password: 'abcdefgh', passwordConfirm: 'abcdefgh' })).toBe(false);
   });
 
   it('blocks on a missing 성별, 직업 or an impossible date', () => {
