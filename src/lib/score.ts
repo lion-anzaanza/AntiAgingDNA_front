@@ -4,14 +4,13 @@ import { isoDate } from '@/lib/dates';
  * Reading `/api/scores`. The counterpart to `diary-request.ts`, which handles
  * the write side.
  *
- * Two server behaviours shape everything in this file (both verified against
- * the live server 2026-08-17):
+ * Two server behaviours shape everything in this file:
  *
- * 1. **`GET /api/scores/{date}` and `/today` are not read-only.** Fetching a
- *    single date *creates* that date's score row, permanently — a calendar
- *    drawing one month would record the whole month, and there is no way to
- *    undo it (`DELETE` → 405). Backlog 31. The ranged form creates nothing, so
- *    `scoresPath` only ever builds a range; a single day is a one-day window.
+ * 1. **Scores are read by range only.** `GET /api/scores/{date}` used to
+ *    *create* that date's row, permanently (verified 2026-08-17, backlog 31).
+ *    The server fixed that (verified 2026-10-02), but `scoresPath` still only
+ *    builds a range — a single day is a one-day window — so there is one read
+ *    path, pinned by `score.test.ts`.
  * 2. **A day with no diary still scores.** `displayTotal` and `grade` are
  *    filled from the signup diagnosis baseline, so `grade` reads `GOOD` on a
  *    day the user never touched. Backlog 32. `dailyTotal` is the only field
@@ -58,13 +57,16 @@ export type DailyScore = {
 };
 
 /**
- * `GET /api/scores/items?from&to` — one row per recorded day with the sleep and
- * water atoms behind 나의 LifeDNA 정보's weekly cards (deployed 2026-08-18).
+ * `GET /api/scores/items?from&to` — one row per recorded day with the sleep,
+ * water and stress atoms behind 홈's metric badges and 신체 cards (sleep and
+ * water deployed 2026-08-18, stress verified 2026-10-02 — backlog 10).
  *
- * `sleepMinutes`, `sleepScore` and `sleepGrade` are always null in practice:
- * they derive from 취침·기상 시각, which no screen can collect (backlog 29).
- * There is no stress equivalent at all, so 홈's third badge stays unresolved
- * (backlog 10).
+ * `sleepMinutes`, `sleepScore` and `sleepGrade` are null for anything entered
+ * in the app: they derive from 취침·기상 시각, which no screen can collect
+ * (backlog 29). The `demo` seed has them, so check a fresh account too.
+ *
+ * `stressScore` runs the *wellbeing* way, `100 × (10 − level) / 10`: a stressful
+ * day is a low score and `stressGrade` `DANGER`.
  */
 export type ItemTrend = {
   date: string;
@@ -74,6 +76,9 @@ export type ItemTrend = {
   waterIntake: string | null;
   waterScore: number | null;
   waterGrade: Grade | null;
+  stressLevel: number | null;
+  stressScore: number | null;
+  stressGrade: Grade | null;
 };
 
 export function itemsPath(from: Date, to: Date): string {
@@ -109,6 +114,80 @@ export function dayLevelFor(dailyTotal: number | null | undefined): DayLevel {
   return 'none';
 }
 
+/**
+ * 홈's 스트레스 `%`: the raw 0–10 answer, proportionally (backlog 26 — the
+ * `%` means "how stressed", so higher is worse). `0` is a real answer since
+ * backlog 7, and `null` is "not answered".
+ */
+export function stressPercent(level: number | null | undefined): number | null {
+  if (level === null || level === undefined) return null;
+  return Math.round(level * 10);
+}
+
+/** Structurally `Level` from `components/ui/weekly-info-card`. */
+type ProgressLevel = 'low' | 'mid' | 'high';
+
+/**
+ * One value per day, in `days` order — `null` where the response has no row
+ * for that day or `pick` finds nothing. The single place a ranged response is
+ * slotted into days, so captions and bars cannot disagree about which day is
+ * which.
+ */
+export function valuesFor<T extends { date: string }, V>(
+  days: Date[],
+  rows: T[] | undefined,
+  pick: (row: T) => V | null,
+): (V | null)[] {
+  const rowByDate = byDate(rows, (row) => row.date);
+  return days.map((day) => {
+    const row = rowByDate.get(isoDate(day));
+    return row ? pick(row) : null;
+  });
+}
+
+/**
+ * An area's score for one day, or `null` when the day has no diary. Today
+ * always has a row (`displayTotal` falls back to the signup baseline), so
+ * `dailyTotal` is the "was this recorded" test here as everywhere else —
+ * without it an untouched today counts as a recorded day.
+ */
+export function recordedArea(row: DailyScore, key: keyof AreaScores['grades']): number | null {
+  return row.dailyTotal === null ? null : row.areas[key];
+}
+
+/**
+ * A weekly card's 7 bars and its headline, from one per-day score — an
+ * `ItemTrend` metric or a `DailyScore` area.
+ *
+ * - `bars`: one per day, oldest first, on Figma's seven drawn heights (1–7,
+ *   a straight 0–100 split). `null` where the day has no value — no bar.
+ * - `grade`: the week's mean score on 22's 70/40 boundaries, the same rule
+ *   every other surface uses. `null` when no day in the window has a value.
+ * - `level`: the progress bar's Low/Mid/High (Figma's three fills), one per
+ *   grade, so the bar and the 좋음/주의/위험 word never disagree.
+ */
+export function weeklyTrend<T extends { date: string }>(
+  days: Date[],
+  rows: T[] | undefined,
+  score: (row: T) => number | null,
+): {
+  values: (number | null)[];
+  bars: (number | null)[];
+  grade: Grade | null;
+  level: ProgressLevel | null;
+} {
+  const values = valuesFor(days, rows, score);
+  const bars = values.map((value) =>
+    value === null ? null : 1 + Math.round((Math.min(Math.max(value, 0), 100) / 100) * 6),
+  );
+  const present = values.filter((value): value is number => value !== null);
+  const grade = present.length
+    ? gradeFor(present.reduce((sum, value) => sum + value, 0) / present.length)
+    : null;
+  const level = grade === 'GOOD' ? 'high' : grade === 'WARN' ? 'mid' : grade === 'DANGER' ? 'low' : null;
+  return { values, bars, grade, level };
+}
+
 /** Inclusive range. Never build a single-date path — see (1) above. */
 export function scoresPath(from: Date, to: Date): string {
   return `/api/scores?from=${isoDate(from)}&to=${isoDate(to)}`;
@@ -119,9 +198,9 @@ export function diariesPath(from: Date, to: Date): string {
 }
 
 /**
- * The response carries only days that have a row, and — until backlog 31 is
- * fixed — that includes days materialised by an earlier read. So absence means
- * "no data", but presence does **not** mean "has a diary": check `dailyTotal`.
+ * The response carries only days that have a row. Absence means "no data", but
+ * presence does **not** mean "has a diary" — today always has a row, and rows
+ * materialised by reads before backlog 31 was fixed remain: check `dailyTotal`.
  */
 export function byDate<T>(rows: T[] | undefined, key: (row: T) => string): Map<string, T> {
   return new Map((rows ?? []).map((row) => [key(row), row]));

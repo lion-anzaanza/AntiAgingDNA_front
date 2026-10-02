@@ -16,8 +16,17 @@ import {
   WEEKDAYS_MON_FIRST,
 } from '@/lib/dates';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
+import { type DiaryRow } from '@/lib/diary-request';
+import { dayOverDayLine } from '@/lib/facts';
 import { scale } from '@/lib/scale';
-import { byDate, gradeFor, scoresPath, type DailyScore, type Grade } from '@/lib/score';
+import {
+  byDate,
+  diariesPath,
+  gradeFor,
+  scoresPath,
+  type DailyScore,
+  type Grade,
+} from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
@@ -89,8 +98,6 @@ const LIST_FILL = 'rgba(250, 224, 243, 0.65)';
  * than a missing one.
  */
 const CHART_DAYS = 7;
-/** `어제보다 수면 +40분 · 스트레스 −1` is a server-generated sentence (backlog 27). */
-const CHART_SUMMARY = '';
 
 /** `pagingEnabled` snaps by the scroll view's own width — see home-screen.tsx. */
 const PAGE_WIDTH = Dimensions.get('window').width;
@@ -114,6 +121,14 @@ export default function JournalMainScreen() {
   const to = addDays(monday, 6);
 
   const { data } = useApiQuery<DailyScore[]>(scoresPath(from, to));
+  // Figma's `어제보다 수면 +40분 · 스트레스 −1`, from the two diaries (lib/facts).
+  const yesterday = addDays(today, -1);
+  const diaries = useApiQuery<DiaryRow[]>(diariesPath(yesterday, today));
+  const diaryByDate = byDate(diaries.data, (row) => row.logDate);
+  const chartSummary = dayOverDayLine(
+    diaryByDate.get(isoDate(today)),
+    diaryByDate.get(isoDate(yesterday)),
+  );
   const scoreByDate = byDate(data, (row) => row.date);
   const totalOf = (date: Date) => scoreByDate.get(isoDate(date))?.dailyTotal ?? null;
 
@@ -194,7 +209,7 @@ export default function JournalMainScreen() {
           </View>
           {chartPoints.length === 0 ? null : (
             <View style={{ width: PAGE_WIDTH, paddingLeft: scale(CONTENT_INSET) }}>
-              <WeeklyConditionChart points={chartPoints} summary={CHART_SUMMARY} />
+              <WeeklyConditionChart points={chartPoints} summary={chartSummary} />
             </View>
           )}
         </ScrollView>

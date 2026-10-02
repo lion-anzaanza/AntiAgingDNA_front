@@ -3,11 +3,16 @@ import { Text, View } from 'react-native';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
-/** Figma's own mock numbers — there is no endpoint behind any of the three. */
-const STATS = [
-  { value: '31일', label: '기록한 날', centre: 32.718 },
-  { value: '13축', label: '분석 항목', centre: 98.718 },
-  { value: '암호화', label: '저장 방식', centre: 164.436 },
+/**
+ * Figma's three were mock values (31일 · 13축 · 암호화). Only 기록한 날 has data
+ * behind it — counted from `/api/diaries` by the caller. "13축" is defined
+ * nowhere and "암호화" is a claim about server storage nobody has confirmed, so
+ * both read `—` until they are (frontend-status 45).
+ */
+const CELLS = [
+  { label: '기록한 날', centre: 32.718 },
+  { label: '분석 항목', centre: 98.718 },
+  { label: '저장 방식', centre: 164.436 },
 ];
 
 export const STAT_STRIP_HEIGHT = 30.769;
@@ -19,7 +24,8 @@ const CELL = 60;
  * Regular 12 `text/muted`. v3 sets 31일 3px higher than the other two values;
  * the two win.
  */
-export function StatStrip() {
+export function StatStrip({ recordedDays }: { recordedDays: string }) {
+  const values = [recordedDays, '—', '—'];
   return (
     <View
       style={{
@@ -28,7 +34,7 @@ export function StatStrip() {
         backgroundColor: COLOR.surface.card,
         boxShadow: SHADOW_V4,
       }}>
-      {STATS.map((stat) => (
+      {CELLS.map((stat, index) => (
         <View
           key={stat.label}
           style={{
@@ -45,7 +51,7 @@ export function StatStrip() {
               color: COLOR.brand.violetText,
             }}
             className="font-plex-semibold">
-            {stat.value}
+            {values[index]}
           </Text>
           <Text
             style={{

@@ -7,6 +7,8 @@ import { MENU_ROW_HEIGHT, MenuRow, type MenuItem } from '@/features/my/component
 import { ProfileCard } from '@/features/my/components/profile-card';
 import { messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { profileLabel } from '@/lib/facts';
+import { useApiQuery } from '@/lib/use-api-query';
 import { COLOR, GRADIENT_PASTEL, SHADOW_V4 } from '@/lib/design';
 import { cssGradientPoints } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
@@ -35,7 +37,9 @@ const BUTTON_SHADOW = '0px 0px 1.923px rgba(169, 169, 169, 0.25)';
  * frame; v3 finally draws it on 구독 관리, and 애플워치 on 웨어러블 연동.
  */
 const MENU: MenuItem[] = [
-  { label: '웨어러블 연동', icon: 'watch', iconStroke: 1.333, value: '애플워치', href: '/my/wearable' },
+  // Figma's 애플워치 named a device nobody connected: the app has no wearable
+  // integration at all (backlog 24), so 연결 안 됨 is simply true.
+  { label: '웨어러블 연동', icon: 'watch', iconStroke: 1.333, value: '연결 안 됨', href: '/my/wearable' },
   { label: '구독 관리', icon: 'crown', iconStroke: 1.44, value: '무료', href: '/my/subscription' },
   { label: '데이터 개인정보', icon: 'shield', iconStroke: 1.44, href: '/my/privacy' },
   { label: '이용약관', icon: 'doc', iconStroke: 1.44 },
@@ -44,6 +48,10 @@ const MENU: MenuItem[] = [
 
 export default function MyPageScreen() {
   const { user, signOut, deleteAccount } = useAuth();
+  const dna = useApiQuery<Parameters<typeof profileLabel>[0]>('/api/dna', {
+    // Fixed at signup — no need to re-read on every tab switch.
+    refetchOnFocus: false,
+  });
 
   /*
    * The server hard-deletes; there is no undo and no grace period (backlog item
@@ -98,7 +106,11 @@ export default function MyPageScreen() {
           </Text>
 
           <View style={{ position: 'absolute', top: scale(33.157), ...COLUMN }}>
-            <ProfileCard nickname={user?.nickname ?? ''} streakDays={user?.streakDays ?? 0} />
+            <ProfileCard
+              nickname={user?.nickname ?? ''}
+              streakDays={user?.streakDays ?? 0}
+              typeLabel={profileLabel(dna.data) ?? '—'}
+            />
           </View>
 
           <View

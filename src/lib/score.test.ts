@@ -1,7 +1,19 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { fromIsoDate } from './dates';
-import { byDate, dayLevelFor, diariesPath, gradeFor, scoresPath, type DailyScore } from './score';
+import { fromIsoDate, isoDate, lastDays } from './dates';
+import {
+  byDate,
+  dayLevelFor,
+  diariesPath,
+  gradeFor,
+  recordedArea,
+  scoresPath,
+  stressPercent,
+  valuesFor,
+  weeklyTrend,
+  type DailyScore,
+  type ItemTrend,
+} from './score';
 
 /**
  * Two server behaviours are baked into this module and both have bitten us, so
@@ -114,5 +126,118 @@ describe('presence in a ranged response does not mean the day was recorded', () 
     expect(empty.grade).toBe('GOOD');
     expect(recorded.grade).toBe('GOOD');
     expect(gradeFor(recorded.dailyTotal)).toBe('DANGER');
+  });
+});
+
+describe('stressPercent', () => {
+  it('maps the 0–10 answer straight onto 0–100', () => {
+    expect(stressPercent(10)).toBe(100);
+    expect(stressPercent(7)).toBe(70);
+    expect(stressPercent(1)).toBe(10);
+  });
+
+  it('shows a recorded 0 as 0%, never negative', () => {
+    // Backlog 7 opened 0; the old (x − 1) / 9 formula printed it as −11%.
+    expect(stressPercent(0)).toBe(0);
+  });
+
+  it('keeps unanswered apart from 0', () => {
+    expect(stressPercent(null)).toBeNull();
+    expect(stressPercent(undefined)).toBeNull();
+  });
+});
+
+describe('weeklyTrend', () => {
+  const week = lastDays(fromIsoDate('2026-10-02'), 7);
+  const row = (date: string, waterScore: number | null): ItemTrend => ({
+    date,
+    sleepMinutes: null,
+    sleepScore: null,
+    sleepGrade: null,
+    waterIntake: null,
+    waterScore,
+    waterGrade: null,
+    stressLevel: null,
+    stressScore: null,
+    stressGrade: null,
+  });
+
+  it('puts each day in its own slot, oldest first, and leaves gaps empty', () => {
+    const { bars } = weeklyTrend(
+      week,
+      [row('2026-10-02', 100), row('2026-09-26', 0), row('2026-09-29', 50)],
+      (r) => r.waterScore,
+    );
+    expect(bars).toEqual([1, null, null, 4, null, null, 7]);
+  });
+
+  it('treats a row whose metric is null as no bar', () => {
+    const { bars, grade, level } = weeklyTrend(week, [row('2026-10-01', null)], (r) => r.waterScore);
+    expect(bars.every((bar) => bar === null)).toBe(true);
+    expect(grade).toBeNull();
+    expect(level).toBeNull();
+  });
+
+  it('grades the mean of the days that have a value, on 70/40', () => {
+    // demo account, 2026-09-26..10-02: 85 100 60 85 100 85 100 → 87.9
+    const scores = [85, 100, 60, 85, 100, 85, 100];
+    const rows = week.map((day, i) => row(isoDate(day), scores[i]));
+    const trend = weeklyTrend(week, rows, (r) => r.waterScore);
+    expect(trend.grade).toBe('GOOD');
+    expect(trend.level).toBe('high');
+    // Two days at 50 and one gap is still WARN — the gap does not count as 0.
+    const sparse = weeklyTrend(week, [row('2026-10-01', 50), row('2026-10-02', 50)], (r) => r.waterScore);
+    expect(sparse.grade).toBe('WARN');
+    expect(sparse.level).toBe('mid');
+  });
+
+  it('agrees with the progress bar on DANGER', () => {
+    expect(weeklyTrend(week, [row('2026-10-02', 30)], (r) => r.waterScore).level).toBe('low');
+  });
+});
+
+describe('valuesFor', () => {
+  const days = lastDays(fromIsoDate('2026-10-02'), 3);
+
+  it('slots rows by date, oldest first, null where a day has no row', () => {
+    const rows = [
+      { date: '2026-10-02', v: 3 },
+      { date: '2026-09-30', v: 1 },
+    ];
+    expect(valuesFor(days, rows, (r) => r.v)).toEqual([1, null, 3]);
+  });
+
+  it('keeps a picked null distinct from a value', () => {
+    expect(valuesFor(days, [{ date: '2026-10-01', v: null }], (r) => r.v)).toEqual([null, null, null]);
+    expect(valuesFor(days, undefined, () => 1)).toEqual([null, null, null]);
+  });
+});
+
+describe('recordedArea', () => {
+  const areas = {
+    physical: 80,
+    mental: 60,
+    emotion: null,
+    social: 90,
+    environment: null,
+    grades: { physical: 'GOOD', mental: 'WARN', emotion: null, social: 'GOOD', environment: null },
+  } as const;
+  const row = (dailyTotal: number | null): DailyScore => ({
+    date: '2026-10-02',
+    areas: { ...areas, grades: { ...areas.grades } },
+    dailyTotal,
+    displayTotal: 75,
+    grade: 'GOOD',
+    orbState: 'GOOD_LOW',
+    scoringVersion: 'v1',
+  });
+
+  it('reads the area on a recorded day', () => {
+    expect(recordedArea(row(73), 'mental')).toBe(60);
+  });
+
+  it('ignores the baseline areas of an unrecorded today', () => {
+    // Today always has a row; only dailyTotal says whether it was written.
+    expect(recordedArea(row(null), 'mental')).toBeNull();
   });
 });

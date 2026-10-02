@@ -9,7 +9,16 @@ import { scale } from '@/lib/scale';
  * v3 swapped the avatar bitmap for a 44pt `surface/tint-2` circle carrying the
  * 24pt `Icon/user`, and moved the name and type label in to x 72.
  */
-export function ProfileCard({ nickname, streakDays }: { nickname: string; streakDays: number }) {
+export function ProfileCard({
+  nickname,
+  streakDays,
+  typeLabel,
+}: {
+  nickname: string;
+  streakDays: number;
+  /** `profileLabel` from `lib/facts` — Figma's `올빼미 - 고민감 - 누적형` slot. */
+  typeLabel: string;
+}) {
   return (
     <View
       style={{
@@ -59,7 +68,7 @@ export function ProfileCard({ nickname, streakDays }: { nickname: string; streak
           color: COLOR.brand.violetText,
         }}
         className="font-plex">
-        올빼미 - 고민감 - 누적형
+        {typeLabel}
       </Text>
 
       {/*

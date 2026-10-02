@@ -10,14 +10,17 @@ import { DATE_CELL_HEIGHT, DATE_CELL_WIDTH, DateCell } from '@/components/ui/dat
 import { FEEL_LABELS } from '@/components/ui/feel-select';
 import { Icon } from '@/components/ui/icon';
 import {
+  addDays,
   addMonths,
   endOfMonth,
+  fromIsoDate,
   isoDate,
   startOfMonth,
   WEEKDAYS_SUN_FIRST,
 } from '@/lib/dates';
 import { COLOR, GRADIENT_PROGRESS, SHADOW_V4 } from '@/lib/design';
 import { toDiaryDraft, type DiaryRow } from '@/lib/diary-request';
+import { dayComment, hoursLabel } from '@/lib/facts';
 import { cssGradientPoints, pastelAngle } from '@/lib/gradient';
 import { scale } from '@/lib/scale';
 import {
@@ -71,7 +74,7 @@ const SWATCH_RAMP = cssGradientPoints(pastelAngle(9.615, 4.808), 9.615, 4.808);
 /** The summary card's `컨디션 좋음` pill. */
 const GRADE_LABEL = { GOOD: '좋음', WARN: '주의', DANGER: '위험' } as const;
 
-/** No data behind these: `sleepMinutes` is always null (29), and 27 owns the 2줄 코멘트. */
+/** Shown wherever the day has no value — 수면 is null for app entries (29). */
 const NO_VALUE = '—';
 
 export default function JournalCalendarScreen() {
@@ -80,7 +83,8 @@ export default function JournalCalendarScreen() {
 
   const first = startOfMonth(month);
   const last = endOfMonth(month);
-  const scores = useApiQuery<DailyScore[]>(scoresPath(first, last));
+  // From the day before the 1st, so the 1st's comment can say 전날보다 too.
+  const scores = useApiQuery<DailyScore[]>(scoresPath(addDays(first, -1), last));
   const diaries = useApiQuery<DiaryRow[]>(diariesPath(first, last));
   const scoreByDate = byDate(scores.data, (row) => row.date);
   const diaryByDate = byDate(diaries.data, (row) => row.logDate);
@@ -104,7 +108,10 @@ export default function JournalCalendarScreen() {
 
   function summaryFor(day: number): DailySummary {
     const iso = dayOf(day);
-    const total = scoreByDate.get(iso)?.dailyTotal ?? null;
+    const score = scoreByDate.get(iso);
+    const total = score?.dailyTotal ?? null;
+    const previousTotal =
+      scoreByDate.get(isoDate(addDays(fromIsoDate(iso), -1)))?.dailyTotal ?? null;
     const saved = diaryByDate.get(iso);
     const entry = saved ? toDiaryDraft(saved) : null;
     const condition = entry?.condition ?? 3;
@@ -113,13 +120,13 @@ export default function JournalCalendarScreen() {
       dateLabel: `${month.getMonth() + 1}월 ${day}일 (${WEEKDAYS_SUN_FIRST[(leadingBlanks + day - 1) % 7]})`,
       score: total === null ? 0 : Math.round(total),
       grade: grade === null ? NO_VALUE : `컨디션 ${GRADE_LABEL[grade]}`,
-      sleep: NO_VALUE,
+      sleep: saved?.sleepMinutes == null ? NO_VALUE : hoursLabel(saved.sleepMinutes),
       water: entry?.water ?? NO_VALUE,
       stress: saved?.stressLevel == null ? NO_VALUE : `${saved.stressLevel}/10`,
       condition,
       conditionLabel: FEEL_LABELS[condition - 1],
-      // 서버가 내려주는 문장이 없습니다 (backlog 27) — 지어내지 않고 비웁니다.
-      comment: '',
+      // Facts only — the interim rule in lib/facts (backlog 27).
+      comment: dayComment(total, previousTotal, score?.areas),
     };
   }
 

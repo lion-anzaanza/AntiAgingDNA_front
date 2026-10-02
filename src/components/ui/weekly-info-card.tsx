@@ -86,10 +86,12 @@ type WeeklyInfoCardProps = {
    * for that area on 개선책, so one area never shows two icon styles.
    */
   icon: IconName | WeeklyGlyph;
-  tone: Tone;
-  level: Level;
-  /** Seven days, oldest first. */
-  scores: ScoreBarValue[];
+  /** `null` when the week has no value at all — the word reads `—`. */
+  tone: Tone | null;
+  /** `null` leaves the progress track empty, for the same reason. */
+  level: Level | null;
+  /** Seven days, oldest first. `null` is a day with no value: no bar. */
+  scores: (ScoreBarValue | null)[];
   caption: string;
 };
 
@@ -109,7 +111,11 @@ export function WeeklyInfoCard({
   scores,
   caption,
 }: WeeklyInfoCardProps) {
-  const fillWidth = PROGRESS_WIDTH * PROGRESS_FILL[level];
+  // An empty track keeps its fill element (AGENTS.md #3 — same tree shape every
+  // render) but hides it. Never at zero width: Android's LinearGradientView
+  // throws IllegalArgumentException drawing a 0-wide gradient and takes Expo
+  // Go down with it — 홈 crashed that way while the week was still loading.
+  const fillWidth = PROGRESS_WIDTH * PROGRESS_FILL[level ?? 'low'];
 
   return (
     <View
@@ -161,10 +167,10 @@ export function WeeklyInfoCard({
           textAlign: 'center',
           fontSize: scale(7.333),
           lineHeight: scale(10.154),
-          color: TONE_TEXT[tone],
+          color: tone === null ? COLOR.text.body : TONE_TEXT[tone],
         }}
         className="font-plex-semibold">
-        {WORD[tone]}
+        {tone === null ? '—' : WORD[tone]}
       </Text>
 
       <View
@@ -185,14 +191,16 @@ export function WeeklyInfoCard({
             height: '100%',
             borderTopLeftRadius: scale(3.309),
             borderBottomLeftRadius: scale(3.309),
-            boxShadow: HAIRLINE,
+            boxShadow: level === null ? 'none' : HAIRLINE,
+            opacity: level === null ? 0 : 1,
           }}
         />
       </View>
 
       {scores.map((score, index) => {
-        // Figma steps the fill in eighths, starting at two.
-        const height = (BAR_HEIGHT * (score + 1)) / 8;
+        // Figma steps the fill in eighths, starting at two. A day with no
+        // value keeps its slot at zero height, so the other days stay put.
+        const height = score === null ? 0 : (BAR_HEIGHT * (score + 1)) / 8;
         return (
           <View
             // Position is the identity here — the same day keeps its slot.
@@ -206,7 +214,7 @@ export function WeeklyInfoCard({
               borderTopLeftRadius: scale(2.206),
               borderTopRightRadius: scale(2.206),
               backgroundColor: COLOR.text.onPastel,
-              boxShadow: HAIRLINE,
+              boxShadow: height === 0 ? 'none' : HAIRLINE,
             }}
           />
         );
