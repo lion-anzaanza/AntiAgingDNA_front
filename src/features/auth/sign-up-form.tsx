@@ -134,16 +134,24 @@ export function isNickname(value: string): boolean {
   return /^[가-힣A-Za-z0-9]{2,16}$/.test(value);
 }
 
+/**
+ * 8–72 characters with at least one Latin letter and one digit — the server's
+ * rule, verbatim from `SignUpRequest.password` (`minLength: 8`, `maxLength: 72`,
+ * `pattern: ^(?=.*[A-Za-z])(?=.*\d).+$`; in the spec since 2026-09-30).
+ * Anything else is allowed, symbols and Hangul included, as the server allows.
+ */
+export function isPassword(value: string): boolean {
+  return value.length >= 8 && value.length <= 72 && /[A-Za-z]/.test(value) && /\d/.test(value);
+}
+
 export function isPersonalInfoComplete(form: SignUpForm): boolean {
   return (
-    // 4–32 characters of letters, digits and underscore — the server's rule, and
-    // still provisional (backlog item 2).
+    // 4–32 characters of letters, digits and underscore — the server's rule,
+    // in the spec as `SignUpRequest.loginId` (backlog 2, confirmed 2026-09-30).
     /^[A-Za-z0-9_]{4,32}$/.test(form.loginId.trim()) &&
     isNickname(form.nickname) &&
     isEmailish(form.email) &&
-    form.password.length > 0 &&
-    // Cannot check strength: the server documents no password rule at all
-    // (docs/backend-backlog.md item 19). Matching is ours to check regardless.
+    isPassword(form.password) &&
     form.password === form.passwordConfirm &&
     isBirthDate(form.birthYear, form.birthMonth, form.birthDay) &&
     // v3 draws 성별·직업 again and the owner chose to collect them

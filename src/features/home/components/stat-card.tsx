@@ -3,6 +3,7 @@ import Svg, { Path } from 'react-native-svg';
 
 import { COLOR, SHADOW } from '@/lib/design';
 import { scale } from '@/lib/scale';
+import { type Grade } from '@/lib/score';
 
 /**
  * v3's three metric icons (`icon-moon`, `icon-drop`, `icon-flame`): 28pt line
@@ -32,29 +33,38 @@ const ICONS = {
 const ICON_SIZE = 15.795;
 
 /**
- * The three metric cards. `value` is replaced with the day's real answer in
- * `HomeScreen`; **`badge` is not.**
+ * The badge under each value, from the day's `sleepGrade` / `waterGrade` /
+ * `stressGrade` (`/api/scores/items`, backlog 10).
  *
- * Item 22 deployed a grade for the *total* and for the five 영역 scores, and
- * neither is a grade for 수면·수분·스트레스 — there is no rule saying which
- * stress percentage is 높음 or which cup range is 좋아요. Inventing those
- * thresholds is the same mistake as inventing a cup→litre factor, so the badges
- * stay Figma's until backlog 10 answers it.
+ * The colours are Figma's three badge fills, one per grade. The **words are
+ * the app's grade words** — 좋음 · 주의 · 위험, as on every 나의 LifeDNA 정보
+ * card — not Figma's mock 좋아요 · 조금 부족 · 높음: those were one example
+ * per card, there is no full set to pick from, and 높음 on a stress card would
+ * have to mean the *bad* end while the grade runs the wellbeing way. A grade
+ * the server does not give (no answer that day, 수면 without 취침 시각 —
+ * backlog 29) reads `—`.
+ */
+const BADGE: Record<Grade, { word: string; bg: string; fg: string }> = {
+  GOOD: { word: '좋음', bg: '#E6F4EE', fg: '#3A775D' },
+  WARN: { word: '주의', bg: '#FBF2E1', fg: '#C57100' },
+  DANGER: { word: '위험', bg: '#F9E9E8', fg: '#F53942' },
+};
+const NO_BADGE = { word: '—', bg: COLOR.surface.chip, fg: COLOR.text.body };
+
+/**
+ * The three metric cards. `HomeScreen` always fills `value` and `grade` from
+ * the day, so the defaults here are the empty state, not Figma's mock.
  */
 export const STATS: {
   label: string;
   value: string;
-  badge: string;
-  bg: string;
-  fg: string;
+  grade: Grade | null;
   icon: keyof typeof ICONS;
 }[] = [
   {
     label: '수면',
-    value: '6.4시간',
-    badge: '조금 부족',
-    bg: '#FBF2E1',
-    fg: '#C57100',
+    value: '—',
+    grade: null,
     icon: 'sleep',
   },
   {
@@ -66,18 +76,14 @@ export const STATS: {
      * constant this project refuses elsewhere. Backlog item 26; the backend
      * settled it this way on 2026-08-17.
      */
-    value: '3~5잔',
-    badge: '좋아요',
-    bg: '#E6F4EE',
-    fg: '#3A775D',
+    value: '—',
+    grade: null,
     icon: 'water',
   },
   {
     label: '스트레스',
-    value: '72%',
-    badge: '높음',
-    bg: '#F9E9E8',
-    fg: '#F53942',
+    value: '—',
+    grade: null,
     icon: 'stress',
   },
 ];
@@ -89,8 +95,9 @@ type StatCardProps = (typeof STATS)[number];
  * absolutely; the value, label and badge follow in a centred column at v3's
  * line-box tops (24.74 / 40.58 / 57).
  */
-export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
+export function StatCard({ label, value, grade, icon }: StatCardProps) {
   const glyph = ICONS[icon];
+  const badge = grade === null ? NO_BADGE : BADGE[grade];
   return (
     <View
       style={{
@@ -143,15 +150,15 @@ export function StatCard({ label, value, badge, bg, fg, icon }: StatCardProps) {
           height: scale(12),
           marginTop: scale(57 - 40.58 - 12.41),
           borderRadius: scale(10),
-          backgroundColor: bg,
+          backgroundColor: badge.bg,
           alignItems: 'center',
           justifyContent: 'center',
         }}>
         <Text
           numberOfLines={1}
-          style={{ fontSize: scale(6.769), lineHeight: scale(10.154), color: fg }}
+          style={{ fontSize: scale(6.769), lineHeight: scale(10.154), color: badge.fg }}
           className="font-plex-semibold">
-          {badge}
+          {badge.word}
         </Text>
       </View>
     </View>

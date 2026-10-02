@@ -13,7 +13,6 @@ import { DnaKind } from '@/components/ui/dna-kind';
 import { type IconName } from '@/components/ui/icon';
 import {
   WeeklyInfoCard,
-  type Level,
   type ScoreBarValue,
   type WeeklyGlyph,
 } from '@/components/ui/weekly-info-card';
@@ -27,11 +26,32 @@ import {
 } from '@/features/home/components/orb-card';
 import { StatCard, STATS } from '@/features/home/components/stat-card';
 import { useAuth } from '@/lib/auth';
-import { addDays, isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
+import { addDays, isoDate, lastDays, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { toDiaryDraft, type DiaryRow } from '@/lib/diary-request';
-import { COLOR, type Tone } from '@/lib/design';
+import { COLOR } from '@/lib/design';
+import {
+  hoursLabel,
+  orbCopy,
+  profileLabel,
+  scoreCaption,
+  sleepCaption,
+  toneFor,
+  waterCaption,
+} from '@/lib/facts';
 import { scale } from '@/lib/scale';
-import { byDate, diariesPath, scoresPath, type DailyScore } from '@/lib/score';
+import {
+  byDate,
+  diariesPath,
+  itemsPath,
+  recordedArea,
+  scoresPath,
+  stressPercent,
+  valuesFor,
+  weeklyTrend,
+  type AreaScores,
+  type DailyScore,
+  type ItemTrend,
+} from '@/lib/score';
 import { useApiQuery } from '@/lib/use-api-query';
 
 /**
@@ -60,129 +80,49 @@ const PAGE_WIDTH = Dimensions.get('window').width;
 /**
  * 나의 LifeDNA 정보 — since the 2026-08-17 pull, when Figma turned the five `DNAKind`
  * chips into a **tab strip** (`725:1213`, `725:1294`, `725:1375`, `725:1456`,
- * `726:1472`). Selecting an area swaps the two weekly cards below it.
- *
- * Two things changed at once and both matter:
+ * `726:1472`). Selecting an area swaps the weekly cards below it.
  *
  * - **The order is 신체 · 정신 · 환경 · 감정 · 사회.** The 2026-08-17 pull had
  *   moved 환경 to the end; v4 (`1363:2057`…`2069`) puts it back third.
  * - **Only the selected chip carries a grade colour**; the other four are
- *   `default`. That is how the design shows selection — there is no separate
- *   underline or highlight.
+ *   `default`. That is how the design shows selection.
  *
- * Every string below is Figma's mock. **There is no endpoint behind any of it**
- * — no weekly trend data (backlog 11), no server-written sentences (27), and
- * two of the five areas score `null` even on a full day (33). The score bars
- * are the same two patterns the old card used, which Figma kept.
+ * Everything here is live (2026-10-02):
  *
- * **신체 follows v3 exactly** (`1312:1651`, `1312:1685`): "수면 시간" with a yellow
- * moon and Z's, "수분 섭취량" with a blue drop, and the same two-line caption on
- * both, as drawn — the owner declared v3 final, and these two cards are the
- * shape `GET /api/scores/items` returns (backlog 11).
+ * - **Chips** take today's grade for the area (`areas.grades`, backlog 33). A
+ *   `null` area — 환경 always, 감정 without a stress answer — stays `default`
+ *   even when selected; Figma has no empty look for it (frontend-status 33 🟣).
+ * - **신체** is v3's two cards (`1312:1651`, `1312:1685`), 수면 시간 and 수분
+ *   섭취량 — exactly what `GET /api/scores/items` returns.
+ * - **The other four tabs** were Figma mock cards with no data behind any
+ *   metric they named. Each now shows one card: that area's own daily score
+ *   over the week, from `/api/scores` (the owner's call, 2026-10-02 —
+ *   frontend-status 11 still owns what these tabs *should* show).
  *
- * v3 draws no other tab. Those four keep the port's per-area cards and use the
- * 5 영역 icons the 개선책 screens already ship as a visible stand-in.
+ * Captions are the interim fact-only sentences in `lib/facts.ts`.
  */
 type BalanceArea = {
   label: string;
-  tone: Tone;
+  /** Which `areas` score and grade this tab reads. */
+  key: keyof AreaScores['grades'];
   /** The same `Icon/*` glyph 개선책's 영역 cards use for this area. */
   icon: IconName;
-  /** `glyph` overrides the area's icon with one of v3's drawn ones. */
-  cards: { title: string; caption: string; tone: Tone; level: Level; glyph?: WeeklyGlyph }[];
 };
 
-/** v3's caption, pasted on both 신체 cards, broken where v3 breaks it. */
-const BODY_CAPTION = '올빼미형 - 취침이 3일째\n30분씩 빨라졌어요.';
-
 const BALANCE_AREAS: BalanceArea[] = [
-  {
-    label: '신체',
-    tone: 'good',
-    icon: 'heart',
-    cards: [
-      { title: '수면 시간', caption: BODY_CAPTION, tone: 'good', level: 'high', glyph: 'sleep' },
-      // v3 paints this 주의 in danger red; it stays warn (redesign-v3-delta 결정).
-      { title: '수분 섭취량', caption: BODY_CAPTION, tone: 'warn', level: 'mid', glyph: 'water' },
-    ],
-  },
-  {
-    label: '정신',
-    tone: 'good',
-    icon: 'mind',
-    cards: [
-      {
-        title: '스트레스 회복력',
-        caption: '회복이 몰아서 오는 편 — 짧은 휴식 분산을 추천해요.',
-        tone: 'good',
-        level: 'high',
-      },
-      {
-        title: '집중 · 디지털 부하',
-        caption: '취침 전 폰 사용이 집중과 잠드는 시간에 영향을 줘요.',
-        tone: 'warn',
-        level: 'mid',
-      },
-    ],
-  },
-  {
-    label: '환경',
-    tone: 'good',
-    icon: 'leaf',
-    cards: [
-      {
-        title: '날씨 영향',
-        caption: '흐린 날 컨디션이 낮아지는 경향이 보여요.',
-        tone: 'good',
-        level: 'high',
-      },
-      {
-        title: '수면 환경(빛·소음)',
-        caption: '어두운 침실·낮은 소음이 수면 질을 받쳐줘요.',
-        tone: 'warn',
-        level: 'mid',
-      },
-    ],
-  },
-  {
-    label: '감정',
-    tone: 'danger',
-    icon: 'smile',
-    cards: [
-      {
-        title: '기분 안정도',
-        caption: '기분의 편차가 커요 — 기복을 줄이는 게 목표예요.',
-        tone: 'good',
-        level: 'high',
-      },
-      {
-        title: '기분 회복 탄력',
-        caption: '낮은 기분 다음날 스스로 회복하는 힘이 붙고 있어요.',
-        tone: 'warn',
-        level: 'mid',
-      },
-    ],
-  },
-  {
-    label: '사회',
-    tone: 'good',
-    icon: 'users',
-    cards: [
-      {
-        title: '사람 만나는 주기',
-        caption: '교류가 줄면 다음 날 기분 점수가 내려갔어요.',
-        tone: 'good',
-        level: 'high',
-      },
-      {
-        title: '사회적 지지감',
-        caption: '기댈 사람이 있다는 느낌은 꾸준히 유지되고 있어요.',
-        tone: 'warn',
-        level: 'mid',
-      },
-    ],
-  },
+  { label: '신체', key: 'physical', icon: 'heart' },
+  { label: '정신', key: 'mental', icon: 'mind' },
+  { label: '환경', key: 'environment', icon: 'leaf' },
+  { label: '감정', key: 'emotion', icon: 'smile' },
+  { label: '사회', key: 'social', icon: 'users' },
 ];
+
+type BalanceCard = {
+  title: string;
+  icon: IconName | WeeklyGlyph;
+  trend: ReturnType<typeof weeklyTrend>;
+  caption: string;
+};
 
 /** Shown wherever the server has no value to give. */
 const NO_VALUE = '—';
@@ -192,24 +132,26 @@ function dateLabel(date: Date) {
   return `${date.getMonth() + 1}월 ${date.getDate()}일 ${WEEKDAYS_SUN_FIRST[date.getDay()]}요일`;
 }
 
-/** Figma keeps the same two bar patterns on every tab, whatever the metric. */
-const FIRST_CARD_SCORES: ScoreBarValue[] = [1, 2, 3, 4, 5, 6, 7];
-const SECOND_CARD_SCORES: ScoreBarValue[] = [4, 2, 5, 6, 3, 2, 7];
-
 export default function HomeScreen() {
   const { user } = useAuth();
   const [page, setPage] = useState(0);
   const [areaIndex, setAreaIndex] = useState(0);
 
   /*
-   * Two days of scores give both the orb's number and 어제보다 (backlog 28 —
-   * the backend confirmed the front end may compute the delta). Ranged, never
-   * `/api/scores/today`: the single-date form writes a row for the day it is
-   * asked about (backlog 31).
+   * A week of scores gives the orb's number, 어제보다 (backlog 28 — the front
+   * end computes the delta) and the four area tabs. Ranged, never
+   * `/api/scores/today` — one read path (backlog 31).
    */
   const today = new Date();
-  const scores = useApiQuery<DailyScore[]>(scoresPath(addDays(today, -1), today));
+  const week = lastDays(today, 7);
+  const scores = useApiQuery<DailyScore[]>(scoresPath(week[0], today));
   const diaries = useApiQuery<DiaryRow[]>(diariesPath(today, today));
+  const dna = useApiQuery<Parameters<typeof profileLabel>[0]>('/api/dna', {
+    // Fixed at signup — no need to re-read on every tab switch.
+    refetchOnFocus: false,
+  });
+  const items = useApiQuery<ItemTrend[]>(itemsPath(week[0], today));
+  const todayItem = byDate(items.data, (row) => row.date).get(isoDate(today));
   const scoreByDate = byDate(scores.data, (row) => row.date);
   const displayOf = (date: Date) => scoreByDate.get(isoDate(date))?.displayTotal ?? null;
 
@@ -220,24 +162,71 @@ export default function HomeScreen() {
       ? null
       : Math.round(todayScore) - Math.round(yesterdayScore);
 
-  // Only the first page is 오늘의 컨디션, so only it follows the state.
-  const orbState = scoreByDate.get(isoDate(today))?.orbState ?? DEFAULT_ORB_STATE;
+  // The state drives the orb page's artwork and both pages' chip; the helix
+  // page keeps its own artwork.
+  const todayOrb = scoreByDate.get(isoDate(today))?.orbState ?? null;
+  const orbState = todayOrb ?? DEFAULT_ORB_STATE;
 
   const entry = diaries.data?.[0];
   const draft = entry ? toDiaryDraft(entry) : null;
   const stats = STATS.map((stat) => {
-    if (stat.label === '수분') return { ...stat, value: draft?.water ?? NO_VALUE };
-    if (stat.label === '스트레스') {
-      // 원시값 비례 `(x-1)/9×100` — 화면의 `%`가 "스트레스가 높다"는 뜻이라는
-      // 것까지 확인된 방향입니다 (backlog 26).
-      const level = entry?.stressLevel;
-      const percent = level == null ? null : Math.round(((level - 1) / 9) * 100);
-      return { ...stat, value: percent === null ? NO_VALUE : `${percent}%` };
+    if (stat.label === '수분') {
+      return { ...stat, value: draft?.water ?? NO_VALUE, grade: todayItem?.waterGrade ?? null };
     }
-    // 수면: `sleepMinutes` is always null — 취침·기상 시각을 받을 UI가 없습니다
-    // (backlog 29), so this card cannot be filled at all.
-    return { ...stat, value: NO_VALUE };
+    if (stat.label === '스트레스') {
+      // 원시값 비례 — the `%` means "how stressed" (backlog 26), 0–10 since 7.
+      const percent = stressPercent(entry?.stressLevel);
+      return {
+        ...stat,
+        value: percent === null ? NO_VALUE : `${percent}%`,
+        grade: todayItem?.stressGrade ?? null,
+      };
+    }
+    // 수면: null for anything entered in the app — there is no UI for 취침·기상
+    // 시각 (backlog 29). Only seeded data fills it.
+    const minutes = todayItem?.sleepMinutes ?? null;
+    return {
+      ...stat,
+      value: minutes === null ? NO_VALUE : hoursLabel(minutes),
+      grade: todayItem?.sleepGrade ?? null,
+    };
   });
+
+  // Only a recorded today lights a chip — see `recordedArea`.
+  const todayRow = scoreByDate.get(isoDate(today));
+  const areaGrades = todayRow?.dailyTotal == null ? undefined : todayRow.areas.grades;
+  const area = BALANCE_AREAS[areaIndex];
+  const cards: BalanceCard[] =
+    area.key === 'physical'
+      ? [
+          {
+            title: '수면 시간',
+            icon: 'sleep',
+            trend: weeklyTrend(week, items.data, (row) => row.sleepScore),
+            caption: sleepCaption(valuesFor(week, items.data, (row) => row.sleepMinutes)),
+          },
+          {
+            title: '수분 섭취량',
+            icon: 'water',
+            trend: weeklyTrend(week, items.data, (row) => row.waterScore),
+            caption: waterCaption(
+              valuesFor(week, items.data, (row) =>
+                row.waterIntake ? toDiaryDraft({ waterIntake: row.waterIntake }).water : null,
+              ),
+            ),
+          },
+        ]
+      : [
+          (() => {
+            const trend = weeklyTrend(week, scores.data, (row) => recordedArea(row, area.key));
+            return {
+              title: `${area.label} 영역 점수`,
+              icon: area.icon,
+              trend,
+              caption: scoreCaption(trend.values),
+            };
+          })(),
+        ];
 
   function handlePageScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     setPage(Math.round(event.nativeEvent.contentOffset.x / PAGE_WIDTH));
@@ -287,11 +276,12 @@ export default function HomeScreen() {
                 {...orbPage}
                 artwork={index === 0 ? ORB_STATES[orbState].artwork : orbPage.artwork}
                 sparklesOver={index === 0 ? ORB_STATES[orbState].sparkles : orbPage.sparklesOver}
-                // Only the first card is 오늘의 컨디션. Until the range answers —
-                // or on a day with no score — it shows `—`, not Figma's 100.
-                // 나의 유전자 나선 reads as the user's own score too, and no
-                // endpoint backs it, so it is `—` as well.
-                score={index === 0 && todayScore !== null ? String(Math.round(todayScore)) : NO_VALUE}
+                // Until the range answers — or on a day with no score — `—`,
+                // not Figma's 100. 나의 유전자 나선 shows the same number: no
+                // other score is defined for it (the owner's call, 2026-10-02).
+                score={todayScore !== null ? String(Math.round(todayScore)) : NO_VALUE}
+                copy={orbCopy(todayOrb)}
+                helix={{ streakDays: user?.streakDays ?? 0, typeLabel: profileLabel(dna.data) }}
                 delta={delta}
                 dateLabel={dateLabel(today)}
                 page={page}
@@ -352,23 +342,27 @@ export default function HomeScreen() {
                 gap: scale(2.27),
                 marginTop: scale(30.89 - 9.56 - 13.538),
               }}>
-              {BALANCE_AREAS.map((area, index) => (
-                <DnaKind
-                  key={area.label}
-                  label={area.label}
-                  tone={index === areaIndex ? area.tone : 'default'}
-                  onPress={() => setAreaIndex(index)}
-                />
-              ))}
+              {BALANCE_AREAS.map((chip, index) => {
+                const grade = areaGrades?.[chip.key] ?? null;
+                return (
+                  <DnaKind
+                    key={chip.label}
+                    label={chip.label}
+                    tone={index === areaIndex ? (toneFor(grade) ?? 'default') : 'default'}
+                    onPress={() => setAreaIndex(index)}
+                  />
+                );
+              })}
             </View>
-            {BALANCE_AREAS[areaIndex].cards.map((card, index) => (
+            {cards.map((card) => (
               <View key={card.title} style={{ marginTop: scale(61.13 - 51.198) }}>
                 <WeeklyInfoCard
                   title={card.title}
-                  icon={card.glyph ?? BALANCE_AREAS[areaIndex].icon}
-                  tone={card.tone}
-                  level={card.level}
-                  scores={index === 0 ? FIRST_CARD_SCORES : SECOND_CARD_SCORES}
+                  icon={card.icon}
+                  tone={toneFor(card.trend.grade)}
+                  level={card.trend.level}
+                  // weeklyTrend only ever emits 1–7.
+                  scores={card.trend.bars as (ScoreBarValue | null)[]}
                   caption={card.caption}
                 />
               </View>

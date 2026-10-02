@@ -72,10 +72,10 @@ type as `*/*` rather than `application/json`.
 | PUT | `/api/diaries/{date}` | `DiaryRequest` | 200 `DiaryResponse` | ✅ |
 | DELETE | `/api/diaries/{date}` | — | 204 | — |
 | GET | `/api/scores` | `?from=&to=` | 200 `DailyScoreResponse[]` | ✅ |
-| GET | `/api/scores/items` | `?from=&to=` (≤366 days) | 200 `ItemTrendResponse[]` | — path built, not called |
+| GET | `/api/scores/items` | `?from=&to=` (≤366 days) | 200 `ItemTrendResponse[]` | ✅ 홈 (지표 뱃지 · 신체 탭) |
 | GET | `/api/scores/{date}` | — | 200 `DailyScoreResponse` | — safe since the fix (see Scores) |
 | GET | `/api/scores/today` | — | 200 `DailyScoreResponse` | — |
-| GET | `/api/dna` | — | 200 `DnaInfoResponse` | — |
+| GET | `/api/dna` | — | 200 `DnaInfoResponse` | ✅ 홈 나선 · MY 유형 라벨 |
 | GET | `/health` | — | 200 | — |
 
 **Ranged lists do not fill empty days** — `/api/diaries`, `/api/scores` and

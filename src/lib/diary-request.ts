@@ -250,7 +250,14 @@ export type DiaryFields = {
  * A row of `GET /api/diaries?from&to`. The list keys the day as `logDate`,
  * not `date` — the scores endpoint uses `date`, and the two do not match.
  */
-export type DiaryRow = DiaryFields & { logDate: string };
+export type DiaryRow = DiaryFields & {
+  logDate: string;
+  /**
+   * Read-only: the server derives it from 취침·기상 시각, which the app never
+   * sends (backlog 29) — so it is null for app entries and filled for seeds.
+   */
+  sleepMinutes?: number | null;
+};
 
 /** Constant → label, derived from the tables above so the two cannot drift. */
 function invert(table: Record<string, string | number | boolean>) {

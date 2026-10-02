@@ -1,7 +1,6 @@
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
-import { request } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
 /**
@@ -24,33 +23,45 @@ export type Query<T> = {
   error: unknown;
 };
 
-/** Pass `null` to hold off — the query stays idle rather than firing. */
-export function useApiQuery<T>(path: string | null): Query<T> {
-  const { token } = useAuth();
+/**
+ * Pass `null` to hold off — the query stays idle rather than firing.
+ *
+ * `refetchOnFocus: false` reads once per mount instead, for data a push-and-pop
+ * cannot change — `/api/dna` is fixed at signup, and re-reading it on every
+ * tab switch was a wasted request each time.
+ */
+export function useApiQuery<T>(
+  path: string | null,
+  { refetchOnFocus = true }: { refetchOnFocus?: boolean } = {},
+): Query<T> {
+  const { authedRequest } = useAuth();
   const [state, setState] = useState<Query<T>>({
     data: undefined,
     loading: path !== null,
     error: undefined,
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      if (path === null) return;
-      let cancelled = false;
-      setState((prev) => ({ ...prev, loading: true }));
-      (async () => {
-        try {
-          const data = await request<T>(path, { token });
-          if (!cancelled) setState({ data, loading: false, error: undefined });
-        } catch (error) {
-          if (!cancelled) setState((prev) => ({ ...prev, loading: false, error }));
-        }
-      })();
-      return () => {
-        cancelled = true;
-      };
-    }, [path, token]),
-  );
+  // Same body for both triggers; `authedRequest` carries the token (and signs
+  // the user out on a 401), so a token change still re-runs it.
+  const run = useCallback(() => {
+    if (path === null) return;
+    let cancelled = false;
+    setState((prev) => ({ ...prev, loading: true }));
+    (async () => {
+      try {
+        const data = await authedRequest<T>(path);
+        if (!cancelled) setState({ data, loading: false, error: undefined });
+      } catch (error) {
+        if (!cancelled) setState((prev) => ({ ...prev, loading: false, error }));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [path, authedRequest]);
+
+  useFocusEffect(useCallback(() => (refetchOnFocus ? run() : undefined), [refetchOnFocus, run]));
+  useEffect(() => (refetchOnFocus ? undefined : run()), [refetchOnFocus, run]);
 
   return state;
 }

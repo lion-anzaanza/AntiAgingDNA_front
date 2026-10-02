@@ -10,7 +10,7 @@ import { InputTimeCard } from '@/components/ui/input-time-card';
 import { SelectButton } from '@/components/ui/select-button';
 import { pillWidth, SelectCard } from '@/components/ui/select-card';
 import { Slider0To10 } from '@/components/ui/slider-0-to-10';
-import { ApiError, messageFor, request } from '@/lib/api';
+import { ApiError, messageFor } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import { isoDate, WEEKDAYS_SUN_FIRST } from '@/lib/dates';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
@@ -71,7 +71,7 @@ import { scale } from '@/lib/scale';
  */
 export default function JournalTodayScreen() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { authedRequest } = useAuth();
   // Pinned for the screen's lifetime so the header, the payload and the path
   // cannot disagree if the day rolls over while the form is open.
   const [today] = useState(() => new Date());
@@ -117,7 +117,7 @@ export default function JournalTodayScreen() {
     let cancelled = false;
     (async () => {
       try {
-        const saved = await request<DiaryFields>(`/api/diaries/${isoDate(today)}`, { token });
+        const saved = await authedRequest<DiaryFields>(`/api/diaries/${isoDate(today)}`);
         if (cancelled || !saved) return;
         const draft = toDiaryDraft(saved);
         setCondition(draft.condition);
@@ -159,7 +159,7 @@ export default function JournalTodayScreen() {
     return () => {
       cancelled = true;
     };
-  }, [today, token, restoreAttempt]);
+  }, [today, authedRequest, restoreAttempt]);
 
   /*
    * `conditionLevel` is the only field the server requires, so it is the only
@@ -189,9 +189,8 @@ export default function JournalTodayScreen() {
     setConditionMissing(false);
     setSaving(true);
     try {
-      await request(`/api/diaries/${isoDate(today)}`, {
+      await authedRequest(`/api/diaries/${isoDate(today)}`, {
         method: 'PUT',
-        token,
         body: toDiaryRequest({
           condition,
           sleepOnset,
@@ -212,9 +211,9 @@ export default function JournalTodayScreen() {
           metPeople,
         }),
       });
-      // 일지 메인 is still Figma's static numbers, so returning to it shows no
-      // trace of the save — hence a confirmation. Replace it with whatever the
-      // design lands on once that screen reads real data.
+      // 일지 메인 re-reads on focus, so the save does show up there — but only
+      // as a changed bar or face, easy to miss. Figma draws no save
+      // confirmation, so the platform dialog stands in until one is designed.
       Alert.alert('오늘 기록을 저장했어요', undefined, [{ text: '확인', onPress: leave }]);
     } catch (error) {
       Alert.alert('저장하지 못했어요', messageFor(error));

@@ -127,7 +127,8 @@ export function DailySummaryCard({ summary, onOpenDetail }: DailySummaryCardProp
         />
       </View>
 
-      {/* Server-written sentence (backlog 27) — empty until there is one. */}
+      {/* Facts-only sentence from `lib/facts` (backlog 27 — the server writes
+          none); empty on a day with nothing to compare. */}
       {summary.comment === '' ? null : (
         <Text
           style={{

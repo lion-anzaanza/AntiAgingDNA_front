@@ -7,6 +7,11 @@ import { BANNER_HEIGHT, ReassuranceBanner } from '@/features/my/components/reass
 import { SettingRow, type Row, type ToggleKey } from '@/features/my/components/setting-row';
 import { STAT_STRIP_HEIGHT, StatStrip } from '@/features/my/components/stat-strip';
 import { useAuth } from '@/lib/auth';
+import { addDays } from '@/lib/dates';
+import { type DiaryRow } from '@/lib/diary-request';
+import { RECORD_WINDOW_DAYS, recordedDaysLabel } from '@/lib/facts';
+import { diariesPath } from '@/lib/score';
+import { useApiQuery } from '@/lib/use-api-query';
 import { COLOR, SHADOW_V4 } from '@/lib/design';
 import { scale } from '@/lib/scale';
 
@@ -65,7 +70,7 @@ const SECTIONS: Section[] = [
     rows: [
       { label: '앱 잠금 (생체인증)', icon: 'faceid', iconTop: 15, labelCentre: 27, toggle: { key: 'appLock', top: 14 } },
       { label: '비밀번호 변경', icon: 'lock', iconTop: 63, labelCentre: 74, chevronTop: 65 },
-      { label: '연결된 기기', icon: 'phone', iconTop: 111, labelCentre: 122, pill: { text: '2대', top: 114 } },
+      { label: '연결된 기기', icon: 'phone', iconTop: 111, labelCentre: 122, pill: { text: '—', top: 114 } },
     ],
   },
   {
@@ -82,7 +87,8 @@ const SECTIONS: Section[] = [
         iconTop: 63,
         labelCentre: 74,
         chevronTop: 65,
-        caption: '마지막 백업 · 오늘 09:12',
+        // No backup exists to have a time (backlog 24).
+        caption: '마지막 백업 · —',
       },
       { label: '개인정보처리방침', icon: 'doc', iconTop: 111, labelCentre: 122, chevronTop: 113 },
     ],
@@ -112,6 +118,15 @@ const DEFAULT_TOGGLES: Record<ToggleKey, boolean> = {
 
 export default function PrivacyScreen() {
   const { user } = useAuth();
+  // 기록한 날: every diary in the widest window the API allows (366 days),
+  // read once per visit. A year of full rows to take `.length` is wasteful —
+  // backlog 46 asks for the count itself.
+  const today = new Date();
+  const diaries = useApiQuery<DiaryRow[]>(
+    diariesPath(addDays(today, -(RECORD_WINDOW_DAYS - 1)), today),
+    { refetchOnFocus: false },
+  );
+  const recordedDays = diaries.data ? recordedDaysLabel(diaries.data.length) : '—';
   const [toggles, setToggles] = useState(DEFAULT_TOGGLES);
 
   return (
@@ -141,7 +156,7 @@ export default function PrivacyScreen() {
           </View>
 
           <View style={{ position: 'absolute', top: y(218.11), height: scale(STAT_STRIP_HEIGHT), ...COLUMN }}>
-            <StatStrip />
+            <StatStrip recordedDays={recordedDays} />
           </View>
 
           {SECTIONS.map((section) => (
